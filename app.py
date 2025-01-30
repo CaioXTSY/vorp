@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import markdown
 from datetime import datetime
-import pdfkit
+from xhtml2pdf import pisa
 from io import BytesIO
 from flask_wtf.csrf import CSRFProtect
 
@@ -423,28 +423,104 @@ def export_markdown(period_name, md_file):
         flash("Arquivo não encontrado.", "danger")
         return redirect(url_for('list_disciplines', period_name=period_name))
 
-    with open(md_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-
-    # Converter Markdown para HTML
-    html = markdown.markdown(content, extensions=['fenced_code', 'tables', 'toc', 'codehilite'])
-
-    # Gerar PDF usando pdfkit
     try:
-        config = pdfkit.configuration()
-        pdf = pdfkit.from_string(html, False, configuration=config)
+        # Ler conteúdo do Markdown
+        with open(md_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # Converter Markdown para HTML
+        html_content = markdown.markdown(
+            content,
+            extensions=['fenced_code', 'tables', 'toc', 'codehilite']
+        )
+
+        # CSS para formatação profissional
+        css = """
+        <style>
+            body { 
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                margin: 2cm;
+                font-size: 12pt;
+            }
+            h1 { 
+                color: #2d3748;
+                border-bottom: 2px solid #2d3748;
+                font-size: 18pt;
+            }
+            h2 { font-size: 16pt; }
+            h3 { font-size: 14pt; }
+            ul, ol { 
+                margin-left: 20px;
+                margin-bottom: 15px;
+            }
+            li { 
+                margin: 8px 0;
+                text-align: justify;
+            }
+            strong { font-weight: bold; }
+            pre {
+                background: #f8f9fa;
+                padding: 15px;
+                border-radius: 5px;
+                border: 1px solid #dee2e6;
+                overflow-x: auto;
+                font-family: Consolas, monospace;
+                font-size: 10pt;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            }
+            th, td {
+                border: 1px solid #dee2e6;
+                padding: 12px;
+                text-align: left;
+            }
+            th {
+                background-color: #f8f9fa;
+                font-weight: bold;
+            }
+        </style>
+        """
+
+        # HTML completo
+        full_html = f"""
+        <!DOCTYPE html>
+        <html>
+            <head>
+                <meta charset="utf-8">
+                <title>{md_file.replace('.md', '')}</title>
+                {css}
+            </head>
+            <body>
+                {html_content}
+            </body>
+        </html>
+        """
+
+        # Gerar PDF
+        pdf_buffer = BytesIO()
+        pisa.CreatePDF(
+            src=BytesIO(full_html.encode('utf-8')),
+            dest=pdf_buffer,
+            encoding='utf-8'
+        )
+        pdf_buffer.seek(0)
+
+        return send_file(
+            pdf_buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f"{md_file.replace('.md', '')}.pdf"
+        )
+
     except Exception as e:
-        flash("Erro ao gerar o PDF. Certifique-se de que o wkhtmltopdf está instalado.", "danger")
+        app.logger.error(f"Erro na geração do PDF: {str(e)}")
+        flash("Falha ao gerar PDF. Verifique o console para detalhes.", "danger")
         return redirect(url_for('view_markdown', period_name=period_name, md_file=md_file))
-
-    response = send_file(
-        BytesIO(pdf),
-        mimetype='application/pdf',
-        as_attachment=True,
-        download_name=f"{md_file.replace('.md', '')}.pdf"
-    )
-    return response
-
 
 
 # ----------------------------------------------------------------
