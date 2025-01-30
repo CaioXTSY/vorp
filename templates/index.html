@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}CAIOBOOK - Início{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="text-center py-12" data-aos="fade-up">
+  <h1 class="text-5xl font-bold mb-6">
+    Conhecimento compartilhado,<br>
+    <span class="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+      aprendizado acelerado
+    </span>
+  </h1>
+  <p class="text-xl text-gray-600 mb-8">
+    Colabore, estude e compartilhe conhecimento com sua comunidade acadêmica
+  </p>
+  {% if is_admin() %}
+    <a href="{{ url_for('admin_page') }}" 
+       class="bg-indigo-600 text-white px-8 py-4 rounded-full text-lg hover:bg-indigo-700 transition inline-block">
+      Acesse o Admin
+    </a>
+  {% else %}
+    <a href="{{ url_for('login') }}" 
+       class="bg-indigo-600 text-white px-8 py-4 rounded-full text-lg hover:bg-indigo-700 transition inline-block">
+      Faça Login
+    </a>
+  {% endif %}
+</section>
+
+<!-- Periods Grid -->
+{% if periods %}
+  <section class="mb-24" data-aos="fade-up">
+    <h2 class="text-3xl font-bold mb-12 text-center">Períodos Acadêmicos</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {% for period in periods %}
+        <a href="{{ url_for('list_disciplines', period_name=period) }}" 
+           class="transform transition hover:-translate-y-1">
+          <div class="bg-white p-8 rounded-2xl shadow-xl h-full">
+            <div class="text-indigo-600 mb-4">
+              <i class="fa fa-book-open text-3xl"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">{{ period }}</h3>
+            <p class="text-gray-600">{{ periods[period]|length }} disciplinas disponíveis</p>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  </section>
+{% else %}
+  <p class="text-center text-gray-500 mt-12">Nenhum período encontrado.</p>
+{% endif %}
+
+{% endblock %}

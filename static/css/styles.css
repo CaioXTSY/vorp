@@ -1,0 +1,29 @@
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0px); }
+}
+
+.nav-link {
+  @apply text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors;
+}
+
+.period-card {
+  @apply hover:shadow-2xl transition-shadow duration-300;
+}
+
+.markdown-content h2 {
+  @apply text-2xl font-bold mt-8 mb-4 dark:text-white;
+}
+
+.markdown-content p {
+  @apply text-gray-700 dark:text-gray-300 mb-4 leading-relaxed;
+}
+
+.dark .markdown-content pre {
+  @apply bg-gray-800;
+}
+
+.floating {
+  animation: float 6s ease-in-out infinite;
+}

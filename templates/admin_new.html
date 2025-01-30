@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Nova Disciplina - Admin{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-4" data-aos="fade-up">Criar Nova Disciplina</h1>
+<form method="POST" action="{{ url_for('admin_new_md') }}" data-aos="fade-up">
+  <div class="mb-4">
+    <label class="block mb-1 font-semibold" for="period_name">Período</label>
+    <input
+      type="text"
+      name="period_name"
+      id="period_name"
+      class="w-full p-2 border border-gray-300 rounded"
+      placeholder="ex: Periodo1, ou 2025.1, etc."
+      required
+    >
+  </div>
+  <div class="mb-4">
+    <label class="block mb-1 font-semibold" for="discipline">Disciplina</label>
+    <input
+      type="text"
+      name="discipline"
+      id="discipline"
+      class="w-full p-2 border border-gray-300 rounded"
+      placeholder="Nome da disciplina"
+      required
+    >
+  </div>
+  <div class="mb-4">
+    <label class="block mb-1 font-semibold" for="content">Conteúdo (Markdown)</label>
+    <textarea
+      name="content"
+      id="content"
+      rows="10"
+      class="w-full p-2 border border-gray-300 rounded font-mono"
+      style="white-space: pre; overflow:auto;"
+    ></textarea>
+  </div>
+  <button
+    type="submit"
+    class="bg-indigo-600 text-white px-6 py-2 rounded-full hover:bg-indigo-700 transition"
+  >
+    Criar
+  </button>
+  <a
+    href="{{ url_for('admin_page') }}"
+    class="px-6 py-2 bg-gray-100 rounded-full hover:bg-gray-200 transition ml-4"
+  >
+    Cancelar
+  </a>
+</form>
+{% endblock %}

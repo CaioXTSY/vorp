@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% block title %}{{ md_file|replace('.md','') }} - CAIOBOOK{% endblock %}
+
+{% block content %}
+<div class="relative">
+  <!-- Cabeçalho da disciplina -->
+  <section class="text-center py-12" data-aos="fade-up">
+    <h1 class="text-4xl font-bold mb-2">
+      {{ md_file|replace('.md','') }}
+    </h1>
+    <p class="text-sm text-gray-500">Período: {{ period_name }}</p>
+    <div class="mt-6 flex justify-center flex-wrap gap-4">
+      {% if is_logged_in() %}
+        <a href="{{ url_for('edit_markdown', period_name=period_name, md_file=md_file) }}"
+           class="bg-indigo-600 text-white px-6 py-2 rounded-full hover:bg-indigo-700 transition inline-flex items-center space-x-2">
+          <i class="fa fa-edit"></i><span>Editar</span>
+        </a>
+      {% endif %}
+      <a href="{{ url_for('export_markdown', period_name=period_name, md_file=md_file) }}"
+         class="bg-gray-100 text-gray-800 px-6 py-2 rounded-full hover:bg-gray-200 transition inline-flex items-center space-x-2">
+        <i class="fa fa-file-pdf"></i><span>Exportar PDF</span>
+      </a>
+      <a href="{{ url_for('view_questoes', period_name=period_name, disc_file=md_file) }}"
+         class="bg-gray-100 text-gray-800 px-6 py-2 rounded-full hover:bg-gray-200 transition inline-flex items-center space-x-2">
+        <i class="fa fa-question-circle"></i><span>Questões</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- Layout em 2 colunas: TOC + Conteúdo principal -->
+  <section class="md:flex md:space-x-8" data-aos="fade-up">
+    <!-- TOC (Sumário) -->
+    <aside class="mb-8 md:mb-0 md:w-1/4">
+      <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200
+                  prose-sm max-w-none overflow-auto max-h-[70vh] sticky top-28">
+        <h2 class="text-lg font-bold mb-2">Sumário</h2>
+        {{ toc|safe }}
+      </div>
+    </aside>
+
+    <!-- Conteúdo Markdown -->
+    <article class="md:w-3/4 prose max-w-none">
+      {{ html_content|safe }}
+    </article>
+  </section>
+
+
+      
+      <!-- Seção do Chat de Dúvidas -->
+      <section class="mt-12" data-aos="fade-up">
+        <div class="bg-white rounded-xl shadow-lg p-6">
+          <h2 class="text-2xl font-bold mb-4">Dúvidas? Pergunte ao CAIO</h2>
+          
+          <div id="chat-container" class="mb-4 h-96 overflow-y-auto bg-gray-50 rounded-lg p-4 space-y-4">
+            <div class="chat-message ai-message">
+              <div class="flex items-start space-x-2">
+                <div class="bg-indigo-600 text-white rounded-full w-8 h-8 flex items-center justify-center">
+                  <i class="fa fa-robot"></i>
+                </div>
+                <div class="bg-white p-3 rounded-lg shadow max-w-3xl prose">
+                  <p class="text-sm">Olá! Sou o CAIO, seu assistente de estudos. Pergunte sobre o conteúdo desta página e eu tentarei ajudar!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-2">
+            <input type="text" id="user-question" 
+                  class="flex-1 p-3 border border-gray-300 rounded-lg"
+                  placeholder="Digite sua dúvida aqui..."
+                  onkeypress="handleKeyPress(event)">
+            <button onclick="askQuestion()" 
+                    id="ask-button"
+                    class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition flex items-center gap-2">
+              <i class="fa fa-paper-plane"></i> Enviar
+            </button>
+          </div>
+        </div>
+      </section>
+</div>
+
+<!-- Scripts necessários -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+
+<style>
+  .chat-message { animation: fadeIn 0.3s ease-in; }
+  @keyframes fadeIn { 
+    from { opacity: 0; transform: translateY(10px); } 
+    to { opacity: 1; transform: translateY(0); } 
+  }
+  .prose pre {
+    background-color: #1f2937;
+    color: #f3f4f6;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+  }
+  .prose code {
+    background-color: #f3f4f6;
+    color: #1f2937;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+  }
+</style>
+
+<script>
+  // Funções do Chat
+  function handleKeyPress(e) {
+    if (e.key === 'Enter') askQuestion();
+  }
+
+  async function askQuestion() {
+    const questionInput = document.getElementById('user-question');
+    const button = document.getElementById('ask-button');
+    const chatContainer = document.getElementById('chat-container');
+    const question = questionInput.value.trim();
+    
+    if (!question) return;
+
+    // Adiciona mensagem do usuário
+    chatContainer.innerHTML += `
+      <div class="chat-message user-message">
+        <div class="flex items-start space-x-2 justify-end">
+          <div class="bg-indigo-600 text-white rounded-full w-8 h-8 flex items-center justify-center">
+            <i class="fa fa-user"></i>
+          </div>
+          <div class="bg-indigo-600 text-white p-3 rounded-lg shadow max-w-3xl">
+            <p class="text-sm">${question}</p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    questionInput.value = '';
+    button.disabled = true;
+    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Processando...';
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    try {
+      const response = await fetch('/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: question,
+          context: `{{ markdown_content|replace('\\n', '\\\\n')|replace('\\r', '\\\\r')|safe }}`
+        })
+      });
+
+      const data = await response.json();
+      
+      // Processa markdown na resposta
+      chatContainer.innerHTML += `
+        <div class="chat-message ai-message">
+          <div class="flex items-start space-x-2">
+            <div class="bg-indigo-600 text-white rounded-full w-8 h-8 flex items-center justify-center">
+              <i class="fa fa-robot"></i>
+            </div>
+            <div class="bg-white p-3 rounded-lg shadow max-w-3xl prose">
+              ${marked.parse(data.answer)}
+            </div>
+          </div>
+        </div>
+      `;
+
+    } catch (error) {
+      console.error('Error:', error);
+      chatContainer.innerHTML += `
+        <div class="chat-message ai-message">
+          <div class="flex items-start space-x-2">
+            <div class="bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center">
+              <i class="fa fa-exclamation-triangle"></i>
+            </div>
+            <div class="bg-red-100 p-3 rounded-lg shadow max-w-3xl">
+              <p class="text-sm text-red-600">Erro ao processar sua pergunta. Tente novamente mais tarde.</p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    button.disabled = false;
+    button.innerHTML = '<i class="fa fa-paper-plane"></i> Enviar';
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+
+  // WebSocket para atualizações em tempo real
+  const socket = io();
+  socket.on('update_markdown', (data) => {
+    if (data.period === "{{ period_name }}" && data.file === "{{ md_file }}") {
+      window.location.reload(true);
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Questões - {{ disc_file|replace('.md','') }}{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-4">
+  Questões de {{ disc_file|replace('.md','') }}
+</h1>
+
+{% if html_content %}
+<article class="prose max-w-none mb-6">
+  {{ html_content|safe }}
+</article>
+{% else %}
+<p class="text-gray-500">Ainda não há questões adicionadas.</p>
+{% endif %}
+
+{% if is_logged_in() %}
+  <a
+    href="{{ url_for('edit_questoes', period_name=period_name, disc_file=disc_file) }}"
+    class="bg-indigo-600 text-white px-6 py-2 rounded-full hover:bg-indigo-700 transition"
+  >
+    Editar Questões
+  </a>
+{% else %}
+  <p class="text-gray-500 mt-4">
+    Faça <a href="{{ url_for('login') }}" class="text-indigo-600 hover:underline">login</a> para editar questões.
+  </p>
+{% endif %}
+{% endblock %}

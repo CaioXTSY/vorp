@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-br" x-data="{ mobileMenuOpen: false }">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Tailwind CSS com plugins: forms, typography, aspect-ratio -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
+
+  <!-- FontAwesome (ícones) -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    integrity="sha512-9KU2LtOQoZUOo1+GxRFL3Mrj6bE0fyfHXOE2Ebb2KA6JqWvEsNkA7r6eM4IPfOZqs1JsLNukDw2y3MeTpq0DDA=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
+
+  <!-- Prism.js (opcional) para destaque de código -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css"
+  />
+
+  <!-- AOS (animações de scroll) -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+  <!-- CSS custom (opcional) -->
+  <style>
+    /* Ajuste se quiser dark mode: body.dark { ... } ou .dark .algumaClasse { ... } */
+  </style>
+
+  {% block head_extras %}{% endblock %}
+</head>
+
+<!--
+  min-h-screen: faz o body ter no mínimo a altura total da tela
+  flex flex-col: layout em coluna
+-->
+<body class="min-h-screen flex flex-col bg-gray-50 text-gray-800">
+
+  <!-- Navbar (fixa no topo) -->
+  <nav class="fixed w-full bg-white border-b border-gray-200 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <!-- Logo -->
+      <a href="{{ url_for('index') }}" class="text-2xl font-bold text-indigo-600 flex items-center space-x-2">
+        <i class="fa fa-graduation-cap"></i>
+        <span>CAIOBOOK</span>
+      </a>
+
+      <!-- Menu Desktop -->
+      <div class="hidden md:flex items-center space-x-6">
+        <a href="{{ url_for('index') }}" class="hover:text-indigo-600 transition">Home</a>
+        {% if is_logged_in() %}
+          <a href="{{ url_for('logout') }}" class="hover:text-indigo-600 transition">Sair</a>
+          {% if is_admin() %}
+            <a href="{{ url_for('admin_page') }}" class="hover:text-indigo-600 transition">Admin</a>
+          {% endif %}
+        {% else %}
+          <a href="{{ url_for('login') }}" class="hover:text-indigo-600 transition">Login</a>
+        {% endif %}
+      </div>
+
+      <!-- Botão menu mobile (hamburger) -->
+      <div class="md:hidden">
+        <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-gray-600 focus:outline-none">
+          <i class="fas fa-bars fa-lg"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Overlay para Menu Mobile (quando aberto) -->
+  <div
+    class="md:hidden fixed inset-0 bg-black/30 z-40"
+    x-show="mobileMenuOpen"
+    x-transition
+    @click="mobileMenuOpen = false"
+    style="display: none;"
+  ></div>
+
+  <!-- Sidebar do Menu Mobile -->
+  <div
+    class="md:hidden fixed top-20 left-0 w-3/4 max-w-sm bg-white h-full border-r border-gray-200 z-50 py-4 px-4"
+    x-show="mobileMenuOpen"
+    x-transition
+    style="display: none;"
+  >
+    <a href="{{ url_for('index') }}" class="block mb-2 text-lg hover:text-indigo-600">Home</a>
+    {% if is_logged_in() %}
+      <a href="{{ url_for('logout') }}" class="block mb-2 text-lg hover:text-indigo-600">Sair</a>
+      {% if is_admin() %}
+        <a href="{{ url_for('admin_page') }}" class="block mb-2 text-lg hover:text-indigo-600">Admin</a>
+      {% endif %}
+    {% else %}
+      <a href="{{ url_for('login') }}" class="block mb-2 text-lg hover:text-indigo-600">Login</a>
+    {% endif %}
+  </div>
+
+  <!-- Container para "empurrar" o footer lá pra baixo; compensando o nav fixo com pt-20 -->
+  <div class="pt-20 flex-grow">
+    <main class="max-w-7xl mx-auto px-4 py-8">
+      <!-- Mensagens Flash -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="mb-6">
+            {% for category, msg in messages %}
+              <div class="p-3 mb-2 rounded
+                {% if category == 'success' %}bg-green-100 text-green-800
+                {% elif category == 'danger' %}bg-red-100 text-red-800
+                {% elif category == 'warning' %}bg-yellow-100 text-yellow-800
+                {% else %}bg-gray-100 text-gray-800{% endif %}"
+              >
+                {{ msg }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <!-- Rodapé (fixado ao final pela estrutura flex) -->
+  <footer class="bg-white border-t border-gray-200 py-6 flex-none">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
+      <p class="text-gray-500 text-sm">
+        &copy; {{ current_year }} CAIOBOOK. Todos os direitos reservados.
+      </p>
+      <div class="mt-4 md:mt-0 space-x-4 text-gray-500">
+        <a href="#" class="hover:text-indigo-600"><i class="fab fa-facebook-f"></i></a>
+        <a href="#" class="hover:text-indigo-600"><i class="fab fa-instagram"></i></a>
+        <a href="#" class="hover:text-indigo-600"><i class="fab fa-twitter"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts (AOS, Prism, etc.) -->
+  <script src="https://unpkg.com/alpinejs" defer></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof AOS !== 'undefined') {
+        AOS.init({ duration: 600, once: true });
+      }
+      if (typeof Prism !== 'undefined') {
+        Prism.highlightAll();
+      }
+    });
+  </script>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+  const socket = io();
+  
+  socket.on('update_markdown', (data) => {
+    if (data.period === "{{ period_name }}" && data.file === "{{ md_file }}") {
+      window.location.reload();  // Recarrega a página para todos os usuários
+    }
+  });
+</script>
+</body>
+</html>

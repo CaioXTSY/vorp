@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Editar {{ md_file|replace('.md','') }} - CAIOBOOK{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <div class="mb-8" data-aos="fade-up">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">
+      <i class="fa fa-edit mr-2"></i>Editando: {{ md_file|replace('.md','') }}
+    </h1>
+    <div class="flex items-center space-x-4 text-sm text-gray-500">
+      <span>Período: {{ period_name }}</span>
+      <a href="{{ url_for('view_markdown', period_name=period_name, md_file=md_file) }}" 
+         class="text-indigo-600 hover:underline flex items-center">
+        <i class="fa fa-eye mr-1"></i> Visualizar
+      </a>
+    </div>
+  </div>
+
+  <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    
+    <div class="shadow-xl rounded-lg overflow-hidden border border-gray-200">
+      <div id="editor-toolbar"></div>
+      <textarea id="markdown-editor" name="markdown_content">{{ current_content }}</textarea>
+    </div>
+
+    <div class="mt-6 flex gap-4 justify-end">
+      <a href="{{ url_for('view_markdown', period_name=period_name, md_file=md_file) }}" 
+         class="bg-gray-200 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-300 transition">
+        Cancelar
+      </a>
+      <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition">
+        <i class="fa fa-save mr-2"></i> Salvar
+      </button>
+    </div>
+  </form>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
+<script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+
+<style>
+  .EasyMDEContainer .CodeMirror {
+    min-height: 70vh;
+    padding: 1rem;
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+  }
+  
+  .editor-toolbar {
+    background: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+    gap: 8px;
+    padding: 12px !important;
+  }
+  
+  .editor-toolbar button {
+    color: #475569 !important;
+    border-radius: 6px !important;
+    border: 1px solid #e2e8f0 !important;
+    transition: all 0.2s !important;
+  }
+  
+  .editor-toolbar button:hover {
+    background: #f1f5f9 !important;
+    color: #4f46e5 !important;
+  }
+  
+  .editor-toolbar i.separator {
+    background: #cbd5e1 !important;
+  }
+</style>
+
+<script>
+  const easyMDE = new EasyMDE({
+    element: document.getElementById('markdown-editor'),
+    autoDownloadFontAwesome: false,
+    spellChecker: false,
+    forceSync: false,
+    indentWithTabs: false,
+    tabSize: 2,
+    placeholder: "Escreva seu conteúdo em Markdown aqui...",
+    shortcuts: {
+      toggleSideBySide: null,
+      toggleFullScreen: null
+    },
+    toolbar: [
+      'bold', 'italic', 'heading', '|',
+      'code', 'quote', 'unordered-list', 'ordered-list', '|',
+      'link', 'image', 'table', '|',
+      'preview', 'side-by-side', '|',
+      {
+        name: "guide",
+        action: "https://www.markdownguide.org/basic-syntax/",
+        className: "fa fa-question-circle",
+        title: "Guia Markdown"
+      }
+    ]
+  });
+
+  // Garante o salvamento correto antes do envio
+  document.querySelector('form').addEventListener('submit', (e) => {
+    easyMDE.codemirror.save();
+  });
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+  const socket = io();
+  
+  socket.on('update_markdown', (data) => {
+    if (data.period === "{{ period_name }}" && data.file === "{{ md_file }}") {
+      window.location.reload();
+    }
+  });
+</script>
+{% endblock %}

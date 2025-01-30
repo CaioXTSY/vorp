@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}{{ period_name }} - Disciplinas{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-8" data-aos="fade-up">
+  Disciplinas do {{ period_name }}
+</h1>
+
+{% if disciplines and disciplines|length > 0 %}
+  <ul class="space-y-4">
+    {% for disc_info in disciplines %}
+      <li class="flex items-center justify-between bg-white p-4 rounded-md shadow" data-aos="fade-up">
+        <div>
+          <a
+            href="{{ url_for('view_markdown', period_name=period_name, md_file=disc_info.filename) }}"
+            class="text-indigo-600 font-semibold hover:underline"
+          >
+            {{ disc_info.filename|replace('.md', '') }}
+          </a>
+          {% if disc_info.updated_at %}
+            <span class="text-xs text-gray-500 ml-2">
+              Atualizado em {{ disc_info.updated_at.strftime('%d/%m/%Y %H:%M') }}
+            </span>
+          {% endif %}
+        </div>
+        {% if is_logged_in() %}
+          <!-- Botão de Favoritar (AJAX se quiser) -->
+          <button
+            class="favorite-btn px-3 py-1 rounded-md
+                   {% if disc_info.filename.replace('.md','') in favorites %}
+                     bg-yellow-200 text-yellow-800
+                   {% else %}
+                     bg-gray-100 text-gray-600
+                   {% endif %}"
+            data-discipline="{{ disc_info.filename|replace('.md','') }}"
+          >
+            {% if disc_info.filename.replace('.md','') in favorites %}
+              <i class="fa fa-star"></i> Favorito
+            {% else %}
+              <i class="fa-regular fa-star"></i> Fav
+            {% endif %}
+          </button>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p class="text-gray-500">Nenhuma disciplina encontrada neste período.</p>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Exemplo de AJAX para favoritar
+  document.querySelectorAll('.favorite-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const disc = btn.getAttribute('data-discipline');
+      fetch(`/favorite/${disc}`, { method: 'POST' })
+        .then(resp => resp.json())
+        .then(data => {
+          if (data.status === 'added') {
+            btn.innerHTML = '<i class="fa fa-star"></i> Favorito';
+            btn.classList.remove('bg-gray-100','text-gray-600');
+            btn.classList.add('bg-yellow-200','text-yellow-800');
+          } else if (data.status === 'removed') {
+            btn.innerHTML = '<i class="fa-regular fa-star"></i> Fav';
+            btn.classList.remove('bg-yellow-200','text-yellow-800');
+            btn.classList.add('bg-gray-100','text-gray-600');
+          }
+        });
+    });
+  });
+</script>
+{% endblock %}
