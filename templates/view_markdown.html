@@ -4,79 +4,76 @@
 {% block content %}
 <div class="relative">
   <!-- Cabeçalho da disciplina -->
-  <section class="text-center py-12" data-aos="fade-up">
-    <h1 class="text-4xl font-bold mb-2">
+  <section class="text-center py-6 md:py-12" data-aos="fade-up">
+    <h1 class="text-2xl md:text-4xl font-bold mb-2 px-4">
       {{ md_file|replace('.md','') }}
     </h1>
     <p class="text-sm text-gray-500">Período: {{ period_name }}</p>
-    <div class="mt-6 flex justify-center flex-wrap gap-4">
+    <div class="mt-4 md:mt-6 flex flex-col md:flex-row justify-center items-center gap-2 md:gap-4 px-4">
       {% if is_logged_in() %}
         <a href="{{ url_for('edit_markdown', period_name=period_name, md_file=md_file) }}"
-           class="bg-indigo-600 text-white px-6 py-2 rounded-full hover:bg-indigo-700 transition inline-flex items-center space-x-2">
+           class="w-full md:w-auto bg-indigo-600 text-white px-4 md:px-6 py-2 rounded-full hover:bg-indigo-700 transition inline-flex items-center justify-center space-x-2">
           <i class="fa fa-edit"></i><span>Editar</span>
         </a>
       {% endif %}
       <a href="{{ url_for('export_markdown', period_name=period_name, md_file=md_file) }}"
-         class="bg-gray-100 text-gray-800 px-6 py-2 rounded-full hover:bg-gray-200 transition inline-flex items-center space-x-2">
+         class="w-full md:w-auto bg-gray-100 text-gray-800 px-4 md:px-6 py-2 rounded-full hover:bg-gray-200 transition inline-flex items-center justify-center space-x-2">
         <i class="fa fa-file-pdf"></i><span>Exportar PDF</span>
       </a>
       <a href="{{ url_for('view_questoes', period_name=period_name, disc_file=md_file) }}"
-         class="bg-gray-100 text-gray-800 px-6 py-2 rounded-full hover:bg-gray-200 transition inline-flex items-center space-x-2">
+         class="w-full md:w-auto bg-gray-100 text-gray-800 px-4 md:px-6 py-2 rounded-full hover:bg-gray-200 transition inline-flex items-center justify-center space-x-2">
         <i class="fa fa-question-circle"></i><span>Questões</span>
       </a>
     </div>
   </section>
 
   <!-- Layout em 2 colunas: TOC + Conteúdo principal -->
-  <section class="md:flex md:space-x-8" data-aos="fade-up">
+  <section class="md:flex md:space-x-8 px-4" data-aos="fade-up">
     <!-- TOC (Sumário) -->
-    <aside class="mb-8 md:mb-0 md:w-1/4">
-      <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200
-                  prose-sm max-w-none overflow-auto max-h-[70vh] sticky top-28">
+    <aside class="mb-8 md:mb-0 md:w-full md:max-w-[280px] lg:max-w-[320px]">
+      <div class="bg-white p-4 md:p-6 rounded-xl shadow-lg border border-gray-200
+                  prose-sm max-w-none overflow-auto max-h-[50vh] md:max-h-[70vh] md:sticky md:top-28">
         <h2 class="text-lg font-bold mb-2">Sumário</h2>
         {{ toc|safe }}
       </div>
     </aside>
 
     <!-- Conteúdo Markdown -->
-    <article class="md:w-3/4 prose max-w-none">
+    <article class="md:flex-1 prose max-w-none overflow-x-hidden">
       {{ html_content|safe }}
     </article>
   </section>
 
-
+  <!-- Seção do Chat de Dúvidas -->
+  <section class="mt-8 md:mt-12 px-4" data-aos="fade-up">
+    <div class="bg-white rounded-xl shadow-lg p-4 md:p-6">
       
-      <!-- Seção do Chat de Dúvidas -->
-      <section class="mt-12" data-aos="fade-up">
-        <div class="bg-white rounded-xl shadow-lg p-6">
-          <h2 class="text-2xl font-bold mb-4">Dúvidas? Pergunte à Noemy</h2>
-          
-          <div id="chat-container" class="mb-4 h-96 overflow-y-auto bg-gray-50 rounded-lg p-4 space-y-4">
-            <div class="chat-message ai-message">
-              <div class="flex items-start space-x-2">
-                <div class="bg-indigo-600 text-white rounded-full w-8 h-8 flex items-center justify-center">
-                  <i class="fa fa-robot"></i>
-                </div>
-                <div class="bg-white p-3 rounded-lg shadow max-w-3xl prose">
-                  <p class="text-sm">Olá! Sou a Noemy, sua assistente de estudos. Pergunte sobre o conteúdo desta página e eu tentarei ajudar!</p>
-                </div>
-              </div>
+      <div id="chat-container" class="mb-4 h-64 md:h-96 overflow-y-auto bg-gray-50 rounded-lg p-3 md:p-4 space-y-3 md:space-y-4">
+        <div class="chat-message ai-message">
+          <div class="flex items-start space-x-2">
+            <div class="bg-indigo-600 text-white rounded-full w-6 h-6 md:w-8 md:h-8 flex items-center justify-center flex-shrink-0">
+              <i class="fa fa-robot text-xs md:text-sm"></i>
+            </div>
+            <div class="bg-white p-2 md:p-3 rounded-lg shadow max-w-3xl prose">
+              <p class="text-sm">Olá! Sou Seu assistente de estudos. Pergunte sobre o conteúdo desta página e eu tentarei ajudar!</p>
             </div>
           </div>
-
-          <div class="flex gap-2">
-            <input type="text" id="user-question" 
-                  class="flex-1 p-3 border border-gray-300 rounded-lg"
-                  placeholder="Digite sua dúvida aqui..."
-                  onkeypress="handleKeyPress(event)">
-            <button onclick="askQuestion()" 
-                    id="ask-button"
-                    class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition flex items-center gap-2">
-              <i class="fa fa-paper-plane"></i> Enviar
-            </button>
-          </div>
         </div>
-      </section>
+      </div>
+
+      <div class="flex gap-2">
+        <input type="text" id="user-question" 
+              class="flex-1 p-2 md:p-3 border border-gray-300 rounded-lg text-sm md:text-base"
+              placeholder="Digite sua dúvida aqui..."
+              onkeypress="handleKeyPress(event)">
+        <button onclick="askQuestion()" 
+                id="ask-button"
+                class="bg-indigo-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg hover:bg-indigo-700 transition flex items-center gap-2 text-sm md:text-base">
+          <i class="fa fa-paper-plane"></i> <span class="hidden md:inline">Enviar</span>
+        </button>
+      </div>
+    </div>
+  </section>
 </div>
 
 <!-- Scripts necessários -->
@@ -103,10 +100,19 @@
     border-radius: 0.25rem;
     font-size: 0.875rem;
   }
+  @media (max-width: 768px) {
+    .prose {
+      font-size: 0.9rem;
+    }
+    .prose h1 { font-size: 1.5rem; }
+    .prose h2 { font-size: 1.3rem; }
+    .prose h3 { font-size: 1.1rem; }
+  }
 </style>
 
 <script>
-  // Funções do Chat
+  let chatHistory = [];
+
   function handleKeyPress(e) {
     if (e.key === 'Enter') askQuestion();
   }
@@ -120,22 +126,31 @@
     if (!question) return;
 
     // Adiciona mensagem do usuário
+    const userMessage = {
+      role: 'user',
+      content: question,
+      timestamp: new Date().toISOString()
+    };
+    
     chatContainer.innerHTML += `
       <div class="chat-message user-message">
         <div class="flex items-start space-x-2 justify-end">
-          <div class="bg-indigo-600 text-white rounded-full w-8 h-8 flex items-center justify-center">
-            <i class="fa fa-user"></i>
+          <div class="bg-indigo-600 text-white rounded-full w-6 h-6 md:w-8 md:h-8 flex items-center justify-center flex-shrink-0">
+            <i class="fa fa-user text-xs md:text-sm"></i>
           </div>
-          <div class="bg-indigo-600 text-white p-3 rounded-lg shadow max-w-3xl">
+          <div class="bg-indigo-600 text-white p-2 md:p-3 rounded-lg shadow max-w-3xl">
             <p class="text-sm">${question}</p>
           </div>
         </div>
       </div>
     `;
 
+    chatHistory.push(userMessage);
+    chatHistory = chatHistory.slice(-10); // Mantém apenas as últimas 10 mensagens
+
     questionInput.value = '';
     button.disabled = true;
-    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Processando...';
+    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
     chatContainer.scrollTop = chatContainer.scrollHeight;
 
     try {
@@ -144,35 +159,45 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           question: question,
-          context: `{{ markdown_content|replace('\\n', '\\\\n')|replace('\\r', '\\\\r')|safe }}`
+          context: `{{ markdown_content|replace('\\n', '\\\\n')|replace('\\r', '\\\\r')|safe }}`,
+          history: chatHistory
         })
       });
 
       const data = await response.json();
       
-      // Processa markdown na resposta
+      // Adiciona resposta da IA
+      const aiMessage = {
+        role: 'assistant',
+        content: data.answer,
+        timestamp: new Date().toISOString()
+      };
+      
       chatContainer.innerHTML += `
         <div class="chat-message ai-message">
           <div class="flex items-start space-x-2">
-            <div class="bg-indigo-600 text-white rounded-full w-8 h-8 flex items-center justify-center">
-              <i class="fa fa-robot"></i>
+            <div class="bg-indigo-600 text-white rounded-full w-6 h-6 md:w-8 md:h-8 flex items-center justify-center flex-shrink-0">
+              <i class="fa fa-robot text-xs md:text-sm"></i>
             </div>
-            <div class="bg-white p-3 rounded-lg shadow max-w-3xl prose">
+            <div class="bg-white p-2 md:p-3 rounded-lg shadow max-w-3xl prose">
               ${marked.parse(data.answer)}
             </div>
           </div>
         </div>
       `;
 
+      chatHistory.push(aiMessage);
+      chatHistory = chatHistory.slice(-10);
+
     } catch (error) {
       console.error('Error:', error);
       chatContainer.innerHTML += `
         <div class="chat-message ai-message">
           <div class="flex items-start space-x-2">
-            <div class="bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center">
-              <i class="fa fa-exclamation-triangle"></i>
+            <div class="bg-red-600 text-white rounded-full w-6 h-6 md:w-8 md:h-8 flex items-center justify-center flex-shrink-0">
+              <i class="fa fa-exclamation-triangle text-xs md:text-sm"></i>
             </div>
-            <div class="bg-red-100 p-3 rounded-lg shadow max-w-3xl">
+            <div class="bg-red-100 p-2 md:p-3 rounded-lg shadow max-w-3xl">
               <p class="text-sm text-red-600">Erro ao processar sua pergunta. Tente novamente mais tarde.</p>
             </div>
           </div>
@@ -181,7 +206,7 @@
     }
 
     button.disabled = false;
-    button.innerHTML = '<i class="fa fa-paper-plane"></i> Enviar';
+    button.innerHTML = '<i class="fa fa-paper-plane"></i> <span class="hidden md:inline">Enviar</span>';
     chatContainer.scrollTop = chatContainer.scrollHeight;
   }
 
