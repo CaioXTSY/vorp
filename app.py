@@ -472,8 +472,6 @@ def inject_current_year():
 @app.route('/ask', methods=['POST'])
 @csrf.exempt
 def ask_question():
-    if not is_logged_in():
-        return jsonify({'error': 'Authentication required'}), 401
 
     data = request.get_json()
     question = data.get('question')
