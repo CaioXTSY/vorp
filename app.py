@@ -484,7 +484,7 @@ def ask_question():
         )
 
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo-1106",
+            model="gpt4o-mini",
             messages=[
                 {"role": "system", "content": f"""
                 Você é um assistente de estudos chamado CAIO. Responda perguntas com base no seguinte contexto:

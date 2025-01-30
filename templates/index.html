@@ -2,30 +2,11 @@
 {% block title %}CAIOBOOK - Início{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<section class="text-center py-12" data-aos="fade-up">
-  <h1 class="text-5xl font-bold mb-6">
-    Conhecimento compartilhado,<br>
-    <span class="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-      aprendizado acelerado
-    </span>
-  </h1>
-  <p class="text-xl text-gray-600 mb-8">
-    Colabore, estude e compartilhe conhecimento com sua comunidade acadêmica
-  </p>
-  {% if is_admin() %}
-    <a href="{{ url_for('admin_page') }}" 
-       class="bg-indigo-600 text-white px-8 py-4 rounded-full text-lg hover:bg-indigo-700 transition inline-block">
-      Acesse o Admin
-    </a>
-  {% else %}
-  {% endif %}
-</section>
 
 <!-- Periods Grid -->
 {% if periods %}
   <section class="mb-24" data-aos="fade-up">
-    <h2 class="text-3xl font-bold mb-12 text-center">Períodos Acadêmicos</h2>
+    <h2 class="text-3xl font-bold mb-12 text-center">Períodos Disponíveis</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {% for period in periods %}
         <a href="{{ url_for('list_disciplines', period_name=period) }}" 
