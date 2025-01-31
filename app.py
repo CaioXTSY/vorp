@@ -433,41 +433,83 @@ def export_markdown(period_name, md_file):
 # OPENAI ASK
 # -----------------------------------------------------------------------------
 
+from flask import jsonify, request
+from flask_wtf.csrf import CSRFProtect
+import os
+from openai import OpenAI
+
+# Exemplo de rota renomeada para /ask_bonny
 @app.route('/ask', methods=['POST'])
 @csrf.exempt
 def ask_question():
     data = request.get_json()
-    question = data.get('question')
+    question = data.get('question', '')
     context = data.get('context', '')[:12000]
+    
+    # Recebe histórico de mensagens, se houver
+    # Esperamos um formato parecido com: [{'role': 'user', 'content': 'Pergunta anterior'}, ...]
+    conversation_history = data.get('history', [])
 
+    # Limita o histórico, se desejado (por exemplo, últimas 10 mensagens)
+    conversation_history = conversation_history[-10:]
+    
     try:
         client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {
-                    "role": "system",
-                    "content": f"""
-Você é um assistente de estudos chamado CAIO. Responda perguntas com base no seguinte contexto:
+        
+        # Montamos as mensagens para o ChatGPT
+        # 1) Mensagem de sistema (instruções) 
+        # 2) Histórico prévio (se existir)
+        # 3) Nova pergunta do usuário
+        messages = [
+            {
+                "role": "system",
+                "content": f"""
+Você é Bonny, uma assistente de estudos alegre, amigável e com um tom humanizado. Use o contexto abaixo se for relevante:
+
 {context}
 
-Regras:
-- Se a pergunta não estiver relacionada ao contexto, diga: "Esta pergunta parece estar fora do contexto do material estudado."
-- Mantenha as respostas curtas e diretas (máximo 3 parágrafos).
-- Use markdown básico para formatação.
-- Se relevante, relacione conceitos com aplicações práticas.
+Regras de estilo:
+- Seja calorosa, simpática e mantenha um ar de leveza.
+- Respostas curtas e diretas (máximo de 3 parágrafos).
+- Use Markdown básico para formatação.
+- Se a pergunta não tiver relação com o contexto, tente responder de forma leve e breve.
+- Se não tiver informações suficientes, seja sincera, mas mantenha a simpatia.
 """
-                },
-                {"role": "user", "content": question}
-            ],
+            }
+        ]
+        
+        # Adiciona o histórico no formato correto para o ChatGPT
+        # Ex.: [{'role': 'user', 'content': 'Pergunta anterior'}]
+        for msg in conversation_history:
+            # Garantimos que role e content estejam definidos (e em minúsculas 'user' ou 'assistant')
+            role = msg.get("role", "user")
+            content = msg.get("content", "")
+            
+            # Pode adaptar se precisar tratar 'system' ou 'assistant'
+            if role not in ["system", "user", "assistant"]:
+                role = "user"
+            
+            messages.append({"role": role, "content": content})
+
+        # Finalmente, adicionamos a mensagem do usuário atual
+        messages.append({"role": "user", "content": question})
+
+        # Chamada à API do OpenAI
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=messages,
             temperature=0.3,
             max_tokens=500
         )
+
+        # Extrai a resposta
         answer = response.choices[0].message.content
+        
         return jsonify({'answer': answer})
     except Exception as e:
         app.logger.error(f"OpenAI API Error: {str(e)}")
         return jsonify({'error': 'Erro ao processar a pergunta'}), 500
+
 
 # -----------------------------------------------------------------------------
 # CONTEXT PROCESSORS

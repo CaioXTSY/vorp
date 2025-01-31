@@ -47,29 +47,39 @@
   <!-- Seção do Chat de Dúvidas -->
   <section class="mt-8 md:mt-12 px-4" data-aos="fade-up">
     <div class="bg-white rounded-xl shadow-lg p-4 md:p-6">
-      
-      <div id="chat-container" class="mb-4 h-64 md:h-96 overflow-y-auto bg-gray-50 rounded-lg p-3 md:p-4 space-y-3 md:space-y-4">
+      <div id="chat-container" 
+           class="mb-4 h-64 md:h-96 overflow-y-auto bg-gray-50 rounded-lg p-3 md:p-4 space-y-3 md:space-y-4">
+        
+        <!-- Mensagem Inicial da Bonny -->
         <div class="chat-message ai-message">
           <div class="flex items-start space-x-2">
-            <div class="bg-indigo-600 text-white rounded-full w-6 h-6 md:w-8 md:h-8 flex items-center justify-center flex-shrink-0">
-              <i class="fa fa-robot text-xs md:text-sm"></i>
-            </div>
+            <!-- Avatar da Bonny -->
+            <img 
+              src="{{ url_for('static', filename='bonny.webp') }}" 
+              alt="Bonny" 
+              class="w-8 h-8 md:w-10 md:h-10 rounded-full flex-shrink-0 object-cover"
+            >
             <div class="bg-white p-2 md:p-3 rounded-lg shadow max-w-3xl prose">
-              <p class="text-sm">Olá! Sou Seu assistente de estudos. Pergunte sobre o conteúdo desta página e eu tentarei ajudar!</p>
+              <p class="text-sm">
+                Olá! Sou <strong>Bonny</strong>, sua assistente de estudos. Pergunte sobre o conteúdo desta página e vou tentar ajudar!
+              </p>
             </div>
           </div>
         </div>
       </div>
 
+      <!-- Área de input -->
       <div class="flex gap-2">
-        <input type="text" id="user-question" 
-              class="flex-1 p-2 md:p-3 border border-gray-300 rounded-lg text-sm md:text-base"
-              placeholder="Digite sua dúvida aqui..."
-              onkeypress="handleKeyPress(event)">
+        <input type="text" 
+               id="user-question" 
+               class="flex-1 p-2 md:p-3 border border-gray-300 rounded-lg text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+               placeholder="Digite sua dúvida aqui..."
+               onkeypress="handleKeyPress(event)">
         <button onclick="askQuestion()" 
                 id="ask-button"
                 class="bg-indigo-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg hover:bg-indigo-700 transition flex items-center gap-2 text-sm md:text-base">
-          <i class="fa fa-paper-plane"></i> <span class="hidden md:inline">Enviar</span>
+          <i class="fa fa-paper-plane"></i> 
+          <span class="hidden md:inline">Enviar</span>
         </button>
       </div>
     </div>
@@ -81,14 +91,19 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 
 <style>
-  .chat-message { animation: fadeIn 0.3s ease-in; }
+  /* Animação de entrada das mensagens */
+  .chat-message {
+    animation: fadeIn 0.3s ease-in;
+  }
   @keyframes fadeIn { 
     from { opacity: 0; transform: translateY(10px); } 
     to { opacity: 1; transform: translateY(0); } 
   }
+
+  /* Estilos para código nas mensagens (Markdown) */
   .prose pre {
-    background-color: #1f2937;
-    color: #f3f4f6;
+    background-color: #1f2937; /* tom de cinza-escuro */
+    color: #f3f4f6;           /* texto em cinza-claro */
     padding: 1rem;
     border-radius: 0.5rem;
     overflow-x: auto;
@@ -100,6 +115,13 @@
     border-radius: 0.25rem;
     font-size: 0.875rem;
   }
+
+  /* Mensagens do usuário (alinhadas à direita) */
+  .user-message .bg-indigo-600 {
+    background-color: #4f46e5; /* Indigo-600 */
+  }
+
+  /* Responsividade ajustada */
   @media (max-width: 768px) {
     .prose {
       font-size: 0.9rem;
@@ -114,7 +136,9 @@
   let chatHistory = [];
 
   function handleKeyPress(e) {
-    if (e.key === 'Enter') askQuestion();
+    if (e.key === 'Enter') {
+      askQuestion();
+    }
   }
 
   async function askQuestion() {
@@ -125,35 +149,39 @@
     
     if (!question) return;
 
-    // Adiciona mensagem do usuário
+    // Adiciona mensagem do usuário no chat
     const userMessage = {
       role: 'user',
       content: question,
       timestamp: new Date().toISOString()
     };
-    
+
     chatContainer.innerHTML += `
       <div class="chat-message user-message">
         <div class="flex items-start space-x-2 justify-end">
-          <div class="bg-indigo-600 text-white rounded-full w-6 h-6 md:w-8 md:h-8 flex items-center justify-center flex-shrink-0">
-            <i class="fa fa-user text-xs md:text-sm"></i>
+          <!-- Ícone/avatar do usuário (pode usar uma imagem se quiser) -->
+          <div class="bg-indigo-600 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0">
+            <i class="fa fa-user text-sm"></i>
           </div>
           <div class="bg-indigo-600 text-white p-2 md:p-3 rounded-lg shadow max-w-3xl">
-            <p class="text-sm">${question}</p>
+            <p class="text-sm break-words">${question}</p>
           </div>
         </div>
       </div>
     `;
 
     chatHistory.push(userMessage);
-    chatHistory = chatHistory.slice(-10); // Mantém apenas as últimas 10 mensagens
+    // Mantém apenas as últimas 10 mensagens no histórico
+    chatHistory = chatHistory.slice(-10);
 
     questionInput.value = '';
     button.disabled = true;
     button.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+
     chatContainer.scrollTop = chatContainer.scrollHeight;
 
     try {
+      // Faz POST para o endpoint /ask
       const response = await fetch('/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -165,21 +193,24 @@
       });
 
       const data = await response.json();
-      
-      // Adiciona resposta da IA
+
+      // Adiciona resposta da IA (Bonny)
       const aiMessage = {
         role: 'assistant',
         content: data.answer,
         timestamp: new Date().toISOString()
       };
-      
+
       chatContainer.innerHTML += `
         <div class="chat-message ai-message">
           <div class="flex items-start space-x-2">
-            <div class="bg-indigo-600 text-white rounded-full w-6 h-6 md:w-8 md:h-8 flex items-center justify-center flex-shrink-0">
-              <i class="fa fa-robot text-xs md:text-sm"></i>
-            </div>
-            <div class="bg-white p-2 md:p-3 rounded-lg shadow max-w-3xl prose">
+            <!-- Avatar da Bonny -->
+            <img 
+              src="{{ url_for('static', filename='bonny.webp') }}" 
+              alt="Bonny" 
+              class="w-8 h-8 md:w-10 md:h-10 rounded-full flex-shrink-0 object-cover"
+            >
+            <div class="bg-white p-2 md:p-3 rounded-lg shadow max-w-3xl prose break-words">
               ${marked.parse(data.answer)}
             </div>
           </div>
@@ -194,8 +225,8 @@
       chatContainer.innerHTML += `
         <div class="chat-message ai-message">
           <div class="flex items-start space-x-2">
-            <div class="bg-red-600 text-white rounded-full w-6 h-6 md:w-8 md:h-8 flex items-center justify-center flex-shrink-0">
-              <i class="fa fa-exclamation-triangle text-xs md:text-sm"></i>
+            <div class="bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0">
+              <i class="fa fa-exclamation-triangle text-sm"></i>
             </div>
             <div class="bg-red-100 p-2 md:p-3 rounded-lg shadow max-w-3xl">
               <p class="text-sm text-red-600">Erro ao processar sua pergunta. Tente novamente mais tarde.</p>
@@ -210,7 +241,7 @@
     chatContainer.scrollTop = chatContainer.scrollHeight;
   }
 
-  // WebSocket para atualizações em tempo real
+  // WebSocket para atualizações em tempo real (quando o conteúdo Markdown é atualizado)
   const socket = io();
   socket.on('update_markdown', (data) => {
     if (data.period === "{{ period_name }}" && data.file === "{{ md_file }}") {
