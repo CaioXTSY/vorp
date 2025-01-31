@@ -444,7 +444,7 @@ from openai import OpenAI
 def ask_question():
     data = request.get_json()
     question = data.get('question', '')
-    context = data.get('context', '')[:12000]
+    context = data.get('context', '')
     
     # Recebe histórico de mensagens, se houver
     # Esperamos um formato parecido com: [{'role': 'user', 'content': 'Pergunta anterior'}, ...]
@@ -498,7 +498,7 @@ Regras de estilo:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=messages,
-            temperature=0.3,
+            temperature=0.4,
             max_tokens=500
         )
 
