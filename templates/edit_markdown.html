@@ -3,114 +3,139 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 py-8">
-  <div class="mb-8" data-aos="fade-up">
-    <h1 class="text-3xl font-bold text-gray-900 mb-2">
-      <i class="fa fa-edit mr-2"></i>Editando: {{ md_file|replace('.md','') }}
+  <!-- Cabeçalho da página -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">
+      <i class="fa fa-edit mr-2"></i> Editando: {{ md_file|replace('.md','') }}
     </h1>
     <div class="flex items-center space-x-4 text-sm text-gray-500">
       <span>Período: {{ period_name }}</span>
       <a href="{{ url_for('view_markdown', period_name=period_name, md_file=md_file) }}" 
          class="text-indigo-600 hover:underline flex items-center">
-        <i class="fa fa-eye mr-1"></i> Visualizar
+         <i class="fa fa-eye mr-1"></i> Visualizar
       </a>
     </div>
   </div>
 
-  <form method="POST">
+  <!-- Formulário de edição -->
+  <form id="markdown-form" method="POST">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-    
     <div class="shadow-xl rounded-lg overflow-hidden border border-gray-200">
-      <div id="editor-toolbar"></div>
+      <!-- Editor de Markdown -->
       <textarea id="markdown-editor" name="markdown_content">{{ current_content }}</textarea>
     </div>
-
     <div class="mt-6 flex gap-4 justify-end">
       <a href="{{ url_for('view_markdown', period_name=period_name, md_file=md_file) }}" 
          class="bg-gray-200 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-300 transition">
-        Cancelar
+         Cancelar
       </a>
       <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition">
-        <i class="fa fa-save mr-2"></i> Salvar
+         <i class="fa fa-save mr-2"></i> Salvar
+      </button>
+      <button type="button" id="toggle-zen" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
+         <i class="fa fa-arrows-alt mr-2"></i> Zen Mode
       </button>
     </div>
+    <!-- Área para feedback de salvamento -->
+    <div id="save-status" class="mt-4 text-sm"></div>
   </form>
 </div>
 
+<!-- Inclui Font Awesome e EasyMDE -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
-<script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
 
+<!-- Estilos customizados para o preview do Markdown -->
 <style>
-  .EasyMDEContainer .CodeMirror {
-    min-height: 70vh;
-    padding: 1rem;
-    font-family: 'Fira Code', monospace;
-    font-size: 14px;
+  /* Estiliza a área de preview com a classe custom-markdown-style */
+  .custom-markdown-style h1 {
+      font-size: 2.5rem;
+      color: #2d3748;
+      margin-bottom: 1rem;
   }
-  
-  .editor-toolbar {
-    background: #f8fafc !important;
-    border-color: #e2e8f0 !important;
-    gap: 8px;
-    padding: 12px !important;
+  .custom-markdown-style p {
+      line-height: 1.6;
+      margin-bottom: 1rem;
   }
-  
-  .editor-toolbar button {
-    color: #475569 !important;
-    border-radius: 6px !important;
-    border: 1px solid #e2e8f0 !important;
-    transition: all 0.2s !important;
-  }
-  
-  .editor-toolbar button:hover {
-    background: #f1f5f9 !important;
-    color: #4f46e5 !important;
-  }
-  
-  .editor-toolbar i.separator {
-    background: #cbd5e1 !important;
-  }
+  /* Outras regras podem ser adicionadas conforme a necessidade */
 </style>
 
-<script>
-  const easyMDE = new EasyMDE({
-    element: document.getElementById('markdown-editor'),
-    autoDownloadFontAwesome: false,
-    spellChecker: false,
-    forceSync: false,
-    indentWithTabs: false,
-    tabSize: 2,
-    placeholder: "Escreva seu conteúdo em Markdown aqui...",
-    shortcuts: {
-      toggleSideBySide: null,
-      toggleFullScreen: null
-    },
-    toolbar: [
-      'bold', 'italic', 'heading', '|',
-      'code', 'quote', 'unordered-list', 'ordered-list', '|',
-      'link', 'image', 'table', '|',
-      'preview', 'side-by-side', '|',
-      {
-        name: "guide",
-        action: "https://www.markdownguide.org/basic-syntax/",
-        className: "fa fa-question-circle",
-        title: "Guia Markdown"
-      }
-    ]
-  });
-
-  // Garante o salvamento correto antes do envio
-  document.querySelector('form').addEventListener('submit', (e) => {
-    easyMDE.codemirror.save();
-  });
-</script>
-
+<!-- Scripts -->
+<script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
 <script>
+  // Inicializa o EasyMDE com opções avançadas:
+  const easyMDE = new EasyMDE({
+    element: document.getElementById("markdown-editor"),
+    spellChecker: false,
+    autosave: {
+      enabled: true,
+      uniqueId: "{{ period_name }}-{{ md_file }}",
+      delay: 10000
+    },
+    // Configura a toolbar com os botões desejados e o modo side-by-side
+    toolbar: [
+      'bold', 'italic', 'heading', '|',
+      'quote', 'unordered-list', 'ordered-list', '|',
+      'link', 'image', 'table', '|',
+      'preview', 'side-by-side', 'fullscreen'
+    ],
+    // Aplica classes customizadas na área de preview.
+    // Quando o modo side-by-side for ativado, EasyMDE usa a classe "editor-preview-side" internamente.
+    previewClass: ["editor-preview", "custom-markdown-style"],
+    // Outras configurações
+    forceSync: true,
+    placeholder: "Escreva seu conteúdo em Markdown aqui..."
+  });
+
+  // Submissão do formulário via AJAX para salvar sem recarregar a página
+  document.getElementById("markdown-form").addEventListener("submit", function(e) {
+    e.preventDefault();
+    // Sincroniza o conteúdo do editor com o textarea
+    easyMDE.codemirror.save();
+    const formData = new FormData(this);
+    fetch(location.href, {
+      method: "POST",
+      body: formData,
+      headers: { "X-Requested-With": "XMLHttpRequest" }
+    })
+    .then(response => response.json())
+    .then(data => {
+      const statusDiv = document.getElementById("save-status");
+      statusDiv.textContent = data.message;
+      statusDiv.style.color = data.status === "success" ? "green" : "red";
+    })
+    .catch(error => {
+      console.error("Erro:", error);
+      const statusDiv = document.getElementById("save-status");
+      statusDiv.textContent = "Erro ao salvar o conteúdo.";
+      statusDiv.style.color = "red";
+    });
+  });
+
+  // Botão para alternar para o modo Zen (fullscreen)
+  const toggleZenButton = document.getElementById("toggle-zen");
+  let isZen = false;
+  toggleZenButton.addEventListener("click", function(){
+    isZen = !isZen;
+    if(isZen){
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+      }
+      toggleZenButton.innerHTML = '<i class="fa fa-compress mr-2"></i> Sair do Zen';
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+      toggleZenButton.innerHTML = '<i class="fa fa-arrows-alt mr-2"></i> Zen Mode';
+    }
+  });
+
+  // Conecta ao Socket.IO para receber notificações de atualização externa
   const socket = io();
-  
-  socket.on('update_markdown', (data) => {
-    if (data.period === "{{ period_name }}" && data.file === "{{ md_file }}") {
+  socket.on('update_markdown', function(data){
+    if(data.period === "{{ period_name }}" && data.file === "{{ md_file }}"){
+      console.log("Conteúdo atualizado externamente. Atualizando editor...");
       window.location.reload();
     }
   });

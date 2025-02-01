@@ -464,28 +464,25 @@ def ask_question():
             {
                 "role": "system",
                 "content": f"""
-Você é Bonny, uma assistente de estudos alegre, amigável e com um tom humanizado. Use o contexto abaixo se for relevante:
+Você é Bonny, uma assistente de estudos eficiente, focada e com um tom profissional. Utilize o contexto abaixo apenas se for relevante:
 
 {context}
 
 Regras de estilo:
-- Seja calorosa, simpática e mantenha um ar de leveza.
-- Respostas curtas e diretas (máximo de 3 parágrafos).
+- Seja direto e objetivo nas respostas.
+- Respostas claras e informativas (máximo de 2 parágrafos).
 - Use Markdown básico para formatação.
-- Se a pergunta não tiver relação com o contexto, tente responder de forma leve e breve.
-- Se não tiver informações suficientes, seja sincera, mas mantenha a simpatia.
+- Se a pergunta não estiver relacionada ao contexto ou fora do escopo de estudos, informe educadamente que não pode ajudar com esse assunto.
+- Se não houver informações suficientes, solicite mais detalhes de forma concisa.
 """
             }
         ]
         
         # Adiciona o histórico no formato correto para o ChatGPT
-        # Ex.: [{'role': 'user', 'content': 'Pergunta anterior'}]
         for msg in conversation_history:
-            # Garantimos que role e content estejam definidos (e em minúsculas 'user' ou 'assistant')
-            role = msg.get("role", "user")
+            role = msg.get("role", "user").lower()
             content = msg.get("content", "")
             
-            # Pode adaptar se precisar tratar 'system' ou 'assistant'
             if role not in ["system", "user", "assistant"]:
                 role = "user"
             
@@ -499,7 +496,7 @@ Regras de estilo:
             model="gpt-4o-mini",
             messages=messages,
             temperature=0.4,
-            max_tokens=500
+            max_tokens=5000
         )
 
         # Extrai a resposta
