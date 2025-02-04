@@ -458,7 +458,9 @@ if __name__ == '__main__':
         admin_user = User.query.filter_by(username='admin').first()
         if not admin_user:
             admin_user = User(username='admin')
-            admin_user.set_password('admin')  # Trocar em produção
+            admin_user.set_password('admin')  # Change in production
             db.session.add(admin_user)
             db.session.commit()
-    socketio.run(app, debug=True, allow_unsafe_werkzeug=True)
+
+    port = int(os.environ.get("PORT", 5000))
+    socketio.run(app, debug=True, host='0.0.0.0', port=port, allow_unsafe_werkzeug=True)
