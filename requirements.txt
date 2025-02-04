@@ -1,10 +1,8 @@
-Flask==2.3.2
-Flask-SQLAlchemy==3.0.3
-Flask-SocketIO==5.3.4
-Flask-WTF==1.0.1
-Werkzeug==2.3.2
-markdown==3.4.3
-xhtml2pdf==0.2.10
-python-dotenv==1.0.0
+Flask==2.2.5
+Flask-SQLAlchemy==3.0.2
+Flask-SocketIO==5.3.3
+Flask-WTF==1.1.1
+Markdown==3.4.4
+xhtml2pdf==0.2.5
 openai==0.27.8
-eventlet==0.33.3
+python-dotenv==1.0.0
