@@ -6,3 +6,4 @@ Markdown==3.4.4
 xhtml2pdf==0.2.5
 openai==0.27.8
 python-dotenv==1.0.0
+reportlab==3.5.59
