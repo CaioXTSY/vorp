@@ -5,103 +5,122 @@
   <title>{% block title %}{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Tailwind CSS com plugins: forms, typography, aspect-ratio -->
-  <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
+  <!-- Tailwind CSS com plugins: forms, typography, aspect-ratio e line-clamp -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
 
   <!-- FontAwesome (ícones) -->
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    integrity="sha512-9KU2LtOQoZUOo1+GxRFL3Mrj6bE0fyfHXOE2Ebb2KA6JqWvEsNkA7r6eM4IPfOZqs1JsLNukDw2y3MeTpq0DDA=="
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
-  />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
   <!-- Prism.js (opcional) para destaque de código -->
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css"
-  />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css" />
 
   <!-- AOS (animações de scroll) -->
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
-  <!-- CSS custom (opcional) -->
   <style>
-    /* Ajuste se quiser dark mode: body.dark { ... } ou .dark .algumaClasse { ... } */
+    /* Importando a fonte Poppins e aplicando-a ao body */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+    /* Estilos para links de navegação */
+    .nav-link {
+      @apply relative px-3 py-1.5 transition-all duration-300 hover:text-indigo-600;
+    }
+    .nav-link::after {
+      @apply content-[''] absolute bottom-0 left-1/2 w-0 h-0.5 bg-indigo-600 transition-all duration-300;
+    }
+    .nav-link:hover::after {
+      @apply left-0 w-full;
+    }
   </style>
 
   {% block head_extras %}{% endblock %}
 </head>
-
-<!--
-  min-h-screen: faz o body ter no mínimo a altura total da tela
-  flex flex-col: layout em coluna
--->
-<body class="min-h-screen flex flex-col bg-gray-50 text-gray-800">
-
-  <!-- Navbar (fixa no topo) -->
-  <nav class="fixed w-full bg-white border-b border-gray-200 z-50">
+<body class="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-indigo-50 text-gray-800">
+  
+  <!-- Cabeçalho (Header) Atualizado -->
+  <nav class="fixed w-full bg-white/80 backdrop-blur-md border-b border-gray-100 z-50 shadow-sm">
     <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-      <!-- Logo -->
-      <a href="{{ url_for('index') }}" class="text-2xl font-bold text-indigo-600 flex items-center space-x-2">
-        <i class="fa fa-graduation-cap"></i>
-        <span>CAIOBOOK</span>
+      
+      <!-- Logo Melhorado -->
+      <a href="{{ url_for('index') }}" class="flex items-center space-x-3 group">
+        <div class="p-2 bg-indigo-600 rounded-lg group-hover:rotate-12 transition-transform">
+          <i class="fas fa-graduation-cap text-white text-xl"></i>
+        </div>
+        <span class="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+          CAIOBOOK
+        </span>
       </a>
 
-      <!-- Menu Desktop -->
-      <div class="hidden md:flex items-center space-x-6">
-        <a href="{{ url_for('index') }}" class="hover:text-indigo-600 transition">Home</a>
+      <!-- Menu Desktop Melhorado -->
+      <div class="hidden md:flex items-center space-x-8">
+        <a href="{{ url_for('index') }}" class="nav-link">Home</a>
         {% if is_logged_in() %}
-          <a href="{{ url_for('logout') }}" class="hover:text-indigo-600 transition">Sair</a>
+          <a href="{{ url_for('list_notes') }}" class="nav-link">Minhas Notas</a>
+          <a href="{{ url_for('logout') }}" class="nav-link">Sair</a>
           {% if is_admin() %}
-            <a href="{{ url_for('admin_page') }}" class="hover:text-indigo-600 transition">Admin</a>
+            <a href="{{ url_for('admin_page') }}" class="nav-link flex items-center gap-1.5">
+              <span>Admin</span>
+              <i class="fas fa-shield-alt text-sm text-emerald-600"></i>
+            </a>
           {% endif %}
         {% else %}
-          <a href="{{ url_for('login') }}" class="hover:text-indigo-600 transition">Login</a>
+          <a href="{{ url_for('login') }}" class="nav-link">Login</a>
         {% endif %}
       </div>
 
-      <!-- Botão menu mobile (hamburger) -->
-      <div class="md:hidden">
-        <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-gray-600 focus:outline-none">
-          <i class="fas fa-bars fa-lg"></i>
-        </button>
-      </div>
+      <!-- Botão para Menu Mobile -->
+      <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition">
+        <i class="fas fa-bars text-gray-600 text-xl"></i>
+      </button>
     </div>
   </nav>
 
-  <!-- Overlay para Menu Mobile (quando aberto) -->
-  <div
-    class="md:hidden fixed inset-0 bg-black/30 z-40"
-    x-show="mobileMenuOpen"
-    x-transition
-    @click="mobileMenuOpen = false"
-    style="display: none;"
-  ></div>
+  <!-- Menu Mobile Atualizado -->
+  <div class="md:hidden fixed inset-0 bg-black/20 z-40 backdrop-blur-sm"
+       x-show="mobileMenuOpen"
+       x-transition
+       @click="mobileMenuOpen = false"
+       style="display: none;"></div>
 
-  <!-- Sidebar do Menu Mobile -->
-  <div
-    class="md:hidden fixed top-20 left-0 w-3/4 max-w-sm bg-white h-full border-r border-gray-200 z-50 py-4 px-4"
-    x-show="mobileMenuOpen"
-    x-transition
-    style="display: none;"
-  >
-    <a href="{{ url_for('index') }}" class="block mb-2 text-lg hover:text-indigo-600">Home</a>
-    {% if is_logged_in() %}
-      <a href="{{ url_for('logout') }}" class="block mb-2 text-lg hover:text-indigo-600">Sair</a>
-      {% if is_admin() %}
-        <a href="{{ url_for('admin_page') }}" class="block mb-2 text-lg hover:text-indigo-600">Admin</a>
+  <div class="md:hidden fixed top-20 right-0 w-64 bg-white/95 h-full border-l border-gray-100 z-50 py-6 px-5 shadow-xl"
+       x-show="mobileMenuOpen"
+       x-transition
+       style="display: none;">
+    <div class="flex flex-col space-y-4">
+      <a href="{{ url_for('index') }}" class="nav-link-mobile flex items-center space-x-2">
+        <i class="fas fa-home text-gray-400 w-5"></i>
+        <span>Home</span>
+      </a>
+      {% if is_logged_in() %}
+        <a href="{{ url_for('list_notes') }}" class="nav-link-mobile flex items-center space-x-2">
+          <i class="fas fa-file-alt text-gray-400 w-5"></i>
+          <span>Minhas Notas</span>
+        </a>
+        <a href="{{ url_for('logout') }}" class="nav-link-mobile flex items-center space-x-2">
+          <i class="fas fa-sign-out-alt text-gray-400 w-5"></i>
+          <span>Sair</span>
+        </a>
+        {% if is_admin() %}
+          <a href="{{ url_for('admin_page') }}" class="nav-link-mobile flex items-center space-x-2">
+            <i class="fas fa-shield-alt text-gray-400 w-5"></i>
+            <span>Admin</span>
+          </a>
+        {% endif %}
+      {% else %}
+        <a href="{{ url_for('login') }}" class="nav-link-mobile flex items-center space-x-2">
+          <i class="fas fa-sign-in-alt text-gray-400 w-5"></i>
+          <span>Login</span>
+        </a>
       {% endif %}
-    {% else %}
-      <a href="{{ url_for('login') }}" class="block mb-2 text-lg hover:text-indigo-600">Login</a>
-    {% endif %}
+    </div>
   </div>
 
-  <!-- Container para "empurrar" o footer lá pra baixo; compensando o nav fixo com pt-20 -->
+  <!-- Conteúdo Principal -->
   <div class="pt-20 flex-grow">
     <main class="max-w-7xl mx-auto px-4 py-8">
-      <!-- Mensagens Flash -->
+      <!-- Exibição de Mensagens Flash -->
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
           <div class="mb-6">
@@ -110,8 +129,7 @@
                 {% if category == 'success' %}bg-green-100 text-green-800
                 {% elif category == 'danger' %}bg-red-100 text-red-800
                 {% elif category == 'warning' %}bg-yellow-100 text-yellow-800
-                {% else %}bg-gray-100 text-gray-800{% endif %}"
-              >
+                {% else %}bg-gray-100 text-gray-800{% endif %}">
                 {{ msg }}
               </div>
             {% endfor %}
@@ -123,21 +141,58 @@
     </main>
   </div>
 
-  <!-- Rodapé (fixado ao final pela estrutura flex) -->
-  <footer class="bg-white border-t border-gray-200 py-6 flex-none">
-    <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
-      <p class="text-gray-500 text-sm">
-        &copy; {{ current_year }} CAIOBOOK. Todos os direitos reservados.
-      </p>
-      <div class="mt-4 md:mt-0 space-x-4 text-gray-500">
-        <a href="#" class="hover:text-indigo-600"><i class="fab fa-facebook-f"></i></a>
-        <a href="#" class="hover:text-indigo-600"><i class="fab fa-instagram"></i></a>
-        <a href="#" class="hover:text-indigo-600"><i class="fab fa-twitter"></i></a>
+  <!-- Rodapé (Footer) Atualizado -->
+  <footer class="bg-gradient-to-b from-gray-900 to-indigo-900 text-gray-300 mt-24 flex-none">
+    <div class="max-w-7xl mx-auto px-4 py-12">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <!-- Seção Logo -->
+        <div class="space-y-4">
+          <a href="#" class="flex items-center space-x-3">
+            <div class="p-2 bg-indigo-600 rounded-lg">
+              <i class="fas fa-graduation-cap text-white text-xl"></i>
+            </div>
+            <span class="text-2xl font-bold text-white">CAIOBOOK</span>
+          </a>
+          <p class="text-sm leading-relaxed">
+            Sua plataforma educacional de alta performance para estudos avançados.
+          </p>
+        </div>
+        <!-- Links Úteis -->
+        <div>
+          <h4 class="text-white font-semibold mb-4">Links Rápidos</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="hover:text-indigo-400 transition">Sobre Nós</a></li>
+            <li><a href="#" class="hover:text-indigo-400 transition">Planos</a></li>
+            <li><a href="#" class="hover:text-indigo-400 transition">Tutoriais</a></li>
+            <li><a href="#" class="hover:text-indigo-400 transition">Suporte</a></li>
+          </ul>
+        </div>
+        <!-- Contato -->
+        <div>
+          <h4 class="text-white font-semibold mb-4">Contato</h4>
+          <ul class="space-y-2">
+            <li class="flex items-center space-x-2">
+              <i class="fas fa-envelope text-indigo-400"></i>
+              <span>caaaaaaaaaaaa</span>
+            </li>
+            <li class="flex items-center space-x-2">
+              <i class="fas fa-phone text-indigo-400"></i>
+              <span>(82) 99999-9999</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 mt-8 pt-8 text-center">
+        <p class="text-sm">
+          &copy; {{ current_year }} CAIOBOOK. Todos os direitos reservados.<br>
+          <a href="#" class="hover:text-indigo-400">Política de Privacidade</a> | 
+          <a href="#" class="hover:text-indigo-400">Termos de Serviço</a>
+        </p>
       </div>
     </div>
   </footer>
 
-  <!-- Scripts (AOS, Prism, etc.) -->
+  <!-- Scripts: AlpineJS, AOS, Prism.js -->
   <script src="https://unpkg.com/alpinejs" defer></script>
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
@@ -151,16 +206,7 @@
       }
     });
   </script>
-  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
-<script>
-  const socket = io();
-  
-  socket.on('update_markdown', (data) => {
-    if (data.period === "{{ period_name }}" && data.file === "{{ md_file }}") {
-      window.location.reload();  // Recarrega a página para todos os usuários
-    }
-  });
-</script>
+
+  {% block socket_config %}{% endblock %}
 </body>
 </html>

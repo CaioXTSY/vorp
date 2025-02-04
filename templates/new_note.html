@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Nova Nota - CAIOBOOK{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-white p-8 rounded shadow" data-aos="fade-up">
+  <h1 class="text-2xl font-bold mb-6">Criar Nova Nota</h1>
+  <form method="POST" action="{{ url_for('new_note') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    
+    <!-- Campo para o título -->
+    <div class="mb-4">
+      <label class="block mb-1 font-semibold" for="title">Título</label>
+      <input
+        type="text"
+        name="title"
+        id="title"
+        class="w-full p-2 border border-gray-300 rounded"
+        placeholder="Digite o título da nota..."
+        required
+      >
+    </div>
+    
+    <!-- Editor de Markdown para o conteúdo -->
+    <div class="mb-4">
+      <label class="block mb-1 font-semibold" for="content">Conteúdo</label>
+      <textarea
+        name="content"
+        id="markdown-editor"
+        rows="10"
+        class="w-full p-2 border border-gray-300 rounded"
+        placeholder="Escreva seu conteúdo em Markdown..."
+        required
+      ></textarea>
+    </div>
+    
+    <!-- Select para definir a visibilidade da nota -->
+    <div class="mb-4">
+      <label class="block mb-1 font-semibold" for="visibility">Visibilidade</label>
+      <select name="visibility" id="visibility" class="w-full p-2 border border-gray-300 rounded">
+        <option value="private">Privado</option>
+        <option value="public">Público</option>
+      </select>
+    </div>
+    
+    <!-- Botão de envio -->
+    <div class="flex justify-end">
+      <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-full hover:bg-indigo-700 transition">
+        <i class="fa fa-plus mr-2"></i> Criar Nota
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Inclusão do CSS e JS do EasyMDE -->
+<link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
+<script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+
+<!-- Inicialização do EasyMDE -->
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    var easyMDE = new EasyMDE({
+      element: document.getElementById("markdown-editor"),
+      spellChecker: false,
+      autosave: {
+        enabled: true,
+        uniqueId: "new_note",
+        delay: 10000,
+      },
+      toolbar: [
+        "bold", "italic", "heading", "|",
+        "quote", "unordered-list", "ordered-list", "|",
+        "link", "image", "table", "|",
+        "preview", "side-by-side", "fullscreen"
+      ],
+      placeholder: "Escreva seu conteúdo em Markdown aqui..."
+    });
+  });
+</script>
+{% endblock %}

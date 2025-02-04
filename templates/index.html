@@ -1,196 +1,215 @@
 {% extends "base.html" %}
-{% block title %}CAIOBOOK - Início{% endblock %}
+{% block title %}CAIOBOOK - Estudos Inteligentes{% endblock %}
 
 {% block content %}
-<!-- HERO SECTION -->
-<section 
-  class="relative overflow-hidden py-20 flex flex-col items-center justify-center bg-white"
-  style="background: linear-gradient(170deg, #fff 50%, #f3f4f6 50%);"
->
-  <div class="container mx-auto px-6 text-center" data-aos="fade-up">
-    <h1 class="text-4xl md:text-5xl font-bold mb-6 text-gray-800">
-      Bem-vindo ao <span class="text-indigo-600">CAIOBOOK</span>
-    </h1>
-    <p class="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-8">
-      Sua plataforma de estudo com resumos, anotações e questões organizadas por período e disciplina.
-    </p>
-    <a 
-      href="#periodos-section"
-      class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-8 rounded-lg transition shadow-lg"
-    >
-      Explorar Períodos
-    </a>
-  </div>
-
-  <!-- Elementos decorativos flutuantes (opcionais) -->
-  <div 
-    class="absolute -bottom-20 -left-40 w-80 h-80 bg-indigo-100 rounded-full opacity-50 floating"
-  ></div>
-  <div 
-    class="absolute -top-16 -right-16 w-64 h-64 bg-indigo-200 rounded-full opacity-50 floating"
-  ></div>
-</section>
-
-<!-- FEATURES SECTION -->
-<section class="py-16 bg-white" data-aos="fade-up">
-  <div class="container mx-auto px-6">
-    <div class="mb-10 text-center">
-      <h2 class="text-3xl font-bold text-gray-800">O que você encontra no CAIOBOOK?</h2>
-      <p class="text-gray-600 mt-4 max-w-2xl mx-auto">
-        Organização e rapidez para seus estudos, tudo em um só lugar.
-      </p>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-      <!-- Card 1 -->
-      <div class="bg-white p-8 rounded-2xl shadow-xl text-center hover:shadow-2xl transition">
-        <div class="text-indigo-600 text-4xl mb-4">
-          <i class="fa fa-book-open"></i>
+<header>
+  <!-- Hero Section Simplificada -->
+  <section class="relative bg-white">
+    <div class="container mx-auto px-4 py-20 md:py-24">
+      <div class="flex flex-col md:flex-row items-center gap-8">
+        <!-- Texto Principal -->
+        <div class="md:w-1/2 text-center md:text-left">
+          <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+            Transforme suas anotações com
+            <span class="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              inteligência artificial
+            </span>
+          </h1>
+          <p class="text-gray-600 mb-8 text-lg">
+            Organização automática, análise inteligente e suporte 24/7 para seus estudos
+          </p>
+          <div class="flex justify-center md:justify-start gap-4">
+            {% if is_logged_in() %}
+            <a href="{{ url_for('list_notes') }}" 
+               class="btn-primary">
+               Acessar Plataforma
+            </a>
+            {% else %}
+            <a href="{{ url_for('login') }}" 
+               class="btn-primary">
+               Começar Agora
+            </a>
+            {% endif %}
+          </div>
         </div>
-        <h3 class="text-xl font-bold mb-2 text-gray-800">Resumos Ricos</h3>
-        <p class="text-gray-600">
-          Tenha acesso a conteúdo resumido e bem estruturado de diversas disciplinas, tudo pronto para leitura.
-        </p>
-      </div>
-      <!-- Card 2 -->
-      <div class="bg-white p-8 rounded-2xl shadow-xl text-center hover:shadow-2xl transition">
-        <div class="text-indigo-600 text-4xl mb-4">
-          <i class="fa fa-th-list"></i>
-        </div>
-        <h3 class="text-xl font-bold mb-2 text-gray-800">Organização Intuitiva</h3>
-        <p class="text-gray-600">
-          Tudo separado por período e matéria, facilitando a localização do conteúdo desejado.
-        </p>
-      </div>
-      <!-- Card 3 -->
-      <div class="bg-white p-8 rounded-2xl shadow-xl text-center hover:shadow-2xl transition">
-        <div class="text-indigo-600 text-4xl mb-4">
-          <i class="fa fa-question-circle"></i>
-        </div>
-        <h3 class="text-xl font-bold mb-2 text-gray-800">Questões de Prática</h3>
-        <p class="text-gray-600">
-          Exercícios e perguntas para testar seus conhecimentos e fixar a matéria.
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
 
-<!-- SEÇÃO BONNY NO CENTRO -->
-<section class="py-16 bg-gray-50" data-aos="fade-up">
-  <div class="container mx-auto px-6 text-center">
-    <h2 class="text-3xl font-bold text-gray-800">Conheça a Bonny</h2>
-    <p class="text-gray-600 mt-4 max-w-2xl mx-auto">
-      Precisa de mais detalhes ou explicações? Conte com nossa IA, a Bonny, para tirar dúvidas sobre o material disponível.
-    </p>
-    
-    <!-- Imagem da Bonny em destaque -->
-    <div class="mt-10 flex justify-center">
-      <div class="relative w-48 h-48 md:w-64 md:h-64">
-        <img 
-          src="{{ url_for('static', filename='bonny.webp') }}" 
-          alt="Bonny" 
-          class="rounded-full w-full h-full object-cover shadow-lg"
-        />
-      </div>
-    </div>
-    
-    <!-- Textos abaixo da imagem -->
-    <div class="mt-8 max-w-2xl mx-auto text-gray-700 leading-relaxed">
-      <p class="mb-4">
-        A Bonny é uma assistente virtual pronta para responder perguntas específicas sobre nossos resumos. 
-        Basta perguntar algo diretamente relacionado ao material e obter uma explicação 
-        clara e objetiva.
-      </p>
-      <p>
-        Ela também pode dar exemplos, sugerir formas de estudo e relacionar conceitos para ajudar 
-        você a entender melhor cada assunto. Tudo para tornar seu aprendizado ainda mais eficiente!
-      </p>
-    </div>
-  </div>
-</section>
-
-<!-- PREVIEW ESTILIZADO DE RESUMO -->
-<section class="py-16 bg-white" data-aos="fade-up">
-  <div class="container mx-auto px-6">
-    <div class="mb-10 text-center">
-      <h2 class="text-3xl font-bold text-gray-800">Como são nossos resumos?</h2>
-      <p class="text-gray-600 mt-4 max-w-2xl mx-auto">
-        Dê uma olhada no estilo de leitura que você terá ao acessar o conteúdo.
-      </p>
-    </div>
-    <div class="bg-gray-50 p-6 rounded-2xl shadow-xl md:flex md:items-start">
-      <!-- Barra lateral fictícia (opcional) -->
-      <div class="hidden md:block w-16 bg-indigo-100 rounded-l-2xl py-8 text-center">
-        <span class="text-indigo-600 text-xl font-bold">#</span>
-      </div>
-      <!-- Conteúdo de Exemplo -->
-      <div class="px-4 md:px-6 py-4">
-        <h3 class="text-xl font-bold text-gray-800 mb-2">Título do Resumo</h3>
-        <p class="text-gray-700 mb-4">
-          Este é um exemplo de como os resumos podem aparecer. Tudo bem formatado para 
-          proporcionar uma leitura confortável e fluida. 
-        </p>
-        <h4 class="text-lg font-semibold text-gray-800 mb-2">Tópicos Importantes</h4>
-        <ul class="list-disc list-inside text-gray-700 mb-4">
-          <li>Definição clara do assunto</li>
-          <li>Exemplos práticos ou ilustrados</li>
-          <li>Principais fórmulas (se aplicável)</li>
-          <li>Resumo dos pontos-chave</li>
-        </ul>
-        <div class="bg-white p-4 rounded shadow border-l-4 border-indigo-600 text-sm">
-          <strong>Dica:</strong> Revise cada tópico antes de passar para outro, assim
-          você mantém o conteúdo fresco na memória.
+        <!-- Imagem Hero -->
+        <div class="md:w-1/2 mt-12 md:mt-0">
+          <div class="relative max-w-lg mx-auto">
+            <div class="absolute inset-0 bg-indigo-50 rounded-2xl transform rotate-2"></div>
+            <img 
+              src="{{ url_for('static', filename='bonny.webp') }}" 
+              alt="Interface da plataforma"
+              class="relative z-10 rounded-2xl shadow-lg border-8 border-white"
+              loading="lazy"
+            >
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
+</header>
 
-<!-- SEÇÃO DE PERÍODOS -->
-{% if periods %}
-  <section 
-    id="periodos-section"
-    class="py-20 bg-white border-t border-gray-100"
-    data-aos="fade-up"
-  >
-    <div class="container mx-auto px-6">
-      <h2 class="text-3xl font-bold mb-10 text-center text-gray-800">
-        Períodos Disponíveis
-      </h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {% for period in periods %}
-          <a 
-            href="{{ url_for('list_disciplines', period_name=period) }}" 
-            class="transform transition hover:-translate-y-1"
-          >
-            <div class="bg-white p-8 rounded-2xl shadow-xl h-full">
-              <div class="text-indigo-600 mb-4">
-                <i class="fa fa-book-open text-3xl"></i>
+<main class="bg-gray-50">
+  <!-- Seção de Recursos Integrada -->
+  <section class="py-16 md:py-24">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-12">
+        <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+          Tudo o que você precisa para
+          <span class="text-gradient">estudar melhor</span>
+        </h2>
+        <p class="text-gray-600 max-w-xl mx-auto">
+          Ferramentas inteligentes integradas em uma única plataforma
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <!-- Recurso 1 -->
+        <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+          <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
+            <i class="fas fa-comment-dots text-indigo-600"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Chat com Notas</h3>
+          <p class="text-gray-600 text-sm">
+            Interaja com suas anotações usando linguagem natural
+          </p>
+        </div>
+
+        <!-- Recurso 2 -->
+        <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+          <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+            <i class="fas fa-brain text-purple-600"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Mapas Mentais</h3>
+          <p class="text-gray-600 text-sm">
+            Visualize conexões entre conceitos automaticamente
+          </p>
+        </div>
+
+        <!-- Recurso 3 -->
+        <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+            <i class="fas fa-shield-alt text-blue-600"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Privacidade</h3>
+          <p class="text-gray-600 text-sm">
+            Seus dados protegidos com criptografia de ponta
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Seção IA Integrada -->
+  <section class="py-16 md:py-24 bg-white">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col lg:flex-row items-center gap-12">
+        <!-- Imagem IA -->
+        <div class="lg:w-1/2">
+          <div class="relative rounded-xl overflow-hidden shadow-lg">
+            <img 
+              src="{{ url_for('static', filename='bonny.webp') }}" 
+              alt="Assistente de IA"
+              class="w-full h-auto"
+              loading="lazy"
+            >
+          </div>
+        </div>
+
+        <!-- Texto IA -->
+        <div class="lg:w-1/2">
+          <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
+            <span class="text-gradient">Bonnie AI</span><br>
+            Sua assistente de estudos
+          </h2>
+          
+          <div class="space-y-6">
+            <div class="flex gap-4">
+              <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-indigo-600 rounded-md flex items-center justify-center">
+                  <i class="fas fa-bolt text-white text-sm"></i>
+                </div>
               </div>
-              <h3 class="text-xl font-bold mb-2 text-gray-800">
-                {{ period }}
-              </h3>
-              <p class="text-gray-600">
-                {{ periods[period]|length }} disciplinas disponíveis
-              </p>
+              <div>
+                <h3 class="text-lg font-semibold mb-1">Respostas Instantâneas</h3>
+                <p class="text-gray-600 text-sm">Tire dúvidas em tempo real sobre qualquer conteúdo</p>
+              </div>
             </div>
-          </a>
-        {% endfor %}
+
+            <div class="flex gap-4">
+              <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-purple-600 rounded-md flex items-center justify-center">
+                  <i class="fas fa-book-open text-white text-sm"></i>
+                </div>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold mb-1">Revisão Programada</h3>
+                <p class="text-gray-600 text-sm">Sistema de repetição espaçada adaptativo</p>
+              </div>
+            </div>
+
+            <div class="flex gap-4">
+              <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-blue-600 rounded-md flex items-center justify-center">
+                  <i class="fas fa-chart-line text-white text-sm"></i>
+                </div>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold mb-1">Acompanhamento</h3>
+                <p class="text-gray-600 text-sm">Monitoramento detalhado do seu progresso</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
-{% else %}
-  <section 
-    id="periodos-section"
-    class="py-20 bg-white border-t border-gray-100"
-    data-aos="fade-up"
-  >
-    <div class="container mx-auto px-6">
-      <p class="text-center text-gray-500 mt-12">
-        Nenhum período encontrado.
-      </p>
+
+  <!-- CTA Simplificado -->
+  <section class="py-16 md:py-24 bg-indigo-600">
+    <div class="container mx-auto px-4 text-center">
+      <div class="max-w-2xl mx-auto">
+        <h2 class="text-2xl md:text-3xl font-bold text-white mb-4">
+          Comece agora gratuitamente
+        </h2>
+        <p class="text-indigo-100 mb-8">
+          Cadastre-se em 1 minuto e revolucione sua forma de estudar
+        </p>
+        <a href="{{ url_for('login') }}" 
+           class="inline-block bg-white text-indigo-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition">
+           Criar Conta Gratuita
+        </a>
+      </div>
     </div>
   </section>
-{% endif %}
+</main>
+{% endblock %}
 
+{% block styles %}
+<style>
+  .text-gradient {
+    background: linear-gradient(45deg, #4f46e5, #9333ea);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.875rem 2rem;
+    background-image: linear-gradient(45deg, #4f46e5, #9333ea);
+    color: white;
+    font-weight: 600;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.1);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px -1px rgba(79, 70, 229, 0.2);
+  }
+</style>
 {% endblock %}

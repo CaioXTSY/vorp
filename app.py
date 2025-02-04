@@ -15,6 +15,7 @@ from io import BytesIO
 from flask_wtf.csrf import CSRFProtect
 from openai import OpenAI
 from dotenv import load_dotenv
+import uuid
 
 load_dotenv()
 
@@ -39,6 +40,7 @@ class User(db.Model):
     username = db.Column(db.String(50), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
     versions = db.relationship('Version', backref='user', lazy=True)
+    notes = db.relationship('Note', backref='user', lazy=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -46,13 +48,23 @@ class User(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-
 class Version(db.Model):
     __tablename__ = 'version'
     id = db.Column(db.Integer, primary_key=True)
     discipline = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+class Note(db.Model):
+    __tablename__ = 'note'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    is_public = db.Column(db.Boolean, default=False)
+    hack_link = db.Column(db.String(64), unique=True, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 # -----------------------------------------------------------------------------
@@ -68,34 +80,6 @@ def is_admin():
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
-def list_periods(base_path='notebooks'):
-    structure = {}
-    base_dir = Path(base_path)
-    if not base_dir.exists():
-        return structure
-    for period_dir in sorted(base_dir.iterdir()):
-        if period_dir.is_dir():
-            md_files = [
-                f.name for f in period_dir.iterdir()
-                if f.is_file() and f.suffix == '.md' and not f.name.endswith('_questoes.md')
-            ]
-            structure[period_dir.name] = sorted(md_files)
-    return structure
-
-def list_all_md_files(base_path='notebooks'):
-    all_files = []
-    periods = list_periods(base_path)
-    for period, files in periods.items():
-        for f in files:
-            all_files.append((period, f))
-    return all_files
-
-def get_questoes_filename(disc_md):
-    return f"{disc_md.replace('.md', '')}_questoes.md"
-
-def slugify(text):
-    return ''.join(e for e in text.lower() if e.isalnum() or e == '-').strip()
-
 # -----------------------------------------------------------------------------
 # LOGIN / LOGOUT
 # -----------------------------------------------------------------------------
@@ -110,7 +94,7 @@ def login():
             session['user_id'] = user.id
             session['username'] = user.username
             flash("Login realizado com sucesso!", "success")
-            return redirect(url_for('index'))
+            return redirect(url_for('list_notes'))
         else:
             flash("Usuário ou senha inválidos.", "danger")
             return redirect(url_for('login'))
@@ -120,35 +104,11 @@ def login():
 def logout():
     session.clear()
     flash("Logout realizado com sucesso!", "success")
-    return redirect(url_for('index'))
+    return redirect(url_for('login'))
 
 # -----------------------------------------------------------------------------
-# MAIN ROUTES
+# UPLOAD DE IMAGENS
 # -----------------------------------------------------------------------------
-
-@app.route('/')
-def index():
-    periods = list_periods()
-    return render_template('index.html', periods=periods)
-
-@app.route('/periodo/<string:period_name>')
-def list_disciplines(period_name):
-    periods = list_periods()
-    if period_name not in periods:
-        flash("Período não encontrado.", "danger")
-        return redirect(url_for('index'))
-
-    disciplines = periods[period_name]
-    discipline_info = []
-    for disc_file in disciplines:
-        md_path = Path('notebooks') / period_name / disc_file
-        updated_at = datetime.fromtimestamp(md_path.stat().st_mtime) if md_path.exists() else None
-        discipline_info.append({'filename': disc_file, 'updated_at': updated_at})
-    return render_template('list_disciplines.html', period_name=period_name, disciplines=discipline_info)
-
-@app.template_filter('markdown')
-def markdown_filter(text):
-    return markdown.markdown(text, extensions=['fenced_code', 'tables', 'codehilite'])
 
 @app.route('/upload-image', methods=['POST'])
 def upload_image():
@@ -166,188 +126,67 @@ def upload_image():
         return jsonify({'url': f"/static/uploads/{filename}"})
     return jsonify({'error': 'Upload failed'}), 500
 
-@app.route('/view/<string:period_name>/<string:md_file>')
-def view_markdown(period_name, md_file):
-    md_path = Path('notebooks') / period_name / md_file
-    if not md_path.exists():
-        flash("Arquivo não encontrado.", "danger")
-        return redirect(url_for('list_disciplines', period_name=period_name))
-    with open(md_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-    html_content = markdown.markdown(content, extensions=['fenced_code', 'tables', 'toc', 'codehilite'])
-    md_instance = markdown.Markdown(extensions=['toc'])
-    md_instance.convert(content)
-    toc = md_instance.toc
-    return render_template('view_markdown.html',
-                           period_name=period_name,
-                           md_file=md_file,
-                           html_content=html_content,
-                           markdown_content=content,
-                           toc=toc)
+# -----------------------------------------------------------------------------
+# NOTAS (Funcionalidade estilo HackMD)
+# -----------------------------------------------------------------------------
 
-@app.route('/edit/<string:period_name>/<string:md_file>', methods=['GET', 'POST'])
-def edit_markdown(period_name, md_file):
+
+@app.route('/')
+def index():
+    return render_template("index.html")
+
+
+@app.route('/notes/<int:note_id>/toggle_public', methods=['POST'])
+def toggle_public(note_id):
     if not is_logged_in():
-        flash("Você precisa estar logado para editar.", "warning")
-        return redirect(url_for('login'))
-    md_path = Path('notebooks') / period_name / md_file
-    if not md_path.exists():
-        flash("Arquivo não encontrado.", "danger")
-        return redirect(url_for('list_disciplines', period_name=period_name))
+        return jsonify({'status': 'error', 'message': 'Você precisa estar logado.'}), 403
 
-    if request.method == 'POST':
-        new_content = request.form['markdown_content']
-        with open(md_path, 'w', encoding='utf-8') as f:
-            f.write(new_content)
-        version = Version(discipline=md_file.replace('.md', ''), content=new_content, user_id=session['user_id'])
-        db.session.add(version)
-        db.session.commit()
-        flash("Arquivo atualizado com sucesso!", "success")
-        socketio.emit('update_markdown',
-                      {'period': period_name, 'file': md_file},
-                      to='all',
-                      namespace='/')
-        return redirect(url_for('view_markdown', period_name=period_name, md_file=md_file))
+    note = Note.query.get_or_404(note_id)
 
-    with open(md_path, 'r', encoding='utf-8') as f:
-        current_content = f.read()
-    return render_template('edit_markdown.html',
-                           period_name=period_name,
-                           md_file=md_file,
-                           current_content=current_content)
+    if note.user_id != session['user_id']:
+        return jsonify({'status': 'error', 'message': 'Você não tem permissão para alterar esta nota.'}), 403
 
-# -----------------------------------------------------------------------------
-# ADMIN
-# -----------------------------------------------------------------------------
+    if not note.is_public:
+        note.is_public = True
+        note.hack_link = uuid.uuid4().hex[:8]
+    else:
+        note.is_public = False
+        note.hack_link = None
+
+    db.session.commit()
+
+    share_link = ""
+    if note.is_public:
+        share_link = f"{request.host_url.rstrip('/')}/p/{note.hack_link}"
+
+    return jsonify({'status': 'success', 'share_link': share_link})
+
+
 
 @app.route('/admin')
 def admin_page():
     if not is_admin():
         flash("Acesso negado. Permissões insuficientes.", "danger")
         return redirect(url_for('login'))
-    all_md = list_all_md_files()
-    return render_template('admin.html', all_md=all_md)
+    # Para o admin, vamos listar todas as notas (por exemplo)
+    all_notes = Note.query.order_by(Note.updated_at.desc()).all()
+    return render_template('admin.html', notes=all_notes)
 
-@app.route('/admin/new', methods=['GET', 'POST'])
-def admin_new_md():
-    if not is_admin():
-        flash("Acesso negado. Permissões insuficientes.", "danger")
+
+@app.route('/export/<int:note_id>', methods=['GET'])
+def export_note(note_id):
+    note = Note.query.get_or_404(note_id)
+    # Se a nota for privada e o usuário não for o dono, não permite exportação
+    if not note.is_public and (not is_logged_in() or note.user_id != session.get('user_id')):
+        flash("Acesso negado para exportar esta nota.", "danger")
         return redirect(url_for('login'))
-
-    if request.method == 'POST':
-        period_name = request.form['period_name'].strip()
-        discipline = request.form['discipline'].strip()
-        content = request.form['content']
-        if not period_name or not discipline:
-            flash("Período e Disciplina são obrigatórios.", "warning")
-            return redirect(url_for('admin_new_md'))
-
-        filename = secure_filename(discipline) + ".md"
-        md_path = Path('notebooks') / period_name / filename
-        md_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(md_path, 'w', encoding='utf-8') as f:
-            f.write(content)
-
-        version = Version(discipline=discipline, content=content, user_id=session['user_id'])
-        db.session.add(version)
-        db.session.commit()
-
-        flash(f"Disciplina '{discipline}' criada em '{period_name}'.", "success")
-        return redirect(url_for('admin_page'))
-
-    return render_template('admin_new.html')
-
-@app.route('/admin/delete/<string:period_name>/<string:md_file>', methods=['POST'])
-def delete_discipline(period_name, md_file):
-    if not is_admin():
-        flash("Acesso negado.", "danger")
-        return redirect(url_for('login'))
-
-    md_path = Path('notebooks') / period_name / md_file
-    if md_path.exists():
-        md_path.unlink()
-        questoes_path = Path('notebooks') / period_name / get_questoes_filename(md_file)
-        if questoes_path.exists():
-            questoes_path.unlink()
-
-    disc_name = md_file.replace('.md', '')
-    Version.query.filter_by(discipline=disc_name).delete()
-    db.session.commit()
-
-    flash("Disciplina deletada com sucesso!", "success")
-    return redirect(url_for('admin_page'))
-
-# -----------------------------------------------------------------------------
-# QUESTÕES
-# -----------------------------------------------------------------------------
-
-@app.route('/questoes/<string:period_name>/<string:disc_file>')
-def view_questoes(period_name, disc_file):
-    questoes_file = get_questoes_filename(disc_file)
-    md_path = Path('notebooks') / period_name / questoes_file
-    if md_path.exists():
-        with open(md_path, 'r', encoding='utf-8') as f:
-            content = f.read()
-        html_content = markdown.markdown(content, extensions=['fenced_code', 'tables', 'codehilite'])
-    else:
-        html_content = None
-    return render_template('view_questoes.html',
-                           period_name=period_name,
-                           disc_file=disc_file,
-                           questoes_file=questoes_file,
-                           html_content=html_content)
-
-@app.route('/questoes/<string:period_name>/<string:disc_file>/edit', methods=['GET', 'POST'])
-def edit_questoes(period_name, disc_file):
-    if not is_logged_in():
-        flash("Você precisa estar logado para editar.", "warning")
-        return redirect(url_for('login'))
-
-    questoes_file = get_questoes_filename(disc_file)
-    md_path = Path('notebooks') / period_name / questoes_file
-    if request.method == 'POST':
-        new_content = request.form['markdown_content']
-        md_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(md_path, 'w', encoding='utf-8') as f:
-            f.write(new_content)
-        version = Version(
-            discipline=disc_file.replace('.md', '_questoes'),
-            content=new_content,
-            user_id=session['user_id']
-        )
-        db.session.add(version)
-        db.session.commit()
-        flash("Questões atualizadas com sucesso!", "success")
-        return redirect(url_for('view_questoes', period_name=period_name, disc_file=disc_file))
-
-    if md_path.exists():
-        with open(md_path, 'r', encoding='utf-8') as f:
-            current_content = f.read()
-    else:
-        current_content = ""
-
-    return render_template('edit_questoes.html',
-                           period_name=period_name,
-                           disc_file=disc_file,
-                           questoes_file=questoes_file,
-                           current_content=current_content)
-
-# -----------------------------------------------------------------------------
-# EXPORT PDF
-# -----------------------------------------------------------------------------
-
-@app.route('/export/<string:period_name>/<string:md_file>', methods=['GET'])
-def export_markdown(period_name, md_file):
-    md_path = Path('notebooks') / period_name / md_file
-    if not md_path.exists():
-        flash("Arquivo não encontrado.", "danger")
-        return redirect(url_for('list_disciplines', period_name=period_name))
     try:
-        with open(md_path, 'r', encoding='utf-8') as f:
-            content = f.read()
+        # Converte o conteúdo Markdown para HTML
         html_content = markdown.markdown(
-            content, extensions=['fenced_code', 'tables', 'toc', 'codehilite']
+            note.content, 
+            extensions=['fenced_code', 'tables', 'codehilite']
         )
+        # CSS para formatação do PDF (você pode ajustar conforme necessário)
         css = """
         <style>
             body { 
@@ -403,7 +242,7 @@ def export_markdown(period_name, md_file):
         <html>
             <head>
                 <meta charset="utf-8">
-                <title>{md_file.replace('.md', '')}</title>
+                <title>{note.title}</title>
                 {css}
             </head>
             <body>
@@ -422,44 +261,145 @@ def export_markdown(period_name, md_file):
             pdf_buffer,
             mimetype='application/pdf',
             as_attachment=True,
-            download_name=f"{md_file.replace('.md', '')}.pdf"
+            download_name=f"{note.title}.pdf"
         )
     except Exception as e:
         app.logger.error(f"Erro na geração do PDF: {str(e)}")
         flash("Falha ao gerar PDF.", "danger")
-        return redirect(url_for('view_markdown', period_name=period_name, md_file=md_file))
+        return redirect(url_for('view_note', note_id=note.id))
+
+
+@app.route('/notes')
+def list_notes():
+    if not is_logged_in():
+        flash("Você precisa estar logado para acessar suas notas.", "warning")
+        return redirect(url_for('login'))
+    user_id = session['user_id']
+    notes = Note.query.filter_by(user_id=user_id).order_by(Note.updated_at.desc()).all()
+    return render_template('notes.html', notes=notes)
+
+@app.route('/notes/new', methods=['GET', 'POST'])
+def new_note():
+    if not is_logged_in():
+        flash("Você precisa estar logado para criar notas.", "warning")
+        return redirect(url_for('login'))
+    if request.method == 'POST':
+        title = request.form['title'].strip()
+        content = request.form['content']
+        is_public = True if request.form.get('is_public') == 'on' else False
+        hack_link = None
+        if is_public:
+            hack_link = uuid.uuid4().hex[:8]
+        note = Note(title=title, content=content, is_public=is_public,
+                    hack_link=hack_link, user_id=session['user_id'])
+        db.session.add(note)
+        db.session.commit()
+        flash("Nota criada com sucesso!", "success")
+        return redirect(url_for('list_notes'))
+    return render_template('new_note.html')
+
+@app.route('/notes/<int:note_id>')
+def view_note(note_id):
+    note = Note.query.get_or_404(note_id)
+    # Se a nota for privada, exige que o usuário seja o dono
+    if not note.is_public:
+        if not is_logged_in() or session['user_id'] != note.user_id:
+            flash("Esta nota é privada.", "danger")
+            return redirect(url_for('login'))
+    
+    # Converte o conteúdo Markdown para HTML e gera o TOC
+    md_instance = markdown.Markdown(extensions=['fenced_code', 'tables', 'toc', 'codehilite'])
+    html_content = md_instance.convert(note.content)
+    toc = md_instance.toc
+
+    return render_template('view_note.html', note=note, html_content=html_content, toc=toc)
+
+
+@app.route('/notes/<int:note_id>/edit', methods=['GET', 'POST'])
+def edit_note(note_id):
+    if not is_logged_in():
+        flash("Você precisa estar logado para editar notas.", "warning")
+        return redirect(url_for('login'))
+    note = Note.query.get_or_404(note_id)
+    if note.user_id != session['user_id']:
+        flash("Você não tem permissão para editar esta nota.", "danger")
+        return redirect(url_for('list_notes'))
+    if request.method == 'POST':
+        note.title = request.form['title'].strip()
+        note.content = request.form['content']
+        is_public = True if request.form.get('is_public') == 'on' else False
+        note.is_public = is_public
+        if is_public and not note.hack_link:
+            note.hack_link = uuid.uuid4().hex[:8]
+        elif not is_public:
+            note.hack_link = None
+        db.session.commit()
+        flash("Nota atualizada com sucesso!", "success")
+        return redirect(url_for('view_note', note_id=note.id))
+    return render_template('edit_note.html', note=note)
+
+@app.route('/notes/<int:note_id>/delete', methods=['POST'])
+def delete_note(note_id):
+    if not is_logged_in():
+        flash("Você precisa estar logado para excluir notas.", "warning")
+        return redirect(url_for('login'))
+    note = Note.query.get_or_404(note_id)
+    if note.user_id != session['user_id']:
+        flash("Você não tem permissão para excluir esta nota.", "danger")
+        return redirect(url_for('list_notes'))
+    db.session.delete(note)
+    db.session.commit()
+    flash("Nota excluída com sucesso.", "success")
+    return redirect(url_for('list_notes'))
+
+# Rota para acesso público via hack link
+@app.route('/p/<string:hack_link>')
+def public_note(hack_link):
+    note = Note.query.filter_by(hack_link=hack_link, is_public=True).first_or_404()
+    md_instance = markdown.Markdown(extensions=['fenced_code', 'tables', 'toc', 'codehilite'])
+    html_content = md_instance.convert(note.content)
+    toc = md_instance.toc
+    return render_template('view_note.html', note=note, html_content=html_content, toc=toc)
+
+
+from datetime import datetime
+
+# Adicione este filtro personalizado
+@app.template_filter('datetime_format')
+def datetime_format(value, format="%d/%m/%Y %H:%M"):
+    """Filtro para formatar datas no Jinja"""
+    if value is None:
+        return ""
+    return value.strftime(format)
 
 # -----------------------------------------------------------------------------
-# OPENAI ASK
+# PERFIL DO USUÁRIO
 # -----------------------------------------------------------------------------
 
-from flask import jsonify, request
-from flask_wtf.csrf import CSRFProtect
-import os
-from openai import OpenAI
+@app.route('/profile/<string:username>')
+def profile(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    if is_logged_in() and session['user_id'] == user.id:
+        notes = Note.query.filter_by(user_id=user.id).order_by(Note.updated_at.desc()).all()
+    else:
+        notes = Note.query.filter_by(user_id=user.id, is_public=True).order_by(Note.updated_at.desc()).all()
+    return render_template('profile.html', user=user, notes=notes)
 
-# Exemplo de rota renomeada para /ask_bonny
+# -----------------------------------------------------------------------------
+# ASSISTENTE IA (OpenAI)
+# -----------------------------------------------------------------------------
+
 @app.route('/ask', methods=['POST'])
 @csrf.exempt
 def ask_question():
     data = request.get_json()
     question = data.get('question', '')
     context = data.get('context', '')
-    
-    # Recebe histórico de mensagens, se houver
-    # Esperamos um formato parecido com: [{'role': 'user', 'content': 'Pergunta anterior'}, ...]
     conversation_history = data.get('history', [])
-
-    # Limita o histórico, se desejado (por exemplo, últimas 10 mensagens)
     conversation_history = conversation_history[-10:]
     
     try:
         client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
-        
-        # Montamos as mensagens para o ChatGPT
-        # 1) Mensagem de sistema (instruções) 
-        # 2) Histórico prévio (se existir)
-        # 3) Nova pergunta do usuário
         messages = [
             {
                 "role": "system",
@@ -477,36 +417,24 @@ Regras de estilo:
 """
             }
         ]
-        
-        # Adiciona o histórico no formato correto para o ChatGPT
         for msg in conversation_history:
             role = msg.get("role", "user").lower()
             content = msg.get("content", "")
-            
             if role not in ["system", "user", "assistant"]:
                 role = "user"
-            
             messages.append({"role": role, "content": content})
-
-        # Finalmente, adicionamos a mensagem do usuário atual
         messages.append({"role": "user", "content": question})
-
-        # Chamada à API do OpenAI
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=messages,
             temperature=0.4,
             max_tokens=5000
         )
-
-        # Extrai a resposta
         answer = response.choices[0].message.content
-        
         return jsonify({'answer': answer})
     except Exception as e:
         app.logger.error(f"OpenAI API Error: {str(e)}")
         return jsonify({'error': 'Erro ao processar a pergunta'}), 500
-
 
 # -----------------------------------------------------------------------------
 # CONTEXT PROCESSORS
