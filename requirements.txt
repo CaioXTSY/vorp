@@ -6,4 +6,4 @@ Markdown
 xhtml2pdf
 openai
 python-dotenv
-reportlab=
+reportlab
