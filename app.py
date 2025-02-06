@@ -126,6 +126,11 @@ def upload_image():
         return jsonify({'url': f"/static/uploads/{filename}"})
     return jsonify({'error': 'Upload failed'}), 500
 
+
+
+
+
+
 # -----------------------------------------------------------------------------
 # NOTAS (Funcionalidade estilo HackMD)
 # -----------------------------------------------------------------------------
@@ -278,25 +283,25 @@ def list_notes():
     notes = Note.query.filter_by(user_id=user_id).order_by(Note.updated_at.desc()).all()
     return render_template('notes.html', notes=notes)
 
-@app.route('/notes/new', methods=['GET', 'POST'])
+@app.route('/notes/new', methods=['POST'])
 def new_note():
     if not is_logged_in():
         flash("Você precisa estar logado para criar notas.", "warning")
         return redirect(url_for('login'))
-    if request.method == 'POST':
-        title = request.form['title'].strip()
-        content = request.form['content']
-        is_public = True if request.form.get('is_public') == 'on' else False
-        hack_link = None
-        if is_public:
-            hack_link = uuid.uuid4().hex[:8]
-        note = Note(title=title, content=content, is_public=is_public,
-                    hack_link=hack_link, user_id=session['user_id'])
-        db.session.add(note)
-        db.session.commit()
-        flash("Nota criada com sucesso!", "success")
+    
+    title = request.form.get('title', '').strip()
+    if not title:
+        flash("O título não pode estar vazio.", "danger")
         return redirect(url_for('list_notes'))
-    return render_template('new_note.html')
+    
+    # Cria a nota com conteúdo vazio e visibilidade padrão (por exemplo, privado)
+    note = Note(title=title, content="", is_public=False, user_id=session['user_id'])
+    db.session.add(note)
+    db.session.commit()
+    
+    flash("Nota criada com sucesso!", "success")
+    return redirect(url_for('list_notes'))
+
 
 @app.route('/notes/<int:note_id>')
 def view_note(note_id):

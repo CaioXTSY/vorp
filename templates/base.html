@@ -17,6 +17,10 @@
   <!-- AOS (animações de scroll) -->
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://unpkg.com/@popperjs/core@2"></script>
+<script src="https://unpkg.com/tippy.js@6"></script>
+
   <style>
     /* Importando a fonte Poppins e aplicando-a ao body */
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -33,6 +37,20 @@
     .nav-link:hover::after {
       @apply left-0 w-full;
     }
+
+    .tippy-box[data-theme="light-border"] {
+  background: white;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.875rem;
+}
+
+.tippy-box[data-theme="light-border"] .tippy-arrow {
+  color: white;
+}
   </style>
 
   {% block head_extras %}{% endblock %}
