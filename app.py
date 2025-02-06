@@ -127,7 +127,43 @@ def upload_image():
     return jsonify({'error': 'Upload failed'}), 500
 
 
-
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    # Se o usuário já estiver logado, redireciona para a página de notas
+    if is_logged_in():
+        flash("Você já está logado.", "info")
+        return redirect(url_for('list_notes'))
+    
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+        
+        # Verifica se todos os campos foram preenchidos
+        if not username or not password or not confirm_password:
+            flash("Preencha todos os campos.", "danger")
+            return redirect(url_for('register'))
+        
+        # Verifica se as senhas coincidem
+        if password != confirm_password:
+            flash("As senhas não coincidem.", "danger")
+            return redirect(url_for('register'))
+        
+        # Verifica se o nome de usuário já existe
+        if User.query.filter_by(username=username).first():
+            flash("Nome de usuário já existe.", "danger")
+            return redirect(url_for('register'))
+        
+        # Cria o novo usuário
+        new_user = User(username=username)
+        new_user.set_password(password)
+        db.session.add(new_user)
+        db.session.commit()
+        
+        flash("Usuário registrado com sucesso! Faça login.", "success")
+        return redirect(url_for('login'))
+    
+    return render_template('register.html')
 
 
 

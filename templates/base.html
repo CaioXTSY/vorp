@@ -19,7 +19,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://unpkg.com/@popperjs/core@2"></script>
-<script src="https://unpkg.com/tippy.js@6"></script>
+  <script src="https://unpkg.com/tippy.js@6"></script>
 
   <style>
     /* Importando a fonte Poppins e aplicando-a ao body */
@@ -39,29 +39,29 @@
     }
 
     .tippy-box[data-theme="light-border"] {
-  background: white;
-  border: 1px solid #e5e7eb;
-  color: #374151;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 0.875rem;
-}
+      background: white;
+      border: 1px solid #e5e7eb;
+      color: #374151;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 0.875rem;
+    }
 
-.tippy-box[data-theme="light-border"] .tippy-arrow {
-  color: white;
-}
+    .tippy-box[data-theme="light-border"] .tippy-arrow {
+      color: white;
+    }
   </style>
 
   {% block head_extras %}{% endblock %}
 </head>
 <body class="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-indigo-50 text-gray-800">
   
-  <!-- Cabeçalho (Header) Atualizado -->
+  <!-- Cabeçalho (Header) -->
   <nav class="fixed w-full bg-white/80 backdrop-blur-md border-b border-gray-100 z-50 shadow-sm">
     <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
       
-      <!-- Logo Melhorado -->
+      <!-- Logo -->
       <a href="{{ url_for('index') }}" class="flex items-center space-x-3 group">
         <div class="p-2 bg-indigo-600 rounded-lg group-hover:rotate-12 transition-transform">
           <i class="fas fa-graduation-cap text-white text-xl"></i>
@@ -71,7 +71,7 @@
         </span>
       </a>
 
-      <!-- Menu Desktop Melhorado -->
+      <!-- Menu Desktop -->
       <div class="hidden md:flex items-center space-x-8">
         <a href="{{ url_for('index') }}" class="nav-link">Home</a>
         {% if is_logged_in() %}
@@ -85,6 +85,7 @@
           {% endif %}
         {% else %}
           <a href="{{ url_for('login') }}" class="nav-link">Login</a>
+          <a href="{{ url_for('register') }}" class="nav-link">Registrar</a>
         {% endif %}
       </div>
 
@@ -95,7 +96,7 @@
     </div>
   </nav>
 
-  <!-- Menu Mobile Atualizado -->
+  <!-- Menu Mobile -->
   <div class="md:hidden fixed inset-0 bg-black/20 z-40 backdrop-blur-sm"
        x-show="mobileMenuOpen"
        x-transition
@@ -131,6 +132,10 @@
           <i class="fas fa-sign-in-alt text-gray-400 w-5"></i>
           <span>Login</span>
         </a>
+        <a href="{{ url_for('register') }}" class="nav-link-mobile flex items-center space-x-2">
+          <i class="fas fa-user-plus text-gray-400 w-5"></i>
+          <span>Registrar</span>
+        </a>
       {% endif %}
     </div>
   </div>
@@ -159,7 +164,7 @@
     </main>
   </div>
 
-  <!-- Rodapé (Footer) Atualizado -->
+  <!-- Rodapé (Footer) -->
   <footer class="bg-gradient-to-b from-gray-900 to-indigo-900 text-gray-300 mt-24 flex-none">
     <div class="max-w-7xl mx-auto px-4 py-12">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
