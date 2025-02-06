@@ -3,35 +3,141 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 py-8">
-  <div class="mb-8 text-center">
-    <h1 class="text-3xl font-bold">Perfil de {{ user.username }}</h1>
+  <!-- Cabeçalho -->
+  <div class="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
+    <div class="space-y-2">
+      <h1 class="text-4xl font-bold text-gray-800">Perfil de {{ user.username }}</h1>
+      {% if is_logged_in() and session['user_id'] == user.id %}
+        <p class="text-gray-600">Estas são todas as suas notas.</p>
+      {% else %}
+        <p class="text-gray-600">Notas públicas de {{ user.username }}.</p>
+      {% endif %}
+    </div>
     {% if is_logged_in() and session['user_id'] == user.id %}
-      <p class="text-gray-600">Estas são todas as suas notas.</p>
-    {% else %}
-      <p class="text-gray-600">Notas públicas de {{ user.username }}.</p>
+    <button onclick="createNote()" 
+            class="group relative flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl">
+      <i class="fa-solid fa-plus text-lg"></i>
+      Nova Nota
+      <div class="absolute inset-0 border-2 border-white/20 rounded-lg group-hover:border-white/30 transition-all"></div>
+    </button>
     {% endif %}
   </div>
+  
   {% if notes %}
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {% for note in notes %}
-        <div class="bg-white p-6 rounded-lg shadow hover:shadow-xl transition">
-          <h2 class="text-xl font-bold mb-2">{{ note.title }}</h2>
-          <p class="text-gray-600 text-sm">Atualizada em {{ note.updated_at.strftime('%d/%m/%Y %H:%M') }}</p>
-          <div class="mt-4 flex space-x-2">
-            <a href="{{ url_for('view_note', note_id=note.id) }}" class="text-indigo-600 hover:underline flex items-center">
-              <i class="fa fa-eye mr-1"></i> Visualizar
-            </a>
-            {% if is_logged_in() and session['user_id'] == user.id %}
-              <a href="{{ url_for('edit_note', note_id=note.id) }}" class="text-indigo-600 hover:underline flex items-center">
-                <i class="fa fa-edit mr-1"></i> Editar
-              </a>
-            {% endif %}
+        <div class="relative bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 group">
+          <div class="p-6 pb-16">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-xl font-semibold text-gray-800 truncate">{{ note.title }}</h2>
+              <div class="flex space-x-2 transition-opacity {% if not (is_logged_in() and session['user_id'] == user.id) %} opacity-0 group-hover:opacity-100 {% endif %}">
+                <a href="{{ url_for('view_note', note_id=note.id) }}" 
+                   class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                   data-tooltip="Visualizar">
+                  <i class="fa-solid fa-eye text-gray-600"></i>
+                </a>
+                {% if is_logged_in() and session['user_id'] == user.id %}
+                <a href="{{ url_for('edit_note', note_id=note.id) }}" 
+                   class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                   data-tooltip="Editar">
+                  <i class="fa-solid fa-pen-to-square text-indigo-600"></i>
+                </a>
+                {% endif %}
+              </div>
+            </div>
+            <div class="text-sm text-gray-500 mb-4">
+              <i class="fa-solid fa-clock mr-2"></i>
+              {{ note.updated_at.strftime('%d/%m/%Y %H:%M') }}
+            </div>
+            <div class="prose prose-sm max-w-none text-gray-600 line-clamp-3">
+              {{ note.content | safe }}
+            </div>
           </div>
+          
+          {% if is_logged_in() and session['user_id'] == user.id %}
+          <!-- Rodapé do Card: botão de excluir -->
+          <div class="absolute bottom-0 left-0 right-0 p-4 bg-gray-50 rounded-b-xl border-t">
+            <form method="POST" action="{{ url_for('delete_note', note_id=note.id) }}" 
+                  class="flex justify-end"
+                  onsubmit="return confirm('Tem certeza que deseja excluir permanentemente esta nota?');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" 
+                      class="text-red-500 hover:text-red-700 flex items-center gap-2 transition-colors"
+                      data-tooltip="Excluir">
+                <i class="fa-solid fa-trash-can"></i>
+                <span class="text-sm font-medium">Excluir</span>
+              </button>
+            </form>
+          </div>
+          {% endif %}
         </div>
       {% endfor %}
     </div>
   {% else %}
-    <p class="text-gray-600 text-center">Nenhuma nota encontrada.</p>
+    <div class="text-center py-20 space-y-6">
+      <div class="inline-block p-6 bg-indigo-50 rounded-full">
+        <i class="fa-regular fa-note-sticky text-4xl text-indigo-600"></i>
+      </div>
+      <h2 class="text-2xl font-semibold text-gray-800">Nenhuma nota encontrada</h2>
+      {% if is_logged_in() and session['user_id'] == user.id %}
+      <p class="text-gray-600 max-w-md mx-auto">Comece organizando seus pensamentos e ideias criando sua primeira nota!</p>
+      {% endif %}
+    </div>
   {% endif %}
 </div>
+
+{% if is_logged_in() and session['user_id'] == user.id %}
+<script>
+  function createNote() {
+    Swal.fire({
+      title: 'Criar Nova Nota',
+      input: 'text',
+      inputLabel: 'Nome da Nota',
+      inputPlaceholder: 'Digite um título para sua nova nota...',
+      showCancelButton: true,
+      confirmButtonColor: '#4f46e5',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Criar',
+      cancelButtonText: 'Cancelar',
+      inputValidator: (value) => {
+        if (!value) {
+          return 'Por favor, insira um título para a nota!'
+        }
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = "{{ url_for('new_note') }}";
+        
+        const titleInput = document.createElement('input');
+        titleInput.type = 'hidden';
+        titleInput.name = 'title';
+        titleInput.value = result.value;
+        form.appendChild(titleInput);
+        
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrf_token';
+        csrfInput.value = "{{ csrf_token() }}";
+        form.appendChild(csrfInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+      }
+    })
+  }
+
+  // Inicialização de tooltips
+  tippy('[data-tooltip]', {
+    content(reference) {
+      return reference.getAttribute('data-tooltip');
+    },
+    placement: 'top',
+    theme: 'light-border',
+    animation: 'fade',
+    delay: [100, 0],
+  });
+</script>
+{% endif %}
 {% endblock %}
