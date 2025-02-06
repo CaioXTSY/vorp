@@ -47,9 +47,22 @@
       padding: 6px 12px;
       font-size: 0.875rem;
     }
-
     .tippy-box[data-theme="light-border"] .tippy-arrow {
       color: white;
+    }
+
+    /* Ajustes para o modo side-by-side do EasyMDE:
+       Adiciona margin-top para compensar o header fixo */
+    .CodeMirror,
+    .editor-preview,
+    .editor-preview-side {
+      margin-top: 80px; /* Ajuste esse valor se seu header tiver outra altura */
+    }
+    /* Garante que os elementos do editor fiquem no fluxo normal e abaixo do header */
+    .CodeMirror,
+    .editor-preview {
+      position: relative;
+      z-index: 10;
     }
   </style>
 
