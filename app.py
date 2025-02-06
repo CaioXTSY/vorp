@@ -181,25 +181,23 @@ def index():
 def toggle_public(note_id):
     if not is_logged_in():
         return jsonify({'status': 'error', 'message': 'Você precisa estar logado.'}), 403
-
     note = Note.query.get_or_404(note_id)
-
-    if note.user_id != session['user_id']:
+    try:
+        current_user_id = int(session.get('user_id', 0))
+    except (ValueError, TypeError):
+        return jsonify({'status': 'error', 'message': 'Sessão inválida.'}), 403
+    if note.user_id != current_user_id:
         return jsonify({'status': 'error', 'message': 'Você não tem permissão para alterar esta nota.'}), 403
-
     if not note.is_public:
         note.is_public = True
         note.hack_link = uuid.uuid4().hex[:8]
     else:
         note.is_public = False
         note.hack_link = None
-
     db.session.commit()
-
     share_link = ""
     if note.is_public:
         share_link = f"{request.host_url.rstrip('/')}/p/{note.hack_link}"
-
     return jsonify({'status': 'success', 'share_link': share_link})
 
 
@@ -315,7 +313,11 @@ def list_notes():
     if not is_logged_in():
         flash("Você precisa estar logado para acessar suas notas.", "warning")
         return redirect(url_for('login'))
-    user_id = session['user_id']
+    try:
+        user_id = int(session['user_id'])
+    except (ValueError, TypeError):
+        flash("Sessão inválida. Faça login novamente.", "danger")
+        return redirect(url_for('login'))
     notes = Note.query.filter_by(user_id=user_id).order_by(Note.updated_at.desc()).all()
     return render_template('notes.html', notes=notes)
 
@@ -344,15 +346,17 @@ def view_note(note_id):
     note = Note.query.get_or_404(note_id)
     # Se a nota for privada, exige que o usuário seja o dono
     if not note.is_public:
-        if not is_logged_in() or session['user_id'] != note.user_id:
+        try:
+            current_user_id = int(session.get('user_id', 0))
+        except (ValueError, TypeError):
+            current_user_id = 0
+        if current_user_id != note.user_id:
             flash("Esta nota é privada.", "danger")
             return redirect(url_for('login'))
-    
     # Converte o conteúdo Markdown para HTML e gera o TOC
     md_instance = markdown.Markdown(extensions=['fenced_code', 'tables', 'toc', 'codehilite'])
     html_content = md_instance.convert(note.content)
     toc = md_instance.toc
-
     return render_template('view_note.html', note=note, html_content=html_content, toc=toc)
 
 
@@ -362,7 +366,12 @@ def edit_note(note_id):
         flash("Você precisa estar logado para editar notas.", "warning")
         return redirect(url_for('login'))
     note = Note.query.get_or_404(note_id)
-    if note.user_id != session['user_id']:
+    try:
+        current_user_id = int(session.get('user_id', 0))
+    except (ValueError, TypeError):
+        flash("Sessão inválida. Faça login novamente.", "danger")
+        return redirect(url_for('login'))
+    if note.user_id != current_user_id:
         flash("Você não tem permissão para editar esta nota.", "danger")
         return redirect(url_for('list_notes'))
     if request.method == 'POST':
@@ -385,7 +394,12 @@ def delete_note(note_id):
         flash("Você precisa estar logado para excluir notas.", "warning")
         return redirect(url_for('login'))
     note = Note.query.get_or_404(note_id)
-    if note.user_id != session['user_id']:
+    try:
+        current_user_id = int(session.get('user_id', 0))
+    except (ValueError, TypeError):
+        flash("Sessão inválida. Faça login novamente.", "danger")
+        return redirect(url_for('login'))
+    if note.user_id != current_user_id:
         flash("Você não tem permissão para excluir esta nota.", "danger")
         return redirect(url_for('list_notes'))
     db.session.delete(note)
