@@ -124,6 +124,16 @@ def update_schema():
 # LOGIN / LOGOUT
 # -----------------------------------------------------------------------------
 
+@app.route('/profile/<string:username>')
+def profile(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    if is_logged_in() and session.get('user_id') == user.id:
+        notes = Note.query.filter_by(user_id=user.id).order_by(Note.updated_at.desc()).all()
+    else:
+        notes = Note.query.filter_by(user_id=user.id, is_public=True).order_by(Note.updated_at.desc()).all()
+    return render_template('profile.html', user=user, notes=notes)
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
