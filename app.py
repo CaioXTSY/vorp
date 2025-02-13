@@ -19,6 +19,7 @@ from openai import OpenAI
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from xhtml2pdf import pisa
+from sqlalchemy import text
 
 load_dotenv()
 
@@ -105,12 +106,13 @@ def update_schema():
     Verifica se a coluna 'slug' existe na tabela 'note'. Se não existir,
     adiciona a coluna e atualiza todas as notas existentes.
     """
-    result = db.session.execute("PRAGMA table_info(note)")
+    result = db.session.execute(text("PRAGMA table_info(note)"))
     columns = [row[1] for row in result]
     if 'slug' not in columns:
         app.logger.info("Coluna 'slug' não encontrada. Atualizando o esquema da tabela 'note'...")
-        db.session.execute("ALTER TABLE note ADD COLUMN slug TEXT")
+        db.session.execute(text("ALTER TABLE note ADD COLUMN slug TEXT"))
         db.session.commit()
+        # Atualiza as notas existentes definindo o slug com base no título
         notes = Note.query.all()
         for note in notes:
             if not note.slug:
