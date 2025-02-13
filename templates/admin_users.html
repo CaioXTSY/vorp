@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Admin - Gerenciar Usuários{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold mb-6">Gerenciar Usuários</h1>
+  <div class="overflow-x-auto">
+    <table class="min-w-full bg-white border border-gray-200">
+      <thead>
+        <tr>
+          <th class="px-4 py-2 border-b">ID</th>
+          <th class="px-4 py-2 border-b">Nome de Usuário</th>
+          <th class="px-4 py-2 border-b">Notas</th>
+          <th class="px-4 py-2 border-b">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+        <tr class="hover:bg-gray-50">
+          <td class="px-4 py-2 border-b">{{ user.id }}</td>
+          <td class="px-4 py-2 border-b">{{ user.username }}</td>
+          <td class="px-4 py-2 border-b">{{ user.notes|length }}</td>
+          <td class="px-4 py-2 border-b">
+            <a href="{{ url_for('admin_view_user', user_id=user.id) }}" class="text-indigo-600 hover:underline mr-4">Ver Detalhes</a>
+            {% if user.username != 'admin' %}
+            <form action="{{ url_for('admin_delete_user', user_id=user.id) }}" method="POST" class="inline-block" onsubmit="return confirm('Tem certeza que deseja remover este usuário?');">
+              <button type="submit" class="text-red-600 hover:underline">Remover</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="mt-6">
+    <a href="{{ url_for('admin_page') }}" class="text-indigo-600 hover:underline">&larr; Voltar ao Dashboard</a>
+  </div>
+</div>
+{% endblock %}

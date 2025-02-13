@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Admin - Detalhes do Usuário{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold mb-6">Detalhes do Usuário</h1>
+  <div class="bg-white p-6 rounded-xl shadow mb-6">
+    <h2 class="text-2xl font-semibold">Usuário: {{ user.username }}</h2>
+    <p>ID: {{ user.id }}</p>
+    <p>Total de Notas: {{ user.notes|length }}</p>
+  </div>
+  
+  <div>
+    <h2 class="text-2xl font-semibold mb-4">Notas do Usuário</h2>
+    {% if notes %}
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white border border-gray-200">
+        <thead>
+          <tr>
+            <th class="px-4 py-2 border-b">ID</th>
+            <th class="px-4 py-2 border-b">Título</th>
+            <th class="px-4 py-2 border-b">Slug</th>
+            <th class="px-4 py-2 border-b">Público?</th>
+            <th class="px-4 py-2 border-b">Atualizado em</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for note in notes %}
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-2 border-b">{{ note.id }}</td>
+            <td class="px-4 py-2 border-b">
+              <a href="{{ url_for('view_note', note_id=note.id) }}" class="text-indigo-600 hover:underline">{{ note.title }}</a>
+            </td>
+            <td class="px-4 py-2 border-b">{{ note.slug }}</td>
+            <td class="px-4 py-2 border-b">{{ 'Sim' if note.is_public else 'Não' }}</td>
+            <td class="px-4 py-2 border-b">{{ note.updated_at|datetime_format }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <p>Este usuário não possui notas.</p>
+    {% endif %}
+  </div>
+  <div class="mt-6">
+    <a href="{{ url_for('admin_users') }}" class="text-indigo-600 hover:underline">&larr; Voltar para a Lista de Usuários</a>
+  </div>
+</div>
+{% endblock %}

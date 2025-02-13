@@ -1,21 +1,24 @@
 import os
+import re
+import uuid
+import unicodedata
+from datetime import datetime
+from io import BytesIO
 from pathlib import Path
+
+import markdown
+from dotenv import load_dotenv
 from flask import (
     Flask, render_template, request, redirect, url_for, session,
     flash, jsonify, send_file
 )
 from flask_sqlalchemy import SQLAlchemy
 from flask_socketio import SocketIO
-from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.utils import secure_filename
-import markdown
-from datetime import datetime
-from xhtml2pdf import pisa
-from io import BytesIO
 from flask_wtf.csrf import CSRFProtect
 from openai import OpenAI
-from dotenv import load_dotenv
-import uuid
+from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
+from xhtml2pdf import pisa
 
 load_dotenv()
 
@@ -60,9 +63,9 @@ class Note(db.Model):
     __tablename__ = 'note'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
+    slug = db.Column(db.String(100), unique=True, nullable=False)  # Link fixo
     content = db.Column(db.Text, nullable=False)
     is_public = db.Column(db.Boolean, default=False)
-    hack_link = db.Column(db.String(64), unique=True, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -79,6 +82,41 @@ def is_admin():
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+
+# Função para criar um slug a partir do título
+def slugify(value):
+    value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
+    value = re.sub(r'[^\w\s-]', '', value).strip().lower()
+    value = re.sub(r'[-\s]+', '-', value)
+    return value
+
+# Função para garantir a unicidade do slug
+def generate_unique_slug(title):
+    base_slug = slugify(title)
+    slug = base_slug
+    counter = 1
+    while Note.query.filter_by(slug=slug).first() is not None:
+        slug = f"{base_slug}-{counter}"
+        counter += 1
+    return slug
+
+def update_schema():
+    """
+    Verifica se a coluna 'slug' existe na tabela 'note'. Se não existir,
+    adiciona a coluna e atualiza todas as notas existentes.
+    """
+    result = db.session.execute("PRAGMA table_info(note)")
+    columns = [row[1] for row in result]
+    if 'slug' not in columns:
+        app.logger.info("Coluna 'slug' não encontrada. Atualizando o esquema da tabela 'note'...")
+        db.session.execute("ALTER TABLE note ADD COLUMN slug TEXT")
+        db.session.commit()
+        notes = Note.query.all()
+        for note in notes:
+            if not note.slug:
+                note.slug = generate_unique_slug(note.title)
+        db.session.commit()
+        app.logger.info("Esquema atualizado com sucesso.")
 
 # -----------------------------------------------------------------------------
 # LOGIN / LOGOUT
@@ -126,10 +164,8 @@ def upload_image():
         return jsonify({'url': f"/static/uploads/{filename}"})
     return jsonify({'error': 'Upload failed'}), 500
 
-
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    # Se o usuário já estiver logado, redireciona para a página de notas
     if is_logged_in():
         flash("Você já está logado.", "info")
         return redirect(url_for('list_notes'))
@@ -139,22 +175,18 @@ def register():
         password = request.form.get('password', '')
         confirm_password = request.form.get('confirm_password', '')
         
-        # Verifica se todos os campos foram preenchidos
         if not username or not password or not confirm_password:
             flash("Preencha todos os campos.", "danger")
             return redirect(url_for('register'))
         
-        # Verifica se as senhas coincidem
         if password != confirm_password:
             flash("As senhas não coincidem.", "danger")
             return redirect(url_for('register'))
         
-        # Verifica se o nome de usuário já existe
         if User.query.filter_by(username=username).first():
             flash("Nome de usuário já existe.", "danger")
             return redirect(url_for('register'))
         
-        # Cria o novo usuário
         new_user = User(username=username)
         new_user.set_password(password)
         db.session.add(new_user)
@@ -165,17 +197,13 @@ def register():
     
     return render_template('register.html')
 
-
-
 # -----------------------------------------------------------------------------
 # NOTAS (Funcionalidade estilo HackMD)
 # -----------------------------------------------------------------------------
 
-
 @app.route('/')
 def index():
     return render_template("index.html")
-
 
 @app.route('/notes/<int:note_id>/toggle_public', methods=['POST'])
 def toggle_public(note_id):
@@ -188,44 +216,32 @@ def toggle_public(note_id):
         return jsonify({'status': 'error', 'message': 'Sessão inválida.'}), 403
     if note.user_id != current_user_id:
         return jsonify({'status': 'error', 'message': 'Você não tem permissão para alterar esta nota.'}), 403
-    if not note.is_public:
-        note.is_public = True
-        note.hack_link = uuid.uuid4().hex[:8]
-    else:
-        note.is_public = False
-        note.hack_link = None
+    note.is_public = not note.is_public
     db.session.commit()
     share_link = ""
     if note.is_public:
-        share_link = f"{request.host_url.rstrip('/')}/p/{note.hack_link}"
+        share_link = f"{request.host_url.rstrip('/')}/p/{note.slug}"
     return jsonify({'status': 'success', 'share_link': share_link})
-
-
 
 @app.route('/admin')
 def admin_page():
     if not is_admin():
         flash("Acesso negado. Permissões insuficientes.", "danger")
         return redirect(url_for('login'))
-    # Para o admin, vamos listar todas as notas (por exemplo)
     all_notes = Note.query.order_by(Note.updated_at.desc()).all()
     return render_template('admin.html', notes=all_notes)
-
 
 @app.route('/export/<int:note_id>', methods=['GET'])
 def export_note(note_id):
     note = Note.query.get_or_404(note_id)
-    # Se a nota for privada e o usuário não for o dono, não permite exportação
     if not note.is_public and (not is_logged_in() or note.user_id != session.get('user_id')):
         flash("Acesso negado para exportar esta nota.", "danger")
         return redirect(url_for('login'))
     try:
-        # Converte o conteúdo Markdown para HTML
         html_content = markdown.markdown(
             note.content, 
             extensions=['fenced_code', 'tables', 'codehilite']
         )
-        # CSS para formatação do PDF (você pode ajustar conforme necessário)
         css = """
         <style>
             body { 
@@ -307,7 +323,6 @@ def export_note(note_id):
         flash("Falha ao gerar PDF.", "danger")
         return redirect(url_for('view_note', note_id=note.id))
 
-
 @app.route('/notes')
 def list_notes():
     if not is_logged_in():
@@ -332,19 +347,17 @@ def new_note():
         flash("O título não pode estar vazio.", "danger")
         return redirect(url_for('list_notes'))
     
-    # Cria a nota com conteúdo vazio e visibilidade padrão (por exemplo, privado)
-    note = Note(title=title, content="", is_public=False, user_id=session['user_id'])
+    slug = generate_unique_slug(title)
+    note = Note(title=title, slug=slug, content="", is_public=False, user_id=session['user_id'])
     db.session.add(note)
     db.session.commit()
     
     flash("Nota criada com sucesso!", "success")
     return redirect(url_for('list_notes'))
 
-
 @app.route('/notes/<int:note_id>')
 def view_note(note_id):
     note = Note.query.get_or_404(note_id)
-    # Se a nota for privada, exige que o usuário seja o dono
     if not note.is_public:
         try:
             current_user_id = int(session.get('user_id', 0))
@@ -353,12 +366,10 @@ def view_note(note_id):
         if current_user_id != note.user_id:
             flash("Esta nota é privada.", "danger")
             return redirect(url_for('login'))
-    # Converte o conteúdo Markdown para HTML e gera o TOC
     md_instance = markdown.Markdown(extensions=['fenced_code', 'tables', 'toc', 'codehilite'])
     html_content = md_instance.convert(note.content)
     toc = md_instance.toc
     return render_template('view_note.html', note=note, html_content=html_content, toc=toc)
-
 
 @app.route('/notes/<int:note_id>/edit', methods=['GET', 'POST'])
 def edit_note(note_id):
@@ -379,10 +390,6 @@ def edit_note(note_id):
         note.content = request.form['content']
         is_public = True if request.form.get('is_public') == 'on' else False
         note.is_public = is_public
-        if is_public and not note.hack_link:
-            note.hack_link = uuid.uuid4().hex[:8]
-        elif not is_public:
-            note.hack_link = None
         db.session.commit()
         flash("Nota atualizada com sucesso!", "success")
         return redirect(url_for('view_note', note_id=note.id))
@@ -407,38 +414,83 @@ def delete_note(note_id):
     flash("Nota excluída com sucesso.", "success")
     return redirect(url_for('list_notes'))
 
-# Rota para acesso público via hack link
-@app.route('/p/<string:hack_link>')
-def public_note(hack_link):
-    note = Note.query.filter_by(hack_link=hack_link, is_public=True).first_or_404()
+# Rota para acesso público via slug
+@app.route('/p/<string:slug>')
+def public_note(slug):
+    note = Note.query.filter_by(slug=slug, is_public=True).first_or_404()
     md_instance = markdown.Markdown(extensions=['fenced_code', 'tables', 'toc', 'codehilite'])
     html_content = md_instance.convert(note.content)
     toc = md_instance.toc
     return render_template('view_note.html', note=note, html_content=html_content, toc=toc)
 
-
-from datetime import datetime
-
-# Adicione este filtro personalizado
-@app.template_filter('datetime_format')
-def datetime_format(value, format="%d/%m/%Y %H:%M"):
-    """Filtro para formatar datas no Jinja"""
-    if value is None:
-        return ""
-    return value.strftime(format)
-
 # -----------------------------------------------------------------------------
-# PERFIL DO USUÁRIO
+# ENDPOINTS ADMIN
 # -----------------------------------------------------------------------------
 
-@app.route('/profile/<string:username>')
-def profile(username):
-    user = User.query.filter_by(username=username).first_or_404()
-    if is_logged_in() and session['user_id'] == user.id:
-        notes = Note.query.filter_by(user_id=user.id).order_by(Note.updated_at.desc()).all()
+@app.route('/admin/users')
+def admin_users():
+    if not is_admin():
+        flash("Acesso negado. Permissões insuficientes.", "danger")
+        return redirect(url_for('login'))
+    users = User.query.order_by(User.username).all()
+    return render_template('admin_users.html', users=users)
+
+@app.route('/admin/users/<int:user_id>')
+def admin_view_user(user_id):
+    if not is_admin():
+        flash("Acesso negado. Permissões insuficientes.", "danger")
+        return redirect(url_for('login'))
+    user = User.query.get_or_404(user_id)
+    notes = Note.query.filter_by(user_id=user.id).order_by(Note.updated_at.desc()).all()
+    return render_template('admin_user_detail.html', user=user, notes=notes)
+
+@app.route('/admin/users/<int:user_id>/delete', methods=['POST'])
+def admin_delete_user(user_id):
+    if not is_admin():
+        flash("Acesso negado. Permissões insuficientes.", "danger")
+        return redirect(url_for('login'))
+    user = User.query.get_or_404(user_id)
+    if user.username == 'admin':
+        flash("Não é possível remover o usuário admin.", "danger")
+        return redirect(url_for('admin_users'))
+    user_notes = Note.query.filter_by(user_id=user.id).all()
+    for note in user_notes:
+        db.session.delete(note)
+    db.session.delete(user)
+    db.session.commit()
+    flash("Usuário removido com sucesso.", "success")
+    return redirect(url_for('admin_users'))
+
+@app.route('/admin/notes')
+def admin_notes():
+    if not is_admin():
+        flash("Acesso negado. Permissões insuficientes.", "danger")
+        return redirect(url_for('login'))
+    notes = Note.query.order_by(Note.updated_at.desc()).all()
+    return render_template('admin_notes.html', notes=notes)
+
+# Novo endpoint para exportar o arquivo .db
+@app.route('/admin/export_db', methods=['GET'])
+def export_db():
+    if not is_admin():
+        flash("Acesso negado. Permissões insuficientes.", "danger")
+        return redirect(url_for('login'))
+    
+    db_uri = app.config['SQLALCHEMY_DATABASE_URI']
+    if db_uri.startswith("sqlite:///"):
+        db_filename = db_uri.replace("sqlite:///", "", 1)
+        db_path = os.path.abspath(os.path.join(app.root_path, 'instance', db_filename))
     else:
-        notes = Note.query.filter_by(user_id=user.id, is_public=True).order_by(Note.updated_at.desc()).all()
-    return render_template('profile.html', user=user, notes=notes)
+        flash("Exportação de banco de dados não suportada para este tipo de URI.", "danger")
+        return redirect(url_for('admin_page'))
+    
+    app.logger.info(f"Tentando exportar banco de dados a partir do caminho: {db_path}")
+    
+    if not os.path.exists(db_path):
+        flash(f"Banco de dados não encontrado no caminho: {db_path}", "danger")
+        return redirect(url_for('admin_page'))
+    
+    return send_file(db_path, as_attachment=True, download_name="meu_notion.db", mimetype="application/octet-stream")
 
 # -----------------------------------------------------------------------------
 # ASSISTENTE IA (OpenAI)
@@ -504,16 +556,27 @@ def inject_current_year():
     return {'current_year': datetime.utcnow().year}
 
 # -----------------------------------------------------------------------------
+# TEMPLATE FILTERS
+# -----------------------------------------------------------------------------
+
+@app.template_filter('datetime_format')
+def datetime_format(value, format="%d/%m/%Y %H:%M"):
+    if value is None:
+        return ""
+    return value.strftime(format)
+
+# -----------------------------------------------------------------------------
 # INIT
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
+        update_schema()  # Atualiza o esquema se necessário, adicionando a coluna "slug"
         admin_user = User.query.filter_by(username='admin').first()
         if not admin_user:
             admin_user = User(username='admin')
-            admin_user.set_password('admin')  # Change in production
+            admin_user.set_password('admin')  # Alterar para produção
             db.session.add(admin_user)
             db.session.commit()
 

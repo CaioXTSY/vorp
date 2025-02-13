@@ -1,40 +1,72 @@
 {% extends "base.html" %}
-{% block title %}Admin - CAIOBOOK{% endblock %}
+{% block title %}Admin Dashboard - CAIOBOOK{% endblock %}
 
 {% block content %}
-<h1 class="text-2xl font-bold mb-4" data-aos="fade-up">Admin - Disciplinas</h1>
-<p class="mb-6" data-aos="fade-up">
-  <a
-    href="{{ url_for('admin_new_md') }}"
-    class="bg-indigo-600 text-white px-6 py-2 rounded-full hover:bg-indigo-700 transition"
-  >
-    Nova Disciplina
-  </a>
-</p>
-
-{% if all_md and all_md|length > 0 %}
-<ul class="space-y-2">
-  {% for period, filename in all_md %}
-    <li class="p-4 bg-white border border-gray-200 rounded flex items-center justify-between" data-aos="fade-up">
-      <div>
-        <strong>{{ period }}</strong> - {{ filename }}
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold mb-6">Admin Dashboard</h1>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Gerenciar Usuários -->
+    <a href="{{ url_for('admin_users') }}" class="block p-6 bg-white rounded-xl shadow hover:shadow-lg transition">
+      <div class="flex items-center space-x-4">
+        <i class="fas fa-users text-indigo-600 text-3xl"></i>
+        <div>
+          <h2 class="text-2xl font-semibold">Gerenciar Usuários</h2>
+          <p class="text-gray-600">Listar, visualizar e remover usuários</p>
+        </div>
       </div>
-      <form
-        method="POST"
-        action="{{ url_for('delete_discipline', period_name=period, md_file=filename) }}"
-      >
-        <button
-          type="submit"
-          class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
-          onclick="return confirm('Tem certeza que deseja excluir {{ filename }}?')"
-        >
-          Excluir
-        </button>
-      </form>
-    </li>
-  {% endfor %}
-</ul>
-{% else %}
-<p class="text-gray-500 mt-4">Nenhum arquivo .md encontrado.</p>
-{% endif %}
+    </a>
+    <!-- Gerenciar Notas -->
+    <a href="{{ url_for('admin_notes') }}" class="block p-6 bg-white rounded-xl shadow hover:shadow-lg transition">
+      <div class="flex items-center space-x-4">
+        <i class="fas fa-file-alt text-indigo-600 text-3xl"></i>
+        <div>
+          <h2 class="text-2xl font-semibold">Gerenciar Notas</h2>
+          <p class="text-gray-600">Visualizar todas as notas, inclusive as privadas</p>
+        </div>
+      </div>
+    </a>
+    <!-- Exportar Banco de Dados -->
+    <a href="{{ url_for('export_db') }}" class="block p-6 bg-white rounded-xl shadow hover:shadow-lg transition">
+      <div class="flex items-center space-x-4">
+        <i class="fas fa-database text-indigo-600 text-3xl"></i>
+        <div>
+          <h2 class="text-2xl font-semibold">Exportar Banco de Dados</h2>
+          <p class="text-gray-600">Baixe o arquivo .db</p>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  {% if notes %}
+  <div class="mt-12">
+    <h2 class="text-xl font-semibold mb-4">Notas Recentes</h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white border border-gray-200">
+        <thead>
+          <tr>
+            <th class="px-4 py-2 border-b">ID</th>
+            <th class="px-4 py-2 border-b">Título</th>
+            <th class="px-4 py-2 border-b">Autor</th>
+            <th class="px-4 py-2 border-b">Atualizado em</th>
+            <th class="px-4 py-2 border-b">Público?</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for note in notes %}
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-2 border-b">{{ note.id }}</td>
+            <td class="px-4 py-2 border-b">
+              <a href="{{ url_for('view_note', note_id=note.id) }}" class="text-indigo-600 hover:underline">{{ note.title }}</a>
+            </td>
+            <td class="px-4 py-2 border-b">{{ note.user.username }}</td>
+            <td class="px-4 py-2 border-b">{{ note.updated_at|datetime_format }}</td>
+            <td class="px-4 py-2 border-b">{{ 'Sim' if note.is_public else 'Não' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+</div>
 {% endblock %}
