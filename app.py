@@ -26,7 +26,7 @@ load_dotenv()
 app = Flask(__name__)
 csrf = CSRFProtect(app)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'chave-secreta-trocar-em-producao')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///meu_notion.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///caiobook.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
@@ -502,7 +502,7 @@ def export_db():
         flash(f"Banco de dados não encontrado no caminho: {db_path}", "danger")
         return redirect(url_for('admin_page'))
     
-    return send_file(db_path, as_attachment=True, download_name="meu_notion.db", mimetype="application/octet-stream")
+    return send_file(db_path, as_attachment=True, download_name="caiobook.db", mimetype="application/octet-stream")
 
 # -----------------------------------------------------------------------------
 # ASSISTENTE IA (OpenAI)
