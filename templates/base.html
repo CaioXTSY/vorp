@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-br" x-data="{ mobileMenuOpen: false, isScrolled: false }" 
       :class="{ 'dark': darkMode }" class="scroll-smooth">
+
+
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='/vorp.png') }}">
 <head>
   <meta charset="UTF-8">
   <title>{% block title %}{% endblock %}</title>
@@ -112,7 +115,7 @@
         <span class="ml-3 text-2xl font-bold bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent
                    relative before:absolute before:-bottom-1 before:h-[2px] before:w-0 before:bg-gradient-to-r 
                    before:from-cyan-500 before:to-blue-600 before:transition-all before:duration-300 group-hover:before:w-full">
-          CAIOBOOK
+          VORP
         </span>
       </a>
 
@@ -251,7 +254,7 @@
             <div class="p-2 bg-indigo-600 rounded-lg">
               <i class="fas fa-graduation-cap text-white text-xl"></i>
             </div>
-            <span class="text-xl font-bold text-white">CAIOBOOK</span>
+            <span class="text-xl font-bold text-white">Vorp</span>
           </div>
           <p class="text-sm leading-relaxed text-gray-400">
             Aprendizado inteligente para mentes curiosas.
@@ -292,7 +295,7 @@
       <!-- Copyright -->
       <div class="pt-8 text-center">
         <p class="text-sm text-gray-500">
-          © {{ current_year }} CAIOBOOK. Todos os direitos reservados.
+          © {{ current_year }} Vorp. Todos os direitos reservados.
         </p>
       </div>
     </div>
