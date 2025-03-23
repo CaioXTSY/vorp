@@ -1,211 +1,444 @@
 {% extends "base.html" %}
-{% block title %}CAIOBOOK - Estudos Inteligentes{% endblock %}
+{% block title %}Vorp - Anotações Intuitivas com IA{% endblock %}
+
+{% block head %}
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.css">
+{% endblock %}
 
 {% block content %}
-<header>
-  <!-- Hero Section -->
-  <section class="relative bg-white">
-    <div class="container mx-auto px-4 py-20 md:py-24">
-      <div class="flex flex-col md:flex-row items-center gap-8">
-        <!-- Texto Principal -->
-        <div class="md:w-1/2 text-center md:text-left">
-          <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight">
-            Transforme suas anotações com
-            <span class="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              inteligência artificial
-            </span>
-          </h1>
-          <p class="text-gray-600 mb-8 text-lg">
-            Organização automática, análise inteligente e suporte 24/7 para seus estudos.
-          </p>
-          <div class="flex justify-center md:justify-start gap-4">
-            {% if is_logged_in() %}
-              <a href="{{ url_for('list_notes') }}" class="btn-primary">
-                Acessar Plataforma
-              </a>
-            {% else %}
-              <a href="{{ url_for('login') }}" class="btn-primary">
-                Começar Agora
-              </a>
-            {% endif %}
-          </div>
-        </div>
+<!-- Hero Section -->
 
-        <!-- Imagem Hero -->
-        <div class="md:w-1/2 mt-12 md:mt-0">
-          <div class="relative max-w-lg mx-auto">
-            <div class="absolute inset-0 bg-indigo-50 rounded-2xl transform rotate-2"></div>
-            <img 
-              src="{{ url_for('static', filename='bonny.webp') }}" 
-              alt="Interface da plataforma"
-              class="relative z-10 rounded-2xl shadow-lg border-8 border-white"
-              loading="lazy"
-            >
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-</header>
+<style>
+  @keyframes gradient-wave {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  .gradient-animate {
+    background-size: 400% 400%;
+    animation: gradient-wave 12s ease infinite;
+  }
+</style>
 
-<main class="bg-gray-50">
-  <!-- Seção de Recursos -->
-  <section class="py-16 md:py-24">
-    <div class="container mx-auto px-4">
-      <div class="text-center mb-12">
-        <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-          Tudo o que você precisa para
-          <span class="text-gradient">estudar melhor</span>
-        </h2>
-        <p class="text-gray-600 max-w-xl mx-auto">
-          Ferramentas inteligentes integradas em uma única plataforma
+
+<section class="relative bg-gradient-to-br from-gray-900 to-indigo-900 overflow-hidden">
+  <div class="absolute inset-0 opacity-20" style="background-image: url('data:image/svg+xml,%3Csvg width=\'52\' height=\'26\' viewBox=\'0 0 52 26\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%239C92AC\' fill-opacity=\'0.2\'%3E%3Cpath d=\'M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z\' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+  
+  <div class="w-full px-4 py-28 relative z-10">
+    <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16">
+      <!-- Text Content -->
+      <div class="lg:w-1/2 text-center lg:text-left">
+        <h1 class="text-5xl md:text-6xl font-bold mb-6 leading-tight bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent"
+            data-aos="fade-up"
+            data-aos-duration="800">
+          Transforme suas anotações
+          <span class="block mt-3" data-aos="fade-up" data-aos-delay="200">em conhecimento ativo</span>
+        </h1>
+        <p class="text-xl text-cyan-100 mb-10 max-w-xl mx-auto lg:mx-0"
+           data-aos="fade-up"
+           data-aos-delay="400">
+          Editor inteligente com IA integrada para organização automática, colaboração em tempo real e insights acionáveis
         </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
+             data-aos="fade-up"
+             data-aos-delay="600">
+          <a href="{{ url_for('admin_page') }}" 
+             class="btn-primary inline-flex items-center justify-center gap-2 px-8 py-4 text-lg font-semibold 
+                    bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 
+                    rounded-xl transition-all transform hover:-translate-y-1 shadow-lg hover:shadow-2xl
+                    hover:scale-105 duration-300">
+            Comece Grátis
+            <i class="fas fa-arrow-right text-sm group-hover:translate-x-1 transition-transform"></i>
+          </a>
+          <a href="#features" 
+             class="btn-secondary border-2 border-cyan-500/30 hover:border-cyan-400 px-8 py-4 text-lg
+                    bg-white/5 backdrop-blur-sm hover:bg-white/10 rounded-xl transition-all
+                    hover:scale-105 duration-300">
+            Ver Demonstração
+          </a>
+        </div>
       </div>
 
-      <div class="grid md:grid-cols-3 gap-6">
-        <!-- Recurso 1: Chat com Notas -->
-        <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-          <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
-            <i class="fas fa-comment-dots text-indigo-600"></i>
-          </div>
-          <h3 class="text-xl font-semibold mb-2">Chat com Notas</h3>
-          <p class="text-gray-600 text-sm">
-            Interaja com suas anotações usando linguagem natural
-          </p>
-        </div>
+      <!-- Editor Preview -->
+      <div class="lg:w-1/2 mt-16 lg:mt-0 relative"
+           data-aos="fade-left"
+           data-aos-delay="400">
+        <div class="absolute inset-0 bg-gradient-to-tr from-cyan-500/30 to-blue-500/30 blur-3xl opacity-40 animate-pulse"></div>
+        <div class="relative bg-gray-800/50 backdrop-blur-xl rounded-3xl shadow-2xl border border-cyan-500/20 
+                    transform rotate-1 hover:rotate-0 transition-transform duration-300 hover:shadow-2xl hover:shadow-cyan-500/20">
+          <div class="p-6 space-y-6">
+            <!-- Code Editor -->
+            <div class="font-mono space-y-4">
+              <div class="flex items-center gap-3">
+                <div class="h-3 w-3 rounded-full bg-red-500"></div>
+                <div class="h-3 w-3 rounded-full bg-yellow-500"></div>
+                <div class="h-3 w-3 rounded-full bg-green-500"></div>
+              </div>
+              <pre class="text-cyan-400 text-sm"><code># Machine Learning Basics
+## Supervised Learning
+- Regression
+- Classification
 
-        <!-- Recurso 2: Análise Inteligente -->
-        <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-            <i class="fas fa-chart-pie text-green-600"></i>
+## Unsupervised Learning
+- Clustering
+- Dimensionality Reduction</code></pre>
+            </div>
+            
+            <!-- AI Suggestion -->
+            <div class="p-4 bg-gray-700/50 rounded-xl border border-cyan-500/20 hover:border-cyan-400/40 transition-all">
+              <div class="flex items-center gap-4">
+                <div class="shrink-0">
+                  <div class="h-10 w-10 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-full 
+                              flex items-center justify-center animate-gradient-xy">
+                    <i class="fas fa-robot text-white"></i>
+                  </div>
+                </div>
+                <div class="text-cyan-100 text-sm leading-relaxed">
+                  <p class="font-medium">Sugestão da IA:</p>
+                  <p>Que tal adicionar exemplos de algoritmos para cada categoria?</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <h3 class="text-xl font-semibold mb-2">Análise Inteligente</h3>
-          <p class="text-gray-600 text-sm">
-            Obtenha insights precisos para otimizar seus estudos
-          </p>
-        </div>
-
-        <!-- Recurso 3: Privacidade -->
-        <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-            <i class="fas fa-shield-alt text-blue-600"></i>
-          </div>
-          <h3 class="text-xl font-semibold mb-2">Privacidade</h3>
-          <p class="text-gray-600 text-sm">
-            Seus dados protegidos com criptografia de ponta
-          </p>
         </div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- Seção IA Integrada -->
-  <section class="py-16 md:py-24 bg-white">
-    <div class="container mx-auto px-4">
-      <div class="flex flex-col lg:flex-row items-center gap-12">
-        <!-- Imagem IA -->
-        <div class="lg:w-1/2">
-          <div class="relative rounded-xl overflow-hidden shadow-lg">
-            <img 
-              src="{{ url_for('static', filename='bonny.webp') }}" 
-              alt="Assistente de IA"
-              class="w-full h-auto"
-              loading="lazy"
-            >
+<!-- Features Grid -->
+<section id="features" class="relative py-24 bg-gradient-to-b from-white to-cyan-50 dark:from-gray-900 dark:to-gray-800">
+  <div class="max-w-7xl mx-auto px-4">
+    <div class="text-center mb-20">
+      <h2 class="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-gray-800 to-cyan-600 dark:from-cyan-400 dark:to-blue-400 bg-clip-text text-transparent"
+          data-aos="zoom-in-up">
+        Recursos Revolucionários
+      </h2>
+      <p class="text-xl text-gray-600 dark:text-cyan-100 max-w-3xl mx-auto"
+         data-aos="fade-up"
+         data-aos-delay="200">
+        Tecnologia de ponta para potencializar sua produtividade intelectual
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <!-- Feature 1 -->
+      <div class="card group relative bg-white dark:bg-gray-800 p-8 rounded-3xl border border-gray-200 dark:border-gray-700 
+                  hover:border-cyan-500/30 transition-all duration-300 hover:-translate-y-2"
+           data-aos="fade-up"
+           data-aos-delay="200">
+        <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 opacity-0 
+                    group-hover:opacity-100 rounded-3xl transition-opacity"></div>
+        <div class="relative z-10">
+          <div class="w-14 h-14 mb-6 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-2xl flex items-center justify-center
+                      transform group-hover:rotate-12 transition-transform">
+            <i class="fas fa-code text-2xl text-white"></i>
           </div>
+          <h3 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white group-hover:bg-gradient-to-r group-hover:from-cyan-500 group-hover:to-blue-500 group-hover:bg-clip-text group-hover:text-transparent transition-all">Editor Inteligente</h3>
+          <p class="text-gray-600 dark:text-cyan-100 mb-6">
+            Markdown avançado com suporte a diagramas, fórmulas matemáticas e sintaxe real-time
+          </p>
+          <ul class="space-y-3 text-cyan-600 dark:text-cyan-400">
+            <li class="flex items-center gap-3 hover:translate-x-2 transition-transform">
+              <i class="fas fa-check-circle text-sm"></i>
+              Pré-visualização instantânea
+            </li>
+            <li class="flex items-center gap-3 hover:translate-x-2 transition-transform">
+              <i class="fas fa-check-circle text-sm"></i>
+              Templates inteligentes
+            </li>
+          </ul>
         </div>
+      </div>
 
-        <!-- Texto IA -->
-        <div class="lg:w-1/2">
-          <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
-            <span class="text-gradient">Bonnie AI</span><br>
-            Sua assistente de estudos
-          </h2>
-          
+      <!-- Feature 2 -->
+      <div class="card group relative bg-white dark:bg-gray-800 p-8 rounded-3xl border border-gray-200 dark:border-gray-700 
+                  hover:border-cyan-500/30 transition-all duration-300 hover:-translate-y-2"
+           data-aos="fade-up"
+           data-aos-delay="400">
+        <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 opacity-0 
+                    group-hover:opacity-100 rounded-3xl transition-opacity"></div>
+        <div class="relative z-10">
+          <div class="w-14 h-14 mb-6 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-2xl flex items-center justify-center
+                      transform group-hover:rotate-12 transition-transform">
+            <i class="fas fa-brain text-2xl text-white"></i>
+          </div>
+          <h3 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white group-hover:bg-gradient-to-r group-hover:from-cyan-500 group-hover:to-blue-500 group-hover:bg-clip-text group-hover:text-transparent transition-all">Assistente por IA</h3>
+          <p class="text-gray-600 dark:text-cyan-100 mb-6">
+            Análise contextual e geração automática de resumos, perguntas e conexões
+          </p>
+          <ul class="space-y-3 text-cyan-600 dark:text-cyan-400">
+            <li class="flex items-center gap-3 hover:translate-x-2 transition-transform">
+              <i class="fas fa-check-circle text-sm"></i>
+              Q&A contextual
+            </li>
+            <li class="flex items-center gap-3 hover:translate-x-2 transition-transform">
+              <i class="fas fa-check-circle text-sm"></i>
+              Sugestões em tempo real
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Feature 3 -->
+      <div class="card group relative bg-white dark:bg-gray-800 p-8 rounded-3xl border border-gray-200 dark:border-gray-700 
+                  hover:border-cyan-500/30 transition-all duration-300 hover:-translate-y-2"
+           data-aos="fade-up"
+           data-aos-delay="600">
+        <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 opacity-0 
+                    group-hover:opacity-100 rounded-3xl transition-opacity"></div>
+        <div class="relative z-10">
+          <div class="w-14 h-14 mb-6 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-2xl flex items-center justify-center
+                      transform group-hover:rotate-12 transition-transform">
+            <i class="fas fa-share-nodes text-2xl text-white"></i>
+          </div>
+          <h3 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white group-hover:bg-gradient-to-r group-hover:from-cyan-500 group-hover:to-blue-500 group-hover:bg-clip-text group-hover:text-transparent transition-all">Colaboração Avançada</h3>
+          <p class="text-gray-600 dark:text-cyan-100 mb-6">
+            Compartilhamento seguro com controle de versão e comentários contextualizados
+          </p>
+          <ul class="space-y-3 text-cyan-600 dark:text-cyan-400">
+            <li class="flex items-center gap-3 hover:translate-x-2 transition-transform">
+              <i class="fas fa-check-circle text-sm"></i>
+              Edição simultânea
+            </li>
+            <li class="flex items-center gap-3 hover:translate-x-2 transition-transform">
+              <i class="fas fa-check-circle text-sm"></i>
+              Histórico de mudanças
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI Assistant Section -->
+<section class="relative py-24 bg-gradient-to-br from-gray-900 to-cyan-900 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-4">
+    <div class="flex flex-col lg:flex-row items-center gap-16">
+      <!-- Chat Interface -->
+      <div class="lg:w-1/2 relative" data-aos="fade-right" data-aos-delay="200">
+        <div class="absolute -left-20 -top-20 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div class="relative bg-gray-800/50 backdrop-blur-xl rounded-3xl border border-cyan-500/20 p-8 shadow-2xl
+                    hover:shadow-cyan-500/20 transition-all">
           <div class="space-y-6">
+            <!-- User Message -->
             <div class="flex gap-4">
-              <div class="flex-shrink-0">
-                <div class="w-8 h-8 bg-indigo-600 rounded-md flex items-center justify-center">
-                  <i class="fas fa-bolt text-white text-sm"></i>
+              <div class="shrink-0">
+                <div class="h-12 w-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-full 
+                            flex items-center justify-center hover:rotate-12 transition-transform">
+                  <i class="fas fa-user text-white"></i>
                 </div>
               </div>
-              <div>
-                <h3 class="text-lg font-semibold mb-1">Respostas Instantâneas</h3>
-                <p class="text-gray-600 text-sm">Tire dúvidas em tempo real sobre qualquer conteúdo</p>
+              <div class="bg-gray-700/50 p-4 rounded-xl hover:bg-gray-700/70 transition-all">
+                <p class="text-cyan-100">Como posso melhorar esta explicação sobre redes neurais?</p>
               </div>
             </div>
-
+            
+            <!-- AI Response -->
             <div class="flex gap-4">
-              <div class="flex-shrink-0">
-                <div class="w-8 h-8 bg-purple-600 rounded-md flex items-center justify-center">
-                  <i class="fas fa-book-open text-white text-sm"></i>
+              <div class="shrink-0">
+                <div class="h-12 w-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-full 
+                            flex items-center justify-center overflow-hidden hover:rotate-12 transition-transform">
+                  <img src="{{ url_for('static', filename='vorp.png') }}" 
+                       alt="Vorp AI"
+                       class="w-full h-full object-cover">
                 </div>
               </div>
-              <div>
-                <h3 class="text-lg font-semibold mb-1">Revisão Programada</h3>
-                <p class="text-gray-600 text-sm">Sistema de repetição espaçada adaptativo</p>
-              </div>
-            </div>
-
-            <div class="flex gap-4">
-              <div class="flex-shrink-0">
-                <div class="w-8 h-8 bg-blue-600 rounded-md flex items-center justify-center">
-                  <i class="fas fa-chart-line text-white text-sm"></i>
-                </div>
-              </div>
-              <div>
-                <h3 class="text-lg font-semibold mb-1">Acompanhamento</h3>
-                <p class="text-gray-600 text-sm">Monitoramento detalhado do seu progresso</p>
+              <div class="bg-gray-700/50 p-4 rounded-xl hover:bg-gray-700/70 transition-all">
+                <p class="text-cyan-100 mb-3">Sugiro adicionar:</p>
+                <ul class="list-disc pl-4 space-y-2 text-cyan-200">
+                  <li class="hover:translate-x-2 transition-transform">Exemplo prático com código Python</li>
+                  <li class="hover:translate-x-2 transition-transform">Diagrama de arquitetura</li>
+                  <li class="hover:translate-x-2 transition-transform">Links para estudos de caso</li>
+                </ul>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- CTA -->
-  <section class="py-16 md:py-24 bg-indigo-600">
-    <div class="container mx-auto px-4 text-center">
-      <div class="max-w-2xl mx-auto">
-        <h2 class="text-2xl md:text-3xl font-bold text-white mb-4">
-          Comece agora gratuitamente
+      <!-- Text Content -->
+      <div class="lg:w-1/2" data-aos="fade-left" data-aos-delay="400">
+        <h2 class="text-4xl md:text-5xl font-bold mb-8 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+          Inteligência Artificial
+          <span class="block mt-3">Contextual</span>
         </h2>
-        <p class="text-indigo-100 mb-8">
-          Cadastre-se em 1 minuto e revolucione sua forma de estudar
-        </p>
-        <a href="{{ url_for('login') }}" class="inline-block bg-white text-indigo-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition">
-          Criar Conta Gratuita
+        <div class="space-y-8">
+          <div class="flex items-start gap-6 p-4 bg-white/5 backdrop-blur-sm rounded-xl border border-cyan-500/20
+                     hover:border-cyan-400/40 hover:-translate-y-1 transition-all">
+            <div class="shrink-0 mt-1">
+              <div class="w-8 h-8 bg-cyan-500/20 rounded-lg flex items-center justify-center
+                         group-hover:bg-cyan-500/40 transition-all">
+                <i class="fas fa-bolt text-cyan-400"></i>
+              </div>
+            </div>
+            <div>
+              <h3 class="text-xl font-semibold text-white mb-2">Análise em Tempo Real</h3>
+              <p class="text-cyan-200">Verificação automática de consistência e sugestões de melhoria contínua</p>
+            </div>
+          </div>
+          
+          <div class="flex items-start gap-6 p-4 bg-white/5 backdrop-blur-sm rounded-xl border border-cyan-500/20
+                     hover:border-cyan-400/40 hover:-translate-y-1 transition-all">
+            <div class="shrink-0 mt-1">
+              <div class="w-8 h-8 bg-cyan-500/20 rounded-lg flex items-center justify-center
+                         group-hover:bg-cyan-500/40 transition-all">
+                <i class="fas fa-brain text-cyan-400"></i>
+              </div>
+            </div>
+            <div>
+              <h3 class="text-xl font-semibold text-white mb-2">Aprendizado Adaptativo</h3>
+              <p class="text-cyan-200">O assistente evolui com seu estilo de escrita e áreas de interesse</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing Section -->
+<section class="relative py-24 bg-white dark:bg-gray-900">
+  <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+    <!-- Free Tier -->
+    <div class="card group relative bg-white dark:bg-gray-800 p-8 rounded-3xl border-2 border-gray-200/80 dark:border-gray-700 
+                hover:border-cyan-400/40 transition-all duration-300 hover:shadow-xl hover:-translate-y-2"
+         data-aos="zoom-in" data-aos-delay="200">
+      <div class="text-center">
+        <h3 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Iniciante</h3>
+        <div class="text-5xl font-bold mb-6">
+          <span class="bg-gradient-to-r from-gray-400 to-cyan-400 bg-clip-text text-transparent">Grátis</span>
+        </div>
+        <ul class="space-y-4 mb-8 text-gray-600 dark:text-cyan-100">
+          <li class="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 p-3 rounded-lg transition-all">
+            <i class="fas fa-check-circle text-cyan-500 transform transition-transform group-hover:scale-110"></i>
+            500 créditos/mês
+          </li>
+          <li class="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 p-3 rounded-lg transition-all">
+            <i class="fas fa-check-circle text-cyan-500 transform transition-transform group-hover:scale-110"></i>
+            Editor básico
+          </li>
+        </ul>
+        <a href="#" class="btn w-full py-4 px-8 bg-gradient-to-r from-cyan-400 to-blue-400 text-white rounded-xl
+                        font-bold hover:from-cyan-500 hover:to-blue-500 transition-all shadow-lg hover:shadow-cyan-300/30
+                        flex items-center justify-center gap-2 hover:gap-3">
+          Começar Agora
+          <i class="fas fa-arrow-right text-sm transition-all transform group-hover:translate-x-1"></i>
         </a>
       </div>
     </div>
-  </section>
-</main>
+  
+    <!-- Pro Tier -->
+    <div class="card group relative bg-gradient-to-br from-cyan-500 to-blue-600 p-8 rounded-3xl 
+                transform hover:-translate-y-3 transition-all duration-300 shadow-2xl hover:shadow-cyan-400/40"
+         data-aos="zoom-in" data-aos-delay="400">
+      <div class="absolute inset-0 bg-white/5 backdrop-blur-sm rounded-3xl"></div>
+      <div class="relative z-10 text-center text-white">
+        <div class="flex justify-center mb-4">
+          <span class="bg-white/20 px-4 py-1 rounded-full text-sm font-semibold tracking-wide animate-pulse">
+            Mais Popular
+          </span>
+        </div>
+        <h3 class="text-2xl font-bold mb-4">Profissional</h3>
+        <div class="text-5xl font-bold mb-6">
+          <span>R$29</span>
+          <span class="text-xl font-medium">/mês</span>
+        </div>
+        <ul class="space-y-4 mb-8">
+          <li class="flex items-center gap-3 hover:bg-white/10 p-3 rounded-lg transition-all">
+            <i class="fas fa-check-circle text-cyan-300"></i>
+            5,000 créditos/mês
+          </li>
+          <li class="flex items-center gap-3 hover:bg-white/10 p-3 rounded-lg transition-all">
+            <i class="fas fa-check-circle text-cyan-300"></i>
+            IA Avançada
+          </li>
+        </ul>
+        <a href="#" class="btn w-full py-4 px-8 bg-white text-cyan-600 rounded-xl font-bold
+                        hover:bg-gray-100 hover:text-cyan-700 transition-all shadow-lg
+                        flex items-center justify-center gap-2 hover:gap-3">
+          Assinar Agora
+          <i class="fas fa-rocket text-sm transition-all transform group-hover:translate-y-1"></i>
+        </a>
+      </div>
+    </div>
+  
+    <!-- Enterprise Tier -->
+    <div class="card group relative bg-white dark:bg-gray-800 p-8 rounded-3xl border-2 border-gray-200/80 dark:border-gray-700 
+                hover:border-cyan-400/40 transition-all duration-300 hover:shadow-xl hover:-translate-y-2"
+         data-aos="zoom-in" data-aos-delay="600">
+      <div class="text-center">
+        <h3 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Empresas</h3>
+        <div class="text-5xl font-bold mb-6">
+          <span class="bg-gradient-to-r from-gray-400 to-cyan-400 bg-clip-text text-transparent">Custom</span>
+        </div>
+        <ul class="space-y-4 mb-8 text-gray-600 dark:text-cyan-100">
+          <li class="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 p-3 rounded-lg transition-all">
+            <i class="fas fa-check-circle text-cyan-500 transform transition-transform group-hover:scale-110"></i>
+            Gestão centralizada
+          </li>
+          <li class="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 p-3 rounded-lg transition-all">
+            <i class="fas fa-check-circle text-cyan-500 transform transition-transform group-hover:scale-110"></i>
+            SSO e SAML
+          </li>
+        </ul>
+        <a href="#" class="btn w-full py-4 px-8 bg-gradient-to-r from-gray-500 to-cyan-500 text-white rounded-xl
+                        font-bold hover:from-gray-600 hover:to-cyan-600 transition-all shadow-lg hover:shadow-cyan-300/30
+                        flex items-center justify-center gap-2 hover:gap-3">
+          Contato
+          <i class="fas fa-phone-alt text-sm transition-all transform group-hover:rotate-12"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% block scripts %}
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+  AOS.init({
+    duration: 1000,
+    once: false,
+    mirror: true,
+    easing: 'ease-in-out-quad',
+    offset: 120
+  });
+</script>
+{% endblock %}
 
 {% block styles %}
 <style>
-  .text-gradient {
-    background: linear-gradient(45deg, #4f46e5, #9333ea);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+  @keyframes gradient-xy {
+    0% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+    100% {background-position: 0% 50%;}
   }
 
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.875rem 2rem;
-    background-image: linear-gradient(45deg, #4f46e5, #9333ea);
-    color: white;
-    font-weight: 600;
-    border-radius: 0.75rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.1);
+  .animate-gradient-xy {
+    background-size: 400% 400%;
+    animation: gradient-xy 8s ease infinite;
   }
 
-  .btn-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 12px -1px rgba(79, 70, 229, 0.2);
+  .card:hover {
+    box-shadow: 0 25px 50px -12px rgba(34, 211, 238, 0.25);
+  }
+
+  [data-aos] {
+    transition-property: transform, opacity;
+  }
+
+  .hover\:rotate-12:hover {
+    transform: rotate(12deg);
+  }
+
+  .btn-primary:hover i {
+    transform: translateX(4px);
+  }
+
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
   }
 </style>
 {% endblock %}

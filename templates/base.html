@@ -1,172 +1,200 @@
 <!DOCTYPE html>
-<html lang="pt-br" x-data="{ mobileMenuOpen: false }">
+<html lang="pt-br" x-data="{ mobileMenuOpen: false, isScrolled: false }" 
+      :class="{ 'dark': darkMode }" class="scroll-smooth">
 <head>
   <meta charset="UTF-8">
   <title>{% block title %}{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#6366f1">
 
-  <!-- Tailwind CSS com plugins: forms, typography, aspect-ratio e line-clamp -->
-  <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
+  <!-- Tailwind CSS com plugins atualizados -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp,container-queries"></script>
 
   <!-- FontAwesome (ícones) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-  <!-- Prism.js (opcional) para destaque de código -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css" />
+  <!-- Fonte moderna (Inter) -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 
-  <!-- AOS (animações de scroll) -->
-  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://unpkg.com/@popperjs/core@2"></script>
-  <script src="https://unpkg.com/tippy.js@6"></script>
+  <!-- Animações modernas -->
+  <link rel="stylesheet" href="https://unpkg.com/@splidejs/splide@4.1.4/dist/css/splide.min.css">
 
   <style>
-    /* Importando a fonte Poppins e aplicando-a ao body */
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    :root {
+      --color-primary: 99 102 241;
+      --color-secondary: 139 92 246;
+    }
+
     body {
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      @apply text-gray-800 bg-gradient-to-br from-gray-50 to-indigo-50/50 dark:bg-gray-900 dark:text-gray-100;
     }
-    /* Estilos para links de navegação */
+
+    /* Navbar modernizada */
+    .nav-header {
+      @apply fixed w-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-700 z-50;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03), 0 2px 8px -2px rgba(0,0,0,0.04);
+    }
+
     .nav-link {
-      @apply relative px-3 py-1.5 transition-all duration-300 hover:text-indigo-600;
+      @apply relative px-3 py-2.5 text-sm font-medium text-gray-500 dark:text-gray-400 
+             transition-all hover:text-indigo-600 dark:hover:text-indigo-400 
+             after:absolute after:bottom-0 after:left-1/2 after:w-0 after:h-[2px] 
+             after:bg-indigo-500 after:transition-all after:duration-300;
     }
-    .nav-link::after {
-      @apply content-[''] absolute bottom-0 left-1/2 w-0 h-0.5 bg-indigo-600 transition-all duration-300;
-    }
+
     .nav-link:hover::after {
       @apply left-0 w-full;
     }
 
-    .tippy-box[data-theme="light-border"] {
-      background: white;
-      border: 1px solid #e5e7eb;
-      color: #374151;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-      border-radius: 8px;
-      padding: 6px 12px;
-      font-size: 0.875rem;
-    }
-    .tippy-box[data-theme="light-border"] .tippy-arrow {
-      color: white;
+    /* Botões modernos */
+    .btn-primary {
+      @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg 
+             bg-gradient-to-br from-indigo-600 to-purple-600 text-white 
+             hover:from-indigo-700 hover:to-purple-700 
+             transition-all transform hover:-translate-y-0.5 
+             shadow-sm hover:shadow-lg;
     }
 
-    /* Ajustes para o modo side-by-side do EasyMDE:
-       Adiciona margin-top para compensar o header fixo */
-    .CodeMirror,
-    .editor-preview,
-    .editor-preview-side {
-      margin-top: 80px; /* Ajuste esse valor se seu header tiver outra altura */
+    /* Cards */
+    .card {
+      @apply bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm 
+             border border-gray-200/50 dark:border-gray-700 
+             hover:shadow-md transition-shadow;
     }
-    /* Garante que os elementos do editor fiquem no fluxo normal e abaixo do header */
-    .CodeMirror,
-    .editor-preview {
-      position: relative;
-      z-index: 10;
+
+    /* Alertas modernos */
+    .alert {
+      @apply p-4 rounded-xl border text-sm flex items-start gap-3;
+    }
+    .alert-success {
+      @apply bg-emerald-50/50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-300;
+    }
+    .alert-error {
+      @apply bg-rose-50/50 border-rose-200 text-rose-700 dark:bg-rose-900/20 dark:border-rose-800 dark:text-rose-300;
+    }
+
+    /* Gradiente animado */
+    .animated-gradient {
+      background: linear-gradient(-45deg, #6366f1, #8b5cf6, #ec4899, #f59e0b);
+      background-size: 400% 400%;
+      animation: gradient 15s ease infinite;
+    }
+
+    @keyframes gradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
   </style>
 
   {% block head_extras %}{% endblock %}
 </head>
-<body class="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-indigo-50 text-gray-800">
+<body class="min-h-screen flex flex-col">
   
-  <!-- Cabeçalho (Header) -->
-  <nav class="fixed w-full bg-white/80 backdrop-blur-md border-b border-gray-100 z-50 shadow-sm">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-      
-      <!-- Logo -->
-      <a href="{{ url_for('index') }}" class="flex items-center space-x-3 group">
-        <div class="p-2 bg-indigo-600 rounded-lg group-hover:rotate-12 transition-transform">
-          <i class="fas fa-graduation-cap text-white text-xl"></i>
-        </div>
-        <span class="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-          CAIOBOOK
-        </span>
-      </a>
+  <!-- Cabeçalho Moderno -->
+  <header class="nav-header" 
+          x-data="{ isScrolled: window.pageYOffset > 10 }"
+          @scroll.window="isScrolled = window.pageYOffset > 10">
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="h-16 flex items-center justify-between">
+        
+        <!-- Logo com gradiente animado -->
+        <a href="{{ url_for('index') }}" class="flex items-center space-x-2.5 group">
+          <div class="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center 
+                      group-hover:rotate-12 transition-transform">
+            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+            </svg>
+          </div>
+          <span class="text-xl font-semibold bg-clip-text 
+                       bg-gradient-to-r from-indigo-600 to-purple-500 text-transparent">
+            vorp
+          </span>
+        </a>
 
-      <!-- Menu Desktop -->
-      <div class="hidden md:flex items-center space-x-8">
-        <a href="{{ url_for('index') }}" class="nav-link">Home</a>
-        {% if is_logged_in() %}
-          <a href="{{ url_for('list_notes') }}" class="nav-link">Minhas Notas</a>
-          <a href="{{ url_for('logout') }}" class="nav-link">Sair</a>
-          {% if is_admin() %}
-            <a href="{{ url_for('admin_page') }}" class="nav-link flex items-center gap-1.5">
-              <span>Admin</span>
-              <i class="fas fa-shield-alt text-sm text-emerald-600"></i>
+        <!-- Menu Desktop -->
+        <div class="hidden md:flex items-center gap-6">
+          <a href="{{ url_for('index') }}" class="nav-link">Home</a>
+          {% if is_logged_in() %}
+            <a href="{{ url_for('list_notes') }}" class="nav-link">Notas</a>
+            <a href="{{ url_for('logout') }}" class="nav-link">Sair</a>
+            {% if is_admin() %}
+              <a href="{{ url_for('admin_page') }}" class="nav-link flex items-center gap-1.5">
+                <span>Admin</span>
+                <i class="fas fa-shield-alt text-sm text-emerald-500"></i>
+              </a>
+            {% endif %}
+          {% else %}
+            <a href="{{ url_for('login') }}" class="nav-link">Entrar</a>
+            <a href="{{ url_for('register') }}" class="btn-primary">
+              <i class="fas fa-rocket text-sm"></i>
+              Começar Agora
             </a>
           {% endif %}
-        {% else %}
-          <a href="{{ url_for('login') }}" class="nav-link">Login</a>
-          <a href="{{ url_for('register') }}" class="nav-link">Registrar</a>
-        {% endif %}
+        </div>
+
+        <!-- Botão Mobile -->
+        <button @click="mobileMenuOpen = !mobileMenuOpen" 
+                class="md:hidden p-2 -mr-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+          <i class="fas fa-bars text-gray-600 dark:text-gray-400 text-xl"></i>
+        </button>
       </div>
+    </nav>
+  </header>
 
-      <!-- Botão para Menu Mobile -->
-      <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition">
-        <i class="fas fa-bars text-gray-600 text-xl"></i>
-      </button>
-    </div>
-  </nav>
-
-  <!-- Menu Mobile -->
-  <div class="md:hidden fixed inset-0 bg-black/20 z-40 backdrop-blur-sm"
+  <!-- Menu Mobile Moderno -->
+  <div class="md:hidden fixed inset-0 bg-black/30 z-50 backdrop-blur-sm"
        x-show="mobileMenuOpen"
-       x-transition
-       @click="mobileMenuOpen = false"
-       style="display: none;"></div>
-
-  <div class="md:hidden fixed top-20 right-0 w-64 bg-white/95 h-full border-l border-gray-100 z-50 py-6 px-5 shadow-xl"
-       x-show="mobileMenuOpen"
-       x-transition
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:leave="transition ease-in duration-150"
+       x-cloak
        style="display: none;">
-    <div class="flex flex-col space-y-4">
-      <a href="{{ url_for('index') }}" class="nav-link-mobile flex items-center space-x-2">
-        <i class="fas fa-home text-gray-400 w-5"></i>
-        <span>Home</span>
-      </a>
-      {% if is_logged_in() %}
-        <a href="{{ url_for('list_notes') }}" class="nav-link-mobile flex items-center space-x-2">
-          <i class="fas fa-file-alt text-gray-400 w-5"></i>
-          <span>Minhas Notas</span>
-        </a>
-        <a href="{{ url_for('logout') }}" class="nav-link-mobile flex items-center space-x-2">
-          <i class="fas fa-sign-out-alt text-gray-400 w-5"></i>
-          <span>Sair</span>
-        </a>
-        {% if is_admin() %}
-          <a href="{{ url_for('admin_page') }}" class="nav-link-mobile flex items-center space-x-2">
-            <i class="fas fa-shield-alt text-gray-400 w-5"></i>
-            <span>Admin</span>
+    <div class="absolute top-4 right-4 w-[calc(100%-2rem)] max-w-xs bg-white dark:bg-gray-800 
+                rounded-xl shadow-2xl p-4" @click.outside="mobileMenuOpen = false">
+      <div class="flex flex-col gap-2">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-gray-900 dark:text-white">Menu</h3>
+          <button @click="mobileMenuOpen = false" class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+            <i class="fas fa-times text-lg"></i>
+          </button>
+        </div>
+        
+        {% if is_logged_in() %}
+          <a href="{{ url_for('list_notes') }}" class="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg">
+            <i class="fas fa-file-alt w-5 text-gray-400"></i>
+            <span>Minhas Notas</span>
+          </a>
+          <a href="{{ url_for('logout') }}" class="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg">
+            <i class="fas fa-sign-out-alt w-5 text-gray-400"></i>
+            <span>Sair</span>
+          </a>
+        {% else %}
+          <a href="{{ url_for('login') }}" class="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg">
+            <i class="fas fa-sign-in-alt w-5 text-gray-400"></i>
+            <span>Entrar</span>
+          </a>
+          <a href="{{ url_for('register') }}" class="btn-primary w-full justify-center mt-2">
+            Criar Conta
           </a>
         {% endif %}
-      {% else %}
-        <a href="{{ url_for('login') }}" class="nav-link-mobile flex items-center space-x-2">
-          <i class="fas fa-sign-in-alt text-gray-400 w-5"></i>
-          <span>Login</span>
-        </a>
-        <a href="{{ url_for('register') }}" class="nav-link-mobile flex items-center space-x-2">
-          <i class="fas fa-user-plus text-gray-400 w-5"></i>
-          <span>Registrar</span>
-        </a>
-      {% endif %}
+      </div>
     </div>
   </div>
 
   <!-- Conteúdo Principal -->
-  <div class="pt-20 flex-grow">
-    <main class="max-w-7xl mx-auto px-4 py-8">
-      <!-- Exibição de Mensagens Flash -->
+  <main class="flex-grow pt-2">
+    <div class=" sm:px-1200 ">
+      <!-- Mensagens Flash Modernas -->
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-          <div class="mb-6">
+          <div class="space-y-3 mb-8">
             {% for category, msg in messages %}
-              <div class="p-3 mb-2 rounded
-                {% if category == 'success' %}bg-green-100 text-green-800
-                {% elif category == 'danger' %}bg-red-100 text-red-800
-                {% elif category == 'warning' %}bg-yellow-100 text-yellow-800
-                {% else %}bg-gray-100 text-gray-800{% endif %}">
-                {{ msg }}
+              <div class="alert alert-{{ 'success' if category == 'success' else 'error' }}">
+                <i class="fas {{ 'fa-check-circle' if category == 'success' else 'fa-exclamation-triangle' }} 
+                   text-[0.9em] mt-0.5"></i>
+                <div>{{ msg }}</div>
               </div>
             {% endfor %}
           </div>
@@ -174,73 +202,79 @@
       {% endwith %}
 
       {% block content %}{% endblock %}
-    </main>
-  </div>
+    </div>
+  </main>
 
-  <!-- Rodapé (Footer) -->
-  <footer class="bg-gradient-to-b from-gray-900 to-indigo-900 text-gray-300 mt-24 flex-none">
-    <div class="max-w-7xl mx-auto px-4 py-12">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-        <!-- Seção Logo -->
-        <div class="space-y-4">
-          <a href="#" class="flex items-center space-x-3">
+  <!-- Rodapé Moderno -->
+  <footer class="bg-gray-950 text-gray-300 ">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 border-b border-gray-800 pb-12">
+        <!-- Branding -->
+        <div class="space-y-5">
+          <div class="flex items-center gap-3">
             <div class="p-2 bg-indigo-600 rounded-lg">
               <i class="fas fa-graduation-cap text-white text-xl"></i>
             </div>
-            <span class="text-2xl font-bold text-white">CAIOBOOK</span>
-          </a>
-          <p class="text-sm leading-relaxed">
-            Sua plataforma educacional de alta performance para estudos avançados.
+            <span class="text-xl font-bold text-white">CAIOBOOK</span>
+          </div>
+          <p class="text-sm leading-relaxed text-gray-400">
+            Aprendizado inteligente para mentes curiosas.
           </p>
         </div>
-        <!-- Links Úteis -->
-        <div>
-          <h4 class="text-white font-semibold mb-4">Links Rápidos</h4>
-          <ul class="space-y-2">
-            <li><a href="#" class="hover:text-indigo-400 transition">Sobre Nós</a></li>
-            <li><a href="#" class="hover:text-indigo-400 transition">Planos</a></li>
-            <li><a href="#" class="hover:text-indigo-400 transition">Tutoriais</a></li>
-            <li><a href="#" class="hover:text-indigo-400 transition">Suporte</a></li>
+
+        <!-- Links -->
+        <div class="space-y-4">
+          <h4 class="text-sm font-semibold text-gray-200 uppercase">Produto</h4>
+          <ul class="space-y-3">
+            <li><a href="#" class="text-sm hover:text-indigo-400 transition">Recursos</a></li>
+            <li><a href="#" class="text-sm hover:text-indigo-400 transition">Planos</a></li>
+            <li><a href="#" class="text-sm hover:text-indigo-400 transition">Documentação</a></li>
           </ul>
         </div>
-        <!-- Contato -->
-        <div>
-          <h4 class="text-white font-semibold mb-4">Contato</h4>
-          <ul class="space-y-2">
-            <li class="flex items-center space-x-2">
-              <i class="fas fa-envelope text-indigo-400"></i>
-              <span>caaaaaaaaaaaa</span>
-            </li>
-            <li class="flex items-center space-x-2">
-              <i class="fas fa-phone text-indigo-400"></i>
-              <span>(82) 99999-9999</span>
-            </li>
+
+        <!-- Suporte -->
+        <div class="space-y-4">
+          <h4 class="text-sm font-semibold text-gray-200 uppercase">Suporte</h4>
+          <ul class="space-y-3">
+            <li><a href="#" class="text-sm hover:text-indigo-400 transition">Central de Ajuda</a></li>
+            <li><a href="#" class="text-sm hover:text-indigo-400 transition">Contato</a></li>
+            <li><a href="#" class="text-sm hover:text-indigo-400 transition">Status</a></li>
+          </ul>
+        </div>
+
+        <!-- Legal -->
+        <div class="space-y-4">
+          <h4 class="text-sm font-semibold text-gray-200 uppercase">Legal</h4>
+          <ul class="space-y-3">
+            <li><a href="#" class="text-sm hover:text-indigo-400 transition">Privacidade</a></li>
+            <li><a href="#" class="text-sm hover:text-indigo-400 transition">Termos</a></li>
+            <li><a href="#" class="text-sm hover:text-indigo-400 transition">Segurança</a></li>
           </ul>
         </div>
       </div>
-      <div class="border-t border-gray-800 mt-8 pt-8 text-center">
-        <p class="text-sm">
-          &copy; {{ current_year }} CAIOBOOK. Todos os direitos reservados.<br>
-          <a href="#" class="hover:text-indigo-400">Política de Privacidade</a> | 
-          <a href="#" class="hover:text-indigo-400">Termos de Serviço</a>
+
+      <!-- Copyright -->
+      <div class="pt-8 text-center">
+        <p class="text-sm text-gray-500">
+          © {{ current_year }} CAIOBOOK. Todos os direitos reservados.
         </p>
       </div>
     </div>
   </footer>
 
-  <!-- Scripts: AlpineJS, AOS, Prism.js -->
+  <!-- Scripts -->
   <script src="https://unpkg.com/alpinejs" defer></script>
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      if (typeof AOS !== 'undefined') {
-        AOS.init({ duration: 600, once: true });
-      }
-      if (typeof Prism !== 'undefined') {
-        Prism.highlightAll();
-      }
-    });
+    document.addEventListener('alpine:init', () => {
+      Alpine.store('darkMode', {
+        on: window.matchMedia('(prefers-color-scheme: dark)').matches,
+
+        toggle() {
+          this.on = !this.on
+          document.documentElement.classList.toggle('dark', this.on)
+        }
+      })
+    })
   </script>
 
   {% block socket_config %}{% endblock %}
