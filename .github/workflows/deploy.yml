@@ -20,8 +20,9 @@ jobs:
 
       - name: Install dependencies (optional)
         run: |
-          python -m venv venv
+          python3 -m venv venv
           source venv/bin/activate
+          pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Deploy via SSH
@@ -29,11 +30,29 @@ jobs:
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
-          password: ${{ secrets.SERVER_PASSWORD  }}
+          password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-            script: |
-            cd /www/wwwroot/Caiobook
-            git pull origin main
+            # Acesse o diretório do projeto
+            cd /www/wwwroot/caiobook || { echo "Diretório não encontrado"; exit 1; }
+            
+            # Verifica se é um repositório Git e atualiza o código
+            if [ -d ".git" ]; then
+              git pull origin main
+            else
+              echo "Diretório não é um repositório git. Verifique se o código foi clonado corretamente."
+            fi
+            
+            # Cria o ambiente virtual se não existir
+            if [ ! -d "venv" ]; then
+              python3 -m venv venv
+            fi
+            
+            # Ativa o ambiente virtual
             source venv/bin/activate
+            
+            # Atualiza o pip e instala as dependências
+            pip install --upgrade pip
             pip install -r requirements.txt
-            sudo systemctl restart meu_notion.service
+            
+            # Reinicia o serviço da aplicação (verifique se o nome está correto)
+            sudo systemctl restart meu_notion.service || echo "Serviço não encontrado, verifique o nome do serviço."
