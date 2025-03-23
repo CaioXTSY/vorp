@@ -10,49 +10,52 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out repository
+      - name: Check out repository (runner)
         uses: actions/checkout@v3
 
-      - name: Set up Python
+      - name: Set up Python (runner)
         uses: actions/setup-python@v4
         with:
           python-version: '3.13.2'
 
-      - name: Install dependencies (optional)
+      # Essa etapa é opcional e roda no runner (não no servidor)
+      - name: Install dependencies on runner (optional)
         run: |
           python3 -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Deploy via SSH
+      - name: Deploy via SSH to server
         uses: appleboy/ssh-action@v0.1.8
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-            # Acesse o diretório do projeto
-            cd /www/wwwroot/caiobook || { echo "Diretório não encontrado"; exit 1; }
+            # Acesse o diretório do projeto no servidor
+            cd /www/wwwroot/Caiobook || { echo "Diretório /www/wwwroot/Caiobook não encontrado"; exit 1; }
             
-            # Verifica se é um repositório Git e atualiza o código
+            # Se for um repositório git, atualiza o código; caso contrário, informe o usuário.
             if [ -d ".git" ]; then
+              echo "Repositório encontrado. Atualizando..."
               git pull origin main
             else
-              echo "Diretório não é um repositório git. Verifique se o código foi clonado corretamente."
+              echo "Não é um repositório git. Verifique se o código foi clonado corretamente."
             fi
             
             # Cria o ambiente virtual se não existir
             if [ ! -d "venv" ]; then
+              echo "Criando ambiente virtual..."
               python3 -m venv venv
             fi
             
-            # Ativa o ambiente virtual
+            # Ativa o ambiente virtual e instala as dependências
+            echo "Ativando ambiente virtual e instalando dependências..."
             source venv/bin/activate
-            
-            # Atualiza o pip e instala as dependências
             pip install --upgrade pip
             pip install -r requirements.txt
             
-            # Reinicia o serviço da aplicação (verifique se o nome está correto)
-            sudo systemctl restart meu_notion.service || echo "Serviço não encontrado, verifique o nome do serviço."
+            # Reinicia o serviço (verifique se o nome do serviço está correto)
+            echo "Reiniciando o serviço..."
+            sudo systemctl restart meu_notion.service || echo "Serviço 'meu_notion.service' não encontrado."
