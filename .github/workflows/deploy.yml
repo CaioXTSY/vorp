@@ -1,0 +1,39 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13.2'
+
+      - name: Install dependencies (optional)
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd /home/seu_usuario/meu_notion  # Atualize com o caminho do seu projeto no servidor
+            git pull origin main
+            source venv/bin/activate
+            pip install -r requirements.txt
+            # Reinicie o serviço gerenciador (systemd ou outro)
+            sudo systemctl restart meu_notion.service
