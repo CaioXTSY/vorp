@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br" x-data="{ mobileMenuOpen: false, isScrolled: false }" 
       :class="{ 'dark': darkMode }" class="scroll-smooth">
-
-
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='/vorp.png') }}">
 <head>
   <meta charset="UTF-8">
   <title>{% block title %}{% endblock %}</title>
@@ -223,8 +220,8 @@
   </div>
 
   <!-- Conteúdo Principal -->
-  <main class="flex-grow pt-2">
-    <div class=" sm:px-1200 ">
+  <main class="flex-grow pt-10"> <!-- Alterado de pt-2 para pt-20 para adicionar distância do header -->
+    <div class="sm:px-1200"></div>
       <!-- Mensagens Flash Modernas -->
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
