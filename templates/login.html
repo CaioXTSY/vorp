@@ -1,41 +1,75 @@
 {% extends "base.html" %}
-{% block title %}Login - CAIOBOOK{% endblock %}
+{% block title %}Login - Vorp{% endblock %}
 
 {% block content %}
-<div class="flex items-center justify-center min-h-screen">
-  <div class="w-full max-w-lg p-8 bg-white rounded-xl shadow-lg" data-aos="fade-up">
-    <div class="text-center mb-6">
-      <h1 class="text-3xl font-extrabold text-gray-900">Bem-vindo de volta</h1>
-      <p class="mt-2 text-sm text-gray-600">Faça login com sua conta</p>
-    </div>
-    <form class="space-y-6" method="POST" action="{{ url_for('login') }}">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-      <div class="grid grid-cols-1 gap-6">
-        <div>
-          <label for="username" class="block text-sm font-medium text-gray-700">Usuário</label>
-          <input id="username" name="username" type="text" required
-                 class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-        </div>
-        <div>
-          <label for="password" class="block text-sm font-medium text-gray-700">Senha</label>
-          <input id="password" name="password" type="password" required
-                 class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-        </div>
+<div class="min-h-screen bg-gradient-to-br from-gray-900 to-indigo-900 flex items-center justify-center px-4">
+  <div class="w-full max-w-md relative">
+    <!-- Efeito de fundo glassmorphism -->
+    <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 backdrop-blur-2xl rounded-3xl shadow-2xl"></div>
+    
+    <div class="relative bg-gray-800/50 border border-cyan-500/20 rounded-3xl p-8 shadow-2xl backdrop-blur-xl"
+         data-aos="fade-up"
+         data-aos-delay="200">
+      <div class="text-center mb-8">
+        <!-- Logo animada -->
+        <a href="{{ url_for('index') }}" class="inline-flex items-center space-x-3 group mb-6">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center 
+                      shadow-lg shadow-cyan-500/20 transition-transform group-hover:rotate-12">
+            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+          <span class="text-2xl font-bold bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent">
+            VORP
+          </span>
+        </a>
+        
+        <h1 class="text-3xl font-bold text-white mb-2">Bem-vindo de volta</h1>
+        <p class="text-cyan-200">Faça login para continuar</p>
       </div>
-      <div>
+
+      <form class="space-y-6" method="POST" action="{{ url_for('login') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        
+        <div class="space-y-5">
+          <!-- Input com efeito de foco gradiente -->
+          <div class="group">
+            <label for="username" class="block text-sm font-medium text-cyan-200 mb-2">Usuário</label>
+            <div class="relative rounded-xl bg-gradient-to-r from-cyan-500/10 to-blue-600/10 p-px hover:from-cyan-500/20 hover:to-blue-600/20 transition-all">
+              <input id="username" name="username" type="text" required
+                     class="w-full px-4 py-3 bg-gray-900/50 border border-transparent rounded-[11px] text-white placeholder-cyan-200/50 
+                            focus:outline-none focus:ring-2 focus:ring-cyan-500/50">
+            </div>
+          </div>
+
+          <div class="group">
+            <label for="password" class="block text-sm font-medium text-cyan-200 mb-2">Senha</label>
+            <div class="relative rounded-xl bg-gradient-to-r from-cyan-500/10 to-blue-600/10 p-px hover:from-cyan-500/20 hover:to-blue-600/20 transition-all">
+              <input id="password" name="password" type="password" required
+                     class="w-full px-4 py-3 bg-gray-900/50 border border-transparent rounded-[11px] text-white placeholder-cyan-200/50 
+                            focus:outline-none focus:ring-2 focus:ring-cyan-500/50">
+            </div>
+          </div>
+        </div>
+
         <button type="submit"
-                class="w-full flex justify-center py-3 px-4 border border-transparent rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition">
+                class="w-full py-3.5 px-6 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 rounded-xl
+                       text-white font-semibold shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/30
+                       transform transition-all duration-300 hover:scale-[1.02] active:scale-95">
           Entrar
         </button>
+      </form>
+
+      <div class="mt-6 text-center">
+        <p class="text-sm text-cyan-300">
+          Não tem uma conta?
+          <a href="{{ url_for('register') }}" 
+             class="font-semibold text-white hover:text-cyan-300 transition-colors">
+            Crie agora
+          </a>
+        </p>
       </div>
-    </form>
-    <div class="text-center mt-4">
-      <p class="text-sm text-gray-600">
-        Não tem uma conta?
-        <a href="{{ url_for('register') }}" class="font-medium text-indigo-600 hover:text-indigo-500">
-          Registrar-se
-        </a>
-      </p>
     </div>
   </div>
 </div>
