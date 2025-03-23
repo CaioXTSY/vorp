@@ -34,7 +34,7 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
             # Acesse o diretório do projeto no servidor
-            cd /www/wwwroot/Caiobook || { echo "Diretório /www/wwwroot/Caiobook não encontrado"; exit 1; }
+            cd /www/wwwroot/caiobook || { echo "Diretório /www/wwwroot/Caiobook não encontrado"; exit 1; }
             
             # Se for um repositório git, atualiza o código; caso contrário, informe o usuário.
             if [ -d ".git" ]; then
