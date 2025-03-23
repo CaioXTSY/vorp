@@ -29,11 +29,11 @@ jobs:
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
+          password: ${{ secrets.SERVER_PASSWORD  }}
           script: |
-            cd /home/seu_usuario/meu_notion  # Atualize com o caminho do seu projeto no servidor
+            script: |
+            cd /www/wwwroot/Caiobook
             git pull origin main
             source venv/bin/activate
             pip install -r requirements.txt
-            # Reinicie o serviço gerenciador (systemd ou outro)
             sudo systemctl restart meu_notion.service
