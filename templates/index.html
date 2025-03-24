@@ -20,6 +20,17 @@
     animation: gradient-wave 12s ease infinite;
   }
 </style>
+<style>
+  .feature-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(34, 211, 238, 0.3);
+  }
+
+  .pricing-card:hover {
+    transform: perspective(1000px) rotateY(10deg);
+    transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  }
+</style>
 
 
 <section class="relative bg-gradient-to-br from-gray-900 to-indigo-900 overflow-hidden">
@@ -213,6 +224,8 @@
   </div>
 </section>
 
+
+
 <!-- AI Assistant Section -->
 <section class="relative py-24 bg-gradient-to-br from-gray-900 to-cyan-900 overflow-hidden">
   <div class="max-w-7xl mx-auto px-4">
@@ -302,7 +315,6 @@
 <!-- Pricing Section -->
 <section class="relative py-24 bg-white dark:bg-gray-900">
   <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-    <!-- Free Tier -->
     <div class="card group relative bg-white dark:bg-gray-800 p-8 rounded-3xl border-2 border-gray-200/80 dark:border-gray-700 
                 hover:border-cyan-400/40 transition-all duration-300 hover:shadow-xl hover:-translate-y-2"
          data-aos="zoom-in" data-aos-delay="200">
@@ -395,6 +407,21 @@
   </div>
 </section>
 
+<section class="cta py-24 bg-gradient-to-br from-cyan-500 to-blue-500 text-white">
+  <div class="max-w-7xl mx-auto px-4 text-center">
+    <h2 class="text-4xl md:text-5xl font-bold mb-6">Pronto para transformar suas anotações?</h2>
+    <p class="text-xl mb-10">Comece grátis agora e descubra o poder do Vorp no seu dia a dia.</p>
+    <a href="{{ url_for('admin_page') }}" class="btn-primary inline-flex items-center justify-center gap-2 px-8 py-4 text-lg font-semibold 
+                    bg-white text-cyan-600 rounded-xl transition-all transform hover:-translate-y-1 shadow-lg hover:shadow-2xl
+                    hover:scale-105 duration-300">
+      Comece Grátis
+      <i class="fas fa-arrow-right text-sm group-hover:translate-x-1 transition-transform"></i>
+    </a>
+  </div>
+</section>
+
+
+
 {% block scripts %}
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
@@ -443,3 +470,14 @@
 </style>
 {% endblock %}
 {% endblock %}
+
+<script>
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      e.preventDefault();
+      document.querySelector(this.getAttribute('href')).scrollIntoView({
+        behavior: 'smooth'
+      });
+    });
+  });
+</script>
