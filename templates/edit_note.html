@@ -603,6 +603,70 @@
     color: #e2e8f0;
     border: 1px solid rgba(14, 165, 233, 0.3);
   }
+  
+  /* Menu de contexto IA */
+  .ai-context-menu {
+    position: absolute;
+    display: none;
+    background: #232842;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(14, 165, 233, 0.2);
+    z-index: 100;
+    min-width: 200px;
+    overflow: hidden;
+  }
+  
+  .ai-menu-header {
+    padding: 0.75rem 1rem;
+    background: linear-gradient(to right, #0891b2, #2563eb);
+    color: white;
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+  
+  .ai-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+  }
+  
+  .ai-menu-item:hover {
+    background: rgba(14, 165, 233, 0.2);
+  }
+  
+  .ai-menu-item i {
+    width: 1rem;
+    text-align: center;
+  }
+  
+  /* Processamento IA */
+  .ai-processing {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+  }
+  
+  .ai-spinner {
+    font-size: 2rem;
+    color: #0ea5e9;
+  }
+  
+  .ai-processing-text {
+    color: white;
+    font-size: 1rem;
+  }
 </style>
 {% endblock %}
 
@@ -700,6 +764,10 @@
             <button type="button" class="toolbar-btn" data-action="quote" title="Citação">
               <i class="fas fa-quote-right"></i>
             </button>
+            <!-- Novo botão de IA -->
+            <button type="button" class="toolbar-btn" data-action="ai-menu" title="Assistente IA">
+              <i class="fas fa-robot"></i>
+            </button>
           </div>
           <textarea id="markdownEditor" name="content" class="editor-textarea" placeholder="Digite seu markdown aqui...">{{ note.content }}</textarea>
         </div>
@@ -713,6 +781,26 @@
         </div>
       </div>
     </form>
+    
+    <!-- Menu de contexto IA -->
+    <div id="aiContextMenu" class="ai-context-menu">
+      <div class="ai-menu-header">Assistente IA</div>
+      <button type="button" class="ai-menu-item" data-action="summarize">
+        <i class="fas fa-compress-alt"></i> Resumir texto
+      </button>
+      <button type="button" class="ai-menu-item" data-action="enhance">
+        <i class="fas fa-magic"></i> Melhorar escrita
+      </button>
+      <button type="button" class="ai-menu-item" data-action="format-md">
+        <i class="fas fa-code"></i> Formatar como Markdown
+      </button>
+      <button type="button" class="ai-menu-item" data-action="explain">
+        <i class="fas fa-question-circle"></i> Explicar conceito
+      </button>
+      <button type="button" class="ai-menu-item" data-action="translate">
+        <i class="fas fa-language"></i> Traduzir
+      </button>
+    </div>
   </div>
   
   <!-- Edit Title Modal -->
@@ -805,6 +893,23 @@
         <button type="button" class="btn-control btn-primary" id="closeLinkBtn">
           Fechar
         </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal de processamento IA -->
+  <div id="aiProcessingModal" class="modal-backdrop">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title">Processando com IA</div>
+      </div>
+      <div class="modal-body">
+        <div class="ai-processing">
+          <div class="ai-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+          </div>
+          <div class="ai-processing-text">Processando seu texto...</div>
+        </div>
       </div>
     </div>
   </div>
@@ -1062,9 +1167,7 @@
       }
     });
     
-    // Synchronized scrolling between editor and preview
     const syncScroll = () => {
-      // Calculate the scroll percentage in the source element
       const sourceScrollTop = markdownEditor.scrollTop;
       const sourceScrollHeight = markdownEditor.scrollHeight - markdownEditor.clientHeight;
       const scrollPercentage = sourceScrollTop / sourceScrollHeight;
@@ -1116,6 +1219,120 @@
         }
       }, 10);
     });
+    
+    // Menu de contexto IA
+    const aiContextMenu = document.getElementById('aiContextMenu');
+    const aiProcessingModal = document.getElementById('aiProcessingModal');
+    let selectedText = '';
+    let selectionStart = 0;
+    let selectionEnd = 0;
+
+    // Mostrar menu de contexto no clique direito
+    markdownEditor.addEventListener('contextmenu', function(e) {
+      const selection = markdownEditor.value.substring(markdownEditor.selectionStart, markdownEditor.selectionEnd);
+      
+      if (selection && selection.trim() !== '') {
+        e.preventDefault();
+        selectedText = selection;
+        selectionStart = markdownEditor.selectionStart;
+        selectionEnd = markdownEditor.selectionEnd;
+        
+        // Posicionar o menu no local do clique
+        aiContextMenu.style.display = 'block';
+        aiContextMenu.style.left = `${e.pageX}px`;
+        aiContextMenu.style.top = `${e.pageY}px`;
+        
+        // Verificar se o menu está fora da tela
+        const rect = aiContextMenu.getBoundingClientRect();
+        if (rect.right > window.innerWidth) {
+          aiContextMenu.style.left = `${e.pageX - rect.width}px`;
+        }
+        if (rect.bottom > window.innerHeight) {
+          aiContextMenu.style.top = `${e.pageY - rect.height}px`;
+        }
+      }
+    });
+
+    // Mostrar menu de IA ao clicar no botão da barra de ferramentas
+    document.querySelector('.toolbar-btn[data-action="ai-menu"]').addEventListener('click', function(e) {
+      const selection = markdownEditor.value.substring(markdownEditor.selectionStart, markdownEditor.selectionEnd);
+      
+      if (selection && selection.trim() !== '') {
+        selectedText = selection;
+        selectionStart = markdownEditor.selectionStart;
+        selectionEnd = markdownEditor.selectionEnd;
+        
+        // Posicionar o menu abaixo do botão
+        const rect = this.getBoundingClientRect();
+        aiContextMenu.style.display = 'block';
+        aiContextMenu.style.left = `${rect.left}px`;
+        aiContextMenu.style.top = `${rect.bottom + 5}px`;
+      } else {
+        alert('Selecione algum texto para usar as funcionalidades de IA');
+      }
+    });
+
+    // Fechar menu ao clicar fora
+    document.addEventListener('click', function(e) {
+      if (!aiContextMenu.contains(e.target) && e.target !== document.querySelector('.toolbar-btn[data-action="ai-menu"]')) {
+        aiContextMenu.style.display = 'none';
+      }
+    });
+
+    // Processar ações do menu
+    document.querySelectorAll('.ai-menu-item').forEach(item => {
+      item.addEventListener('click', function() {
+        const action = this.getAttribute('data-action');
+        processAiAction(action, selectedText);
+        aiContextMenu.style.display = 'none';
+      });
+    });
+
+    // Função para processar ações de IA
+    async function processAiAction(action, text) {
+      // Mostrar modal de processamento
+      aiProcessingModal.classList.add('active');
+      
+      try {
+        const response = await fetch('/process-ai', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+          },
+          body: JSON.stringify({
+            action: action,
+            text: text
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error('Erro na resposta da API');
+        }
+        
+        const data = await response.json();
+        
+        if (data.result) {
+          // Substituir o texto selecionado pelo resultado
+          const newText = markdownEditor.value.substring(0, selectionStart) + 
+                          data.result + 
+                          markdownEditor.value.substring(selectionEnd);
+          
+          markdownEditor.value = newText;
+          updatePreview();
+          
+          // Ajustar a seleção para o novo texto
+          markdownEditor.focus();
+          markdownEditor.setSelectionRange(selectionStart, selectionStart + data.result.length);
+        }
+      } catch (error) {
+        console.error('Erro ao processar ação de IA:', error);
+        alert('Ocorreu um erro ao processar sua solicitação. Tente novamente.');
+      } finally {
+        // Esconder modal de processamento
+        aiProcessingModal.classList.remove('active');
+      }
+    }
   });
 </script>
 {% endblock %}

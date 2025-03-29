@@ -581,6 +581,63 @@ def datetime_format(value, format="%d/%m/%Y %H:%M"):
 # INIT
 # -----------------------------------------------------------------------------
 
+
+@app.route('/process-ai', methods=['POST'])
+@csrf.exempt
+def process_ai():
+    data = request.get_json()
+    action = data.get('action', '')
+    text = data.get('text', '')
+    
+    if not text or not action:
+        return jsonify({'error': 'Parâmetros inválidos'}), 400
+    
+    try:
+        client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        
+        # Definir o prompt com base na ação
+        if action == 'summarize':
+            system_prompt = "Você é um assistente especializado em resumir textos. Crie um resumo conciso do texto fornecido, mantendo os pontos principais."
+            user_prompt = f"Resuma o seguinte texto em um parágrafo curto:\n\n{text}"
+        
+        elif action == 'enhance':
+            system_prompt = "Você é um assistente especializado em melhorar a escrita. Melhore o texto fornecido, mantendo o significado original, mas tornando-o mais claro, conciso e profissional."
+            user_prompt = f"Melhore o seguinte texto:\n\n{text}"
+        
+        elif action == 'format-md':
+            system_prompt = "Você é um assistente especializado em formatação Markdown. Converta o texto fornecido em Markdown bem formatado, adicionando cabeçalhos, listas, ênfase e outros elementos apropriados."
+            user_prompt = f"Converta o seguinte texto em Markdown bem formatado:\n\n{text}"
+        
+        elif action == 'explain':
+            system_prompt = "Você é um assistente educacional especializado em explicar conceitos de forma clara e concisa."
+            user_prompt = f"Explique o seguinte conceito de forma simples e educativa:\n\n{text}"
+        
+        elif action == 'translate':
+            system_prompt = "Você é um assistente especializado em tradução. Traduza o texto fornecido para o português, mantendo o significado e o tom originais."
+            user_prompt = f"Traduza o seguinte texto para o português:\n\n{text}"
+        
+        else:
+            return jsonify({'error': 'Ação não reconhecida'}), 400
+        
+        # Fazer a chamada para a API
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",  # Ou outro modelo disponível
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=0.4,
+            max_tokens=2000
+        )
+        
+        result = response.choices[0].message.content
+        return jsonify({'result': result})
+    
+    except Exception as e:
+        app.logger.error(f"OpenAI API Error: {str(e)}")
+        return jsonify({'error': 'Erro ao processar a solicitação'}), 500
+    
+    
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
