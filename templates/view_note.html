@@ -722,18 +722,20 @@
     margin-top: 1rem;
   }
   
+  /* Correção para o campo de compartilhamento */
   .share-link-input {
     flex: 1;
     padding: 0.75rem 1rem;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 0.5rem 0 0 0.5rem;
     font-size: 0.875rem;
-    color: white;
-    background-color: rgba(255, 255, 255, 0.05);
+    color: #e2e8f0; /* Cor clara para o texto */
+    background-color: #1a1f32; /* Fundo escuro para contraste */
   }
   
+  /* Garantir que o botão de copiar tenha cores adequadas */
   .copy-btn {
-    background-color: var(--primary);
+    background-color: #0070f3; /* Azul mais visível */
     color: white;
     border: none;
     padding: 0 1rem;
@@ -743,7 +745,7 @@
   }
   
   .copy-btn:hover {
-    background-color: var(--primary-dark);
+    background-color: #0051a8;
   }
   
   .share-options {
@@ -879,6 +881,7 @@
         </button>
         {% endif %}
       </div>
+    </div>
   </div>
 </section>
 
