@@ -12,12 +12,6 @@ document.addEventListener('DOMContentLoaded', function() {
         hljs.highlightBlock(block);
     });
 
-    // Inicializar SimpleMDE para todos os textareas com a classe 'markdown-editor'
-    var textareas = document.querySelectorAll('.markdown-editor');
-    textareas.forEach(function(textarea) {
-        new SimpleMDE({ element: textarea });
-    });
-
     // Dark Mode Toggle
     const themeToggle = document.getElementById('themeToggle');
     if(themeToggle) {
@@ -47,24 +41,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchResultsModal = new bootstrap.Modal(document.getElementById('searchResultsModal'));
     const searchResultsList = document.getElementById('searchResultsList');
 
-    // Carregar dados para Fuse.js
-    let disciplines = [];
-    {% for period, files in periods.items() %}
-        {% for file in files %}
-            disciplines.push({
-                title: "{{ file.replace('.md', '') }}",
-                period: "{{ period }}",
-                url: "{{ url_for('view_markdown', period_name=period, md_file=file) }}"
-            });
-        {% endfor %}
-    {% endfor %}
-
     const options = {
         keys: ['title', 'period'],
         threshold: 0.3
     };
-
-    const fuse = new Fuse(disciplines, options);
 
     searchForm.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -90,7 +70,6 @@ document.addEventListener('DOMContentLoaded', function() {
         searchResultsModal.show();
     });
 
-    // SocketIO para Notificações em Tempo Real
     const socket = io();
 
     socket.on('connect', () => {

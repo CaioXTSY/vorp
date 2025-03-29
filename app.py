@@ -595,7 +595,6 @@ def process_ai():
     try:
         client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
         
-        # Definir o prompt com base na ação
         if action == 'summarize':
             system_prompt = "Você é um assistente especializado em resumir textos. Crie um resumo conciso do texto fornecido, mantendo os pontos principais."
             user_prompt = f"Resuma o seguinte texto em um parágrafo curto:\n\n{text}"
@@ -637,7 +636,7 @@ def process_ai():
         app.logger.error(f"OpenAI API Error: {str(e)}")
         return jsonify({'error': 'Erro ao processar a solicitação'}), 500
     
-    
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
