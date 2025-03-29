@@ -1,220 +1,970 @@
 {% extends "base.html" %}
-{% block title %}Editar {{ note.title }} - CAIOBOOK{% endblock %}
 
-{% block content %}
-<section class="max-w-4xl mx-auto px-4 py-8">
-  <!-- Cabeçalho -->
-  <header class="mb-8">
-    <h1 class="text-3xl font-bold text-gray-900">
-      Editando: {{ note.title }}
-    </h1>
-    <p class="mt-2">
-      <a href="{{ url_for('view_note', note_id=note.id) }}" class="text-blue-500 hover:underline">
-        <i class="fa fa-eye mr-1"></i> Visualizar Nota
-      </a>
-    </p>
-  </header>
+{% block title %}Editar Nota{% endblock %}
 
-  <!-- Formulário de Edição -->
-  <form id="note-form" method="POST" action="{{ url_for('edit_note', note_id=note.id) }}">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-    <!-- Campo Título -->
-    <div class="mb-4">
-      <label for="title" class="block text-lg font-semibold text-gray-700">Título</label>
-      <input type="text" name="title" id="title" value="{{ note.title }}" required
-             class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
-    </div>
-
-    <!-- Editor Vditor -->
-    <div class="mb-4">
-      <!-- Div onde o Vditor será renderizado -->
-      <div id="vditor" style="height: 500px;"></div>
-      <!-- Campo oculto que receberá o conteúdo do editor para envio -->
-      <textarea name="content" id="content" style="display: none;"></textarea>
-    </div>
-
-    <!-- Botões de Ação -->
-    <div class="flex flex-wrap justify-end space-x-4 border-t pt-4">
-      <a href="{{ url_for('view_note', note_id=note.id) }}"
-         class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition">
-         Cancelar
-      </a>
-
-      <!-- Botão para alternar entre pública e privada -->
-      <button id="toggle-public-btn" type="button"
-              class="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 transition">
-        {% if note.is_public %}
-          Tornar Privada
-        {% else %}
-          Tornar Pública
-        {% endif %}
-      </button>
-
-      <!-- Botão de Compartilhar, exibido somente se a nota for pública -->
-      {% if note.is_public %}
-      <button id="share-button" type="button"
-              class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
-        <i class="fa fa-share-alt mr-2"></i> Compartilhar
-      </button>
-      {% endif %}
-
-      <!-- Botão de Salvar -->
-      <button type="submit"
-              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
-         <i class="fa fa-save mr-2"></i> Salvar
-      </button>
-    </div>
-  </form>
-</section>
-
-<!-- INCLUDES -->
-<!-- Font Awesome para ícones -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<!-- Vditor CSS e JS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vditor/dist/index.min.css">
-<script src="https://cdn.jsdelivr.net/npm/vditor/dist/index.min.js"></script>
-
-<!-- Estilos customizados para aumentar os botões da toolbar -->
+{% block head_extras %}
+<!-- Markdown parser -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 <style>
-  /* Aumenta o tamanho dos ícones e o padding dos botões da toolbar do Vditor */
-  .vditor-toolbar .vditor-toolbar__item {
-    font-size: 2rem; /* Aumenta o tamanho do ícone */
-    padding: 0.75rem; /* Aumenta o espaçamento interno */
+  /* Main container styles */
+  body {
+    background: #181c2c;
+    font-family: 'Inter', sans-serif;
+    color: #334155;
+  }
+  .editor-container {
+    background: linear-gradient(to bottom right, #f0f9ff, #e0f2fe);
+    border-radius: 1rem;
+    box-shadow: 0 4px 20px rgba(14, 165, 233, 0.15);
+    overflow: hidden;
+  }
+  
+  .dark .editor-container {
+    background: linear-gradient(to bottom right, #0f172a, #1e293b);
+  }
+  
+  /* Header and controls */
+  .editor-header {
+    background: linear-gradient(to right, #0891b2, #2563eb);
+    padding: 1rem;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .editor-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  
+  /* Control bar */
+  .editor-controls {
+    background: linear-gradient(to right, rgba(6, 182, 212, 0.1), rgba(59, 130, 246, 0.1));
+    padding: 1rem;
+    border-bottom: 1px solid rgba(14, 165, 233, 0.2);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+  }
+  
+  .dark .editor-controls {
+    background: linear-gradient(to right, rgba(6, 182, 212, 0.2), rgba(59, 130, 246, 0.2));
+    border-color: rgba(14, 165, 233, 0.3);
+  }
+  
+  /* Buttons */
+  .btn-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+  }
+  
+  .btn-primary {
+    background: linear-gradient(to right, #0891b2, #2563eb);
+    color: white;
+    box-shadow: 0 2px 5px rgba(14, 165, 233, 0.3);
+  }
+  
+  .btn-primary:hover {
+    box-shadow: 0 4px 8px rgba(14, 165, 233, 0.4);
+    transform: translateY(-1px);
+  }
+  
+  .btn-secondary {
+    background: rgba(255, 255, 255, 0.8);
+    color: #0891b2;
+    border: 1px solid rgba(14, 165, 233, 0.3);
+  }
+  
+  .dark .btn-secondary {
+    background: rgba(30, 41, 59, 0.8);
+    color: #22d3ee;
+    border-color: rgba(14, 165, 233, 0.4);
+  }
+  
+  .btn-secondary:hover {
+    background: rgba(14, 165, 233, 0.1);
+    transform: translateY(-1px);
+  }
+  
+  /* Toggle switch */
+  .toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .toggle-label {
+    font-size: 0.875rem;
+    color: #0e7490;
+  }
+  
+  .dark .toggle-label {
+    color: #22d3ee;
+  }
+  
+  .toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 3rem;
+    height: 1.5rem;
+  }
+  
+  .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #cbd5e1;
+    transition: .4s;
+    border-radius: 1.5rem;
+  }
+  
+  .toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 1.1rem;
+    width: 1.1rem;
+    left: 0.2rem;
+    bottom: 0.2rem;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+  }
+  
+  input:checked + .toggle-slider {
+    background: linear-gradient(to right, #0891b2, #2563eb);
+  }
+  
+  input:checked + .toggle-slider:before {
+    transform: translateX(1.5rem);
+  }
+  
+  /* Editor layout */
+  .editor-layout {
+    display: flex;
+    height: 600px;
+  }
+  
+  @media (max-width: 768px) {
+    .editor-layout {
+      flex-direction: column;
+      height: auto;
+    }
+    
+    .editor-section, .preview-section {
+      width: 100% !important;
+      height: 400px !important;
+    }
+  }
+  
+  /* Editor section */
+  .editor-section {
+    width: 50%;
+    border-right: 1px solid rgba(14, 165, 233, 0.2);
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .dark .editor-section {
+    border-color: rgba(14, 165, 233, 0.3);
+  }
+  
+  .editor-toolbar {
+    background: rgba(255, 255, 255, 0.5);
+    padding: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    border-bottom: 1px solid rgba(14, 165, 233, 0.2);
+  }
+  
+  .dark .editor-toolbar {
+    background: rgba(30, 41, 59, 0.5);
+    border-color: rgba(14, 165, 233, 0.3);
+  }
+  
+  .toolbar-btn {
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.375rem;
+    color: #0891b2;
+    background: rgba(255, 255, 255, 0.8);
+    transition: all 0.2s;
+  }
+  
+  .dark .toolbar-btn {
+    color: #22d3ee;
+    background: rgba(30, 41, 59, 0.8);
+  }
+  
+  .toolbar-btn:hover {
+    background: rgba(14, 165, 233, 0.1);
+    color: #0e7490;
+    transform: translateY(-1px);
+  }
+  
+  .dark .toolbar-btn:hover {
+    background: rgba(14, 165, 233, 0.2);
+    color: #38bdf8;
+  }
+  
+  .editor-textarea {
+    flex: 1;
+    padding: 1rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.875rem;
+    resize: none;
+    border: none;
+    outline: none;
+    background: rgba(255, 255, 255, 0.7);
+    color: #334155;
+  }
+  
+  .dark .editor-textarea {
+    background: rgba(15, 23, 42, 0.7);
+    color: #e2e8f0;
+  }
+  
+  /* Preview section */
+  .preview-section {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .preview-header {
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.5);
+    border-bottom: 1px solid rgba(14, 165, 233, 0.2);
+    font-weight: 600;
+    color: #0e7490;
+  }
+  
+  .dark .preview-header {
+    background: rgba(30, 41, 59, 0.5);
+    border-color: rgba(14, 165, 233, 0.3);
+    color: #22d3ee;
+  }
+  
+  .preview-content {
+    flex: 1;
+    padding: 1rem;
+    overflow: auto;
+    background: rgba(255, 255, 255, 0.7);
+  }
+  
+  .dark .preview-content {
+    background: rgba(15, 23, 42, 0.7);
+  }
+  
+  /* Navigation buttons */
+  .nav-buttons {
+    position: fixed;
+    right: 2rem;
+    bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    z-index: 10;
+  }
+  
+  .nav-btn {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: linear-gradient(to right, #0891b2, #2563eb);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3);
+    transition: all 0.2s;
+  }
+  
+  .nav-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(14, 165, 233, 0.4);
+  }
+  
+  /* Modal styles */
+  .modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  
+  .modal-backdrop.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  
+  .modal-container {
+    background: white;
+    border-radius: 1rem;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    transform: translateY(20px);
+    transition: transform 0.3s;
+  }
+  
+  .dark .modal-container {
+    background: #1e293b;
+  }
+  
+  .modal-backdrop.active .modal-container {
+    transform: translateY(0);
+  }
+  
+  .modal-header {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(14, 165, 233, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .dark .modal-header {
+    border-color: rgba(14, 165, 233, 0.3);
+  }
+  
+  .modal-title {
+    font-weight: 600;
+    font-size: 1.25rem;
+    color: #0e7490;
+  }
+  
+  .dark .modal-title {
+    color: #22d3ee;
+  }
+  
+  .modal-close {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(14, 165, 233, 0.1);
+    color: #0e7490;
+    transition: all 0.2s;
+  }
+  
+  .dark .modal-close {
+    background: rgba(14, 165, 233, 0.2);
+    color: #22d3ee;
+  }
+  
+  .modal-close:hover {
+    background: rgba(14, 165, 233, 0.2);
+    transform: rotate(90deg);
+  }
+  
+  .modal-body {
+    padding: 1rem;
+  }
+  
+  .modal-footer {
+    padding: 1rem;
+    border-top: 1px solid rgba(14, 165, 233, 0.2);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+  
+  .dark .modal-footer {
+    border-color: rgba(14, 165, 233, 0.3);
+  }
+  
+  /* Form elements */
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #0e7490;
+  }
+  
+  .dark .form-label {
+    color: #22d3ee;
+  }
+  
+  .form-input {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(14, 165, 233, 0.3);
+    background: white;
+    color: #334155;
+    transition: all 0.2s;
+  }
+  
+  .dark .form-input {
+    background: #0f172a;
+    color: #e2e8f0;
+    border-color: rgba(14, 165, 233, 0.4);
+  }
+  
+  .form-input:focus {
+    border-color: #0ea5e9;
+    box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
+    outline: none;
+  }
+  
+  /* Markdown content styles */
+  .markdown-content h1 {
+    font-size: 1.875rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: #0e7490;
+  }
+  
+  .dark .markdown-content h1 {
+    color: #22d3ee;
+  }
+  
+  .markdown-content h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: #0e7490;
+  }
+  
+  .dark .markdown-content h2 {
+    color: #22d3ee;
+  }
+  
+  .markdown-content h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #0e7490;
+  }
+  
+  .dark .markdown-content h3 {
+    color: #22d3ee;
+  }
+  
+  .markdown-content p {
+    margin-bottom: 1rem;
+    color: #334155;
+  }
+  
+  .dark .markdown-content p {
+    color: #cbd5e1;
+  }
+  
+  .markdown-content ul {
+    list-style-type: disc;
+    padding-left: 1.25rem;
+    margin-bottom: 1rem;
+    color: #334155;
+  }
+  
+  .dark .markdown-content ul {
+    color: #cbd5e1;
+  }
+  
+  .markdown-content ol {
+    list-style-type: decimal;
+    padding-left: 1.25rem;
+    margin-bottom: 1rem;
+    color: #334155;
+  }
+  
+  .dark .markdown-content ol {
+    color: #cbd5e1;
+  }
+  
+  .markdown-content blockquote {
+    border-left: 4px solid #0ea5e9;
+    padding-left: 1rem;
+    font-style: italic;
+    margin-bottom: 1rem;
+    color: #475569;
+    background-color: rgba(14, 165, 233, 0.05);
+    padding: 0.5rem 1rem;
+    border-radius: 0 0.5rem 0.5rem 0;
+  }
+  
+  .dark .markdown-content blockquote {
+    border-left-color: #0ea5e9;
+    color: #94a3b8;
+    background-color: rgba(14, 165, 233, 0.1);
+  }
+  
+  .markdown-content pre {
+    background-color: #f1f5f9;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    border: 1px solid rgba(14, 165, 233, 0.1);
+  }
+  
+  .dark .markdown-content pre {
+    background-color: #0f172a;
+    border-color: rgba(14, 165, 233, 0.2);
+  }
+  
+  .markdown-content code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.875rem;
+    background-color: #f1f5f9;
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    color: #0e7490;
+  }
+  
+  .dark .markdown-content code {
+    background-color: #0f172a;
+    color: #22d3ee;
+  }
+  
+  .markdown-content pre code {
+    background-color: transparent;
+    padding: 0;
+  }
+  
+  .markdown-content a {
+    color: #0ea5e9;
+    text-decoration: none;
+    transition: all 0.2s;
+    border-bottom: 1px dashed rgba(14, 165, 233, 0.3);
+  }
+  
+  .markdown-content a:hover {
+    color: #0284c7;
+    border-bottom: 1px solid rgba(14, 165, 233, 0.6);
+  }
+  
+  .dark .markdown-content a {
+    color: #38bdf8;
+  }
+  
+  .dark .markdown-content a:hover {
+    color: #7dd3fc;
+  }
+  
+  .markdown-content img {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(14, 165, 233, 0.1);
+  }
+  
+  .markdown-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(14, 165, 233, 0.1);
+  }
+  
+  .markdown-content th,
+  .markdown-content td {
+    border: 1px solid #e2e8f0;
+    padding: 0.75rem;
+    color: #334155;
+  }
+  
+  .dark .markdown-content th,
+  .dark .markdown-content td {
+    border-color: #334155;
+    color: #cbd5e1;
+  }
+  
+  .markdown-content th {
+    background: linear-gradient(to right, rgba(6, 182, 212, 0.1), rgba(59, 130, 246, 0.1));
+    color: #0e7490;
+    font-weight: 600;
+  }
+  
+  .dark .markdown-content th {
+    background: linear-gradient(to right, rgba(6, 182, 212, 0.2), rgba(59, 130, 246, 0.2));
+    color: #22d3ee;
   }
 </style>
+{% endblock %}
 
-<!-- Script de Inicialização do Vditor e funcionalidades dos botões -->
+{% block content %}
+<div class="container mx-auto px-4 py-8 mt-16">
+  <!-- Main editor container -->
+  <div class="editor-container">
+    <!-- Editor header with title -->
+    <div class="editor-header">
+      <div class="editor-title">{{ note.title }}</div>
+      <button type="button" id="editTitleBtn" class="btn-control btn-secondary">
+        <i class="fas fa-edit"></i>
+        <span>Editar Título</span>
+      </button>
+    </div>
+    
+    <!-- Controls bar -->
+    <form method="POST" action="{{ url_for('edit_note', note_id=note.id) }}" id="noteForm">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="title" id="titleInput" value="{{ note.title }}">
+      
+      <div class="editor-controls">
+        <!-- Save button -->
+        <button type="submit" class="btn-control btn-primary">
+          <i class="fas fa-save"></i>
+          <span>Salvar</span>
+        </button>
+        
+        <!-- Cancel button -->
+        <a href="{{ url_for('view_note', note_id=note.id) }}" class="btn-control btn-secondary">
+          <i class="fas fa-times"></i>
+          <span>Cancelar</span>
+        </a>
+        
+        <!-- Public toggle -->
+        <div class="toggle-container">
+          <span class="toggle-label">Tornar Público</span>
+          <label class="toggle-switch">
+            <input type="checkbox" name="is_public" id="is_public" {% if note.is_public %}checked{% endif %}>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        
+        <!-- Help button -->
+        <button type="button" id="helpBtn" class="btn-control btn-secondary ml-auto">
+          <i class="fas fa-question-circle"></i>
+          <span>Ajuda</span>
+        </button>
+      </div>
+      
+      <!-- Editor layout -->
+      <div class="editor-layout">
+        <!-- Editor section -->
+        <div class="editor-section">
+          <div class="editor-toolbar">
+            <button type="button" class="toolbar-btn" data-action="bold" title="Negrito">
+              <i class="fas fa-bold"></i>
+            </button>
+            <button type="button" class="toolbar-btn" data-action="italic" title="Itálico">
+              <i class="fas fa-italic"></i>
+            </button>
+            <button type="button" class="toolbar-btn" data-action="h1" title="Título 1">
+              <i class="fas fa-heading"></i>1
+            </button>
+            <button type="button" class="toolbar-btn" data-action="h2" title="Título 2">
+              <i class="fas fa-heading"></i>2
+            </button>
+            <button type="button" class="toolbar-btn" data-action="h3" title="Título 3">
+              <i class="fas fa-heading"></i>3
+            </button>
+            <button type="button" class="toolbar-btn" data-action="ul" title="Lista não ordenada">
+              <i class="fas fa-list-ul"></i>
+            </button>
+            <button type="button" class="toolbar-btn" data-action="ol" title="Lista ordenada">
+              <i class="fas fa-list-ol"></i>
+            </button>
+            <button type="button" class="toolbar-btn" data-action="link" title="Link">
+              <i class="fas fa-link"></i>
+            </button>
+            <button type="button" class="toolbar-btn" data-action="code" title="Bloco de código">
+              <i class="fas fa-code"></i>
+            </button>
+            <button type="button" class="toolbar-btn" data-action="quote" title="Citação">
+              <i class="fas fa-quote-right"></i>
+            </button>
+          </div>
+          <textarea id="markdownEditor" name="content" class="editor-textarea" placeholder="Digite seu markdown aqui...">{{ note.content }}</textarea>
+        </div>
+        
+        <!-- Preview section -->
+        <div class="preview-section">
+          <div class="preview-header">
+            Visualização
+          </div>
+          <div id="markdownPreview" class="preview-content markdown-content"></div>
+        </div>
+      </div>
+    </form>
+  </div>
+  
+  <!-- Navigation buttons -->
+  <div class="nav-buttons">
+    <button type="button" id="navUp" class="nav-btn" title="Ir para o topo">
+      <i class="fas fa-chevron-up"></i>
+    </button>
+    <button type="button" id="navDown" class="nav-btn" title="Ir para o final">
+      <i class="fas fa-chevron-down"></i>
+    </button>
+  </div>
+  
+  <!-- Edit Title Modal -->
+  <div id="titleModal" class="modal-backdrop">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title">Editar Título</div>
+        <button type="button" class="modal-close" id="closeTitleModal">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="modalTitleInput" class="form-label">Título da Nota</label>
+          <input type="text" id="modalTitleInput" class="form-input" value="{{ note.title }}">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-control btn-secondary" id="cancelTitleModal">
+          Cancelar
+        </button>
+        <button type="button" class="btn-control btn-primary" id="saveTitleModal">
+          Salvar
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Help Modal -->
+  <div id="helpModal" class="modal-backdrop">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title">Ajuda do Editor</div>
+        <button type="button" class="modal-close" id="closeHelpModal">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <h3 class="text-lg font-semibold mb-3 text-cyan-700 dark:text-cyan-400">Atalhos de Markdown</h3>
+        <ul class="space-y-2 mb-4">
+          <li><strong># Título</strong> - Cria um título de nível 1</li>
+          <li><strong>## Subtítulo</strong> - Cria um título de nível 2</li>
+          <li><strong>**texto**</strong> - Deixa o texto em negrito</li>
+          <li><strong>*texto*</strong> - Deixa o texto em itálico</li>
+          <li><strong>- item</strong> - Cria um item de lista não ordenada</li>
+          <li><strong>1. item</strong> - Cria um item de lista ordenada</li>
+          <li><strong>[texto](url)</strong> - Cria um link</li>
+          <li><strong>```código```</strong> - Cria um bloco de código</li>
+          <li><strong>> texto</strong> - Cria uma citação</li>
+        </ul>
+        
+        <h3 class="text-lg font-semibold mb-3 text-cyan-700 dark:text-cyan-400">Dicas</h3>
+        <ul class="space-y-2">
+          <li>Use a barra de ferramentas para formatar seu texto rapidamente</li>
+          <li>Visualize suas alterações em tempo real no painel da direita</li>
+          <li>Salve frequentemente para não perder seu trabalho</li>
+          <li>Use os botões de navegação para se mover rapidamente pelo documento</li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-control btn-primary" id="closeHelpBtn">
+          Entendi
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    // Inicializa o Vditor no elemento "vditor"
-    const vditor = new Vditor('vditor', {
-        height: 500,
-        mode: 'ir', // Modo Instant Rendering (visualização em tempo real)
-        lang: "pt_BR",
-        toolbar: [
-            "bold", "italic", "strike",
-            "list", "ordered-list",
-            "quote", "code",
-            "link", "image", "table",
-            "undo", "redo",
-            "preview", "fullscreen"
-        ],
-        value: {{ note.content|tojson|safe }}
+    const markdownEditor = document.getElementById('markdownEditor');
+    const markdownPreview = document.getElementById('markdownPreview');
+    const titleInput = document.getElementById('titleInput');
+    const modalTitleInput = document.getElementById('modalTitleInput');
+    const titleModal = document.getElementById('titleModal');
+    const helpModal = document.getElementById('helpModal');
+    const navUp = document.getElementById('navUp');
+    const navDown = document.getElementById('navDown');
+    
+    // Configure marked
+    marked.setOptions({
+      breaks: true,
+      gfm: true,
     });
-
-    // Ao enviar o formulário, atualiza o campo oculto com o conteúdo atual do editor
-    document.getElementById('note-form').addEventListener('submit', function() {
-      document.getElementById('content').value = vditor.getValue();
+    
+    // Initial render of preview
+    updatePreview();
+    
+    // Update preview when markdown changes
+    markdownEditor.addEventListener('input', updatePreview);
+    
+    function updatePreview() {
+      try {
+        const rawHtml = marked.parse(markdownEditor.value || '');
+        markdownPreview.innerHTML = rawHtml;
+      } catch (error) {
+        console.error('Error parsing markdown:', error);
+        markdownPreview.innerHTML = '<p>Error rendering preview</p>';
+      }
+    }
+    
+    // Toolbar actions
+    const toolbarButtons = document.querySelectorAll('.toolbar-btn');
+    toolbarButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const action = this.getAttribute('data-action');
+        insertText(action);
+      });
     });
-
-    // Mapeamento dos tooltips do inglês para o português
-    const tooltipMapping = {
-      "Bold": "Negrito",
-      "Italic": "Itálico",
-      "Strike": "Tachado",
-      "List": "Lista",
-      "Ordered List": "Lista Ordenada",
-      "Quote": "Citação",
-      "Code": "Código",
-      "Link": "Link",
-      "Image": "Imagem",
-      "Table": "Tabela",
-      "Undo": "Desfazer",
-      "Redo": "Refazer",
-      "Preview": "Visualizar",
-      "Fullscreen": "Tela Cheia"
-    };
-
-    // Aguarda um curto delay para garantir que a toolbar foi renderizada e atualiza os tooltips
-    setTimeout(function() {
-      document.querySelectorAll('.vditor-toolbar__item').forEach(function(btn) {
-        let currentTitle = btn.getAttribute('title');
-        if (currentTitle && tooltipMapping[currentTitle]) {
-          btn.setAttribute('title', tooltipMapping[currentTitle]);
-        }
-      });
-    }, 500);
-
-    // Função para copiar o link para a área de transferência e notificar o usuário
-    function copyLink(link) {
-      navigator.clipboard.writeText(link)
-        .then(() => alert("Link copiado para a área de transferência!"))
-        .catch(() => alert("Falha ao copiar o link."));
+    
+    function insertText(action) {
+      const textarea = markdownEditor;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const selectedText = textarea.value.substring(start, end);
+      let before = '';
+      let after = '';
+      
+      switch (action) {
+        case 'bold':
+          before = '**';
+          after = '**';
+          break;
+        case 'italic':
+          before = '*';
+          after = '*';
+          break;
+        case 'h1':
+          before = '# ';
+          break;
+        case 'h2':
+          before = '## ';
+          break;
+        case 'h3':
+          before = '### ';
+          break;
+        case 'ul':
+          before = '- ';
+          break;
+        case 'ol':
+          before = '1. ';
+          break;
+        case 'link':
+          before = '[';
+          after = '](url)';
+          break;
+        case 'code':
+          before = '```\n';
+          after = '\n```';
+          break;
+        case 'quote':
+          before = '> ';
+          break;
+      }
+      
+      const newText = textarea.value.substring(0, start) + before + selectedText + after + textarea.value.substring(end);
+      textarea.value = newText;
+      
+      // Set cursor position after the operation
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(start + before.length, end + before.length);
+        updatePreview();
+      }, 0);
     }
-
-    // Função para alternar a visibilidade da nota
-    function togglePublic() {
-      fetch("{{ url_for('toggle_public', note_id=note.id) }}", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": "{{ csrf_token() }}"
-        }
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.status === "success") {
-          // Se a resposta contiver share_link, a nota ficou pública
-          if (data.share_link) {
-            document.getElementById("toggle-public-btn").innerText = "Tornar Privada";
-            // Cria ou atualiza o botão de compartilhar
-            let shareBtn = document.getElementById("share-button");
-            if (!shareBtn) {
-              shareBtn = document.createElement("button");
-              shareBtn.id = "share-button";
-              shareBtn.type = "button";
-              shareBtn.className = "px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition";
-              shareBtn.innerHTML = '<i class="fa fa-share-alt mr-2"></i> Compartilhar';
-              // Insere o botão após o botão de toggle
-              const toggleBtn = document.getElementById("toggle-public-btn");
-              toggleBtn.parentNode.insertBefore(shareBtn, toggleBtn.nextSibling);
-            }
-            // Atualiza o evento de clique para copiar o link
-            document.getElementById("share-button").onclick = function() {
-              copyLink(data.share_link);
-            };
-          } else {
-            // Se não houver share_link, a nota ficou privada
-            document.getElementById("toggle-public-btn").innerText = "Tornar Pública";
-            const shareBtn = document.getElementById("share-button");
-            if (shareBtn) {
-              shareBtn.remove();
-            }
-          }
-        } else {
-          alert(data.message || "Ocorreu um erro ao alternar a visibilidade da nota.");
-        }
-      })
-      .catch(error => {
-        console.error("Erro:", error);
-        alert("Erro na comunicação com o servidor.");
-      });
-    }
-
-    // Associa o evento de clique do botão de alternar visibilidade
-    document.getElementById("toggle-public-btn").addEventListener("click", togglePublic);
-
-    // Se o botão de compartilhar já existir, associa seu evento de clique para copiar o link
-    const shareButton = document.getElementById("share-button");
-    if (shareButton) {
-      shareButton.addEventListener("click", function() {
-        // Faz uma nova requisição para garantir que o link esteja atualizado
-        fetch("{{ url_for('toggle_public', note_id=note.id) }}", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": "{{ csrf_token() }}"
-          }
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.status === "success" && data.share_link) {
-            copyLink(data.share_link);
-          }
-        });
-      });
-    }
+    
+    // Navigation buttons
+    navUp.addEventListener('click', function() {
+      markdownEditor.scrollTop = 0;
+      markdownPreview.scrollTop = 0;
+    });
+    
+    navDown.addEventListener('click', function() {
+      markdownEditor.scrollTop = markdownEditor.scrollHeight;
+      markdownPreview.scrollTop = markdownPreview.scrollHeight;
+    });
+    
+    // Title modal
+    document.getElementById('editTitleBtn').addEventListener('click', function() {
+      titleModal.classList.add('active');
+    });
+    
+    document.getElementById('closeTitleModal').addEventListener('click', function() {
+      titleModal.classList.remove('active');
+    });
+    
+    document.getElementById('cancelTitleModal').addEventListener('click', function() {
+      titleModal.classList.remove('active');
+    });
+    
+    document.getElementById('saveTitleModal').addEventListener('click', function() {
+      const newTitle = modalTitleInput.value.trim();
+      if (newTitle) {
+        titleInput.value = newTitle;
+        document.querySelector('.editor-title').textContent = newTitle;
+        titleModal.classList.remove('active');
+      }
+    });
+    
+    // Help modal
+    document.getElementById('helpBtn').addEventListener('click', function() {
+      helpModal.classList.add('active');
+    });
+    
+    document.getElementById('closeHelpModal').addEventListener('click', function() {
+      helpModal.classList.remove('active');
+    });
+    
+    document.getElementById('closeHelpBtn').addEventListener('click', function() {
+      helpModal.classList.remove('active');
+    });
+    
+    // Close modals when clicking outside
+    window.addEventListener('click', function(event) {
+      if (event.target === titleModal) {
+        titleModal.classList.remove('active');
+      }
+      if (event.target === helpModal) {
+        helpModal.classList.remove('active');
+      }
+    });
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+      // Save with Ctrl+S
+      if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        document.getElementById('noteForm').submit();
+      }
+      
+      // Close modals with Escape
+      if (e.key === 'Escape') {
+        titleModal.classList.remove('active');
+        helpModal.classList.remove('active');
+      }
+    });
   });
 </script>
 {% endblock %}
