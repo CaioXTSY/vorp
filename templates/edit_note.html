@@ -5,24 +5,23 @@
 {% block head_extras %}
 <!-- Markdown parser -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
-<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
 <style>
-  /* Main container styles */
-  body {
-    background: #181c2c;
-    font-family: 'Inter', sans-serif;
-    color: #334155;
-  }
-  .editor-container {
-    background: linear-gradient(to bottom right, #f0f9ff, #e0f2fe);
-    border-radius: 1rem;
-    box-shadow: 0 4px 20px rgba(14, 165, 233, 0.15);
-    overflow: hidden;
+  /* Page background */
+  .page-container {
+    background-color: #181c2c;
+    min-height: 100vh;
+    padding: 2rem 1rem;
   }
   
-  .dark .editor-container {
-    background: linear-gradient(to bottom right, #0f172a, #1e293b);
+  /* Main container styles */
+  .editor-container {
+    background: linear-gradient(to bottom right, #1e2235, #232842);
+    border-radius: 1rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    max-width: 1200px;
+    margin: 0 auto;
   }
   
   /* Header and controls */
@@ -38,11 +37,15 @@
   .editor-title {
     font-size: 1.25rem;
     font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 70%;
   }
   
   /* Control bar */
   .editor-controls {
-    background: linear-gradient(to right, rgba(6, 182, 212, 0.1), rgba(59, 130, 246, 0.1));
+    background: rgba(14, 165, 233, 0.1);
     padding: 1rem;
     border-bottom: 1px solid rgba(14, 165, 233, 0.2);
     display: flex;
@@ -51,9 +54,16 @@
     align-items: center;
   }
   
-  .dark .editor-controls {
-    background: linear-gradient(to right, rgba(6, 182, 212, 0.2), rgba(59, 130, 246, 0.2));
-    border-color: rgba(14, 165, 233, 0.3);
+  @media (max-width: 640px) {
+    .editor-controls {
+      justify-content: center;
+    }
+    
+    .toggle-container {
+      width: 100%;
+      justify-content: center;
+      margin-top: 0.5rem;
+    }
   }
   
   /* Buttons */
@@ -80,19 +90,13 @@
   }
   
   .btn-secondary {
-    background: rgba(255, 255, 255, 0.8);
-    color: #0891b2;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
     border: 1px solid rgba(14, 165, 233, 0.3);
   }
   
-  .dark .btn-secondary {
-    background: rgba(30, 41, 59, 0.8);
-    color: #22d3ee;
-    border-color: rgba(14, 165, 233, 0.4);
-  }
-  
   .btn-secondary:hover {
-    background: rgba(14, 165, 233, 0.1);
+    background: rgba(14, 165, 233, 0.2);
     transform: translateY(-1px);
   }
   
@@ -105,11 +109,7 @@
   
   .toggle-label {
     font-size: 0.875rem;
-    color: #0e7490;
-  }
-  
-  .dark .toggle-label {
-    color: #22d3ee;
+    color: white;
   }
   
   .toggle-switch {
@@ -132,7 +132,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #cbd5e1;
+    background-color: #334155;
     transition: .4s;
     border-radius: 1.5rem;
   }
@@ -171,8 +171,33 @@
     
     .editor-section, .preview-section {
       width: 100% !important;
-      height: 400px !important;
+      height: 350px !important;
     }
+    
+    .mobile-tabs {
+      display: flex !important;
+    }
+  }
+  
+  /* Mobile tabs */
+  .mobile-tabs {
+    display: none;
+    border-bottom: 1px solid rgba(14, 165, 233, 0.2);
+    background: rgba(14, 165, 233, 0.1);
+  }
+  
+  .mobile-tab {
+    flex: 1;
+    text-align: center;
+    padding: 0.75rem;
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  
+  .mobile-tab.active {
+    background: rgba(14, 165, 233, 0.2);
+    border-bottom: 2px solid #0ea5e9;
   }
   
   /* Editor section */
@@ -183,50 +208,50 @@
     flex-direction: column;
   }
   
-  .dark .editor-section {
-    border-color: rgba(14, 165, 233, 0.3);
+  /* Preview section */
+  .preview-section {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  @media (max-width: 768px) {
+    .editor-section, .preview-section {
+      display: none;
+    }
+    
+    .editor-section.active, .preview-section.active {
+      display: flex;
+    }
   }
   
   .editor-toolbar {
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(14, 165, 233, 0.05);
     padding: 0.5rem;
     display: flex;
     flex-wrap: wrap;
     gap: 0.25rem;
     border-bottom: 1px solid rgba(14, 165, 233, 0.2);
-  }
-  
-  .dark .editor-toolbar {
-    background: rgba(30, 41, 59, 0.5);
-    border-color: rgba(14, 165, 233, 0.3);
+    overflow-x: auto;
   }
   
   .toolbar-btn {
-    width: 2rem;
+    min-width: 2rem;
     height: 2rem;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 0.375rem;
-    color: #0891b2;
-    background: rgba(255, 255, 255, 0.8);
+    color: white;
+    background: rgba(14, 165, 233, 0.1);
     transition: all 0.2s;
-  }
-  
-  .dark .toolbar-btn {
-    color: #22d3ee;
-    background: rgba(30, 41, 59, 0.8);
+    flex-shrink: 0;
   }
   
   .toolbar-btn:hover {
-    background: rgba(14, 165, 233, 0.1);
-    color: #0e7490;
-    transform: translateY(-1px);
-  }
-  
-  .dark .toolbar-btn:hover {
     background: rgba(14, 165, 233, 0.2);
-    color: #38bdf8;
+    color: white;
+    transform: translateY(-1px);
   }
   
   .editor-textarea {
@@ -237,74 +262,24 @@
     resize: none;
     border: none;
     outline: none;
-    background: rgba(255, 255, 255, 0.7);
-    color: #334155;
-  }
-  
-  .dark .editor-textarea {
-    background: rgba(15, 23, 42, 0.7);
+    background: #1a1f32;
     color: #e2e8f0;
-  }
-  
-  /* Preview section */
-  .preview-section {
-    width: 50%;
-    display: flex;
-    flex-direction: column;
   }
   
   .preview-header {
     padding: 0.75rem 1rem;
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(14, 165, 233, 0.05);
     border-bottom: 1px solid rgba(14, 165, 233, 0.2);
     font-weight: 600;
-    color: #0e7490;
-  }
-  
-  .dark .preview-header {
-    background: rgba(30, 41, 59, 0.5);
-    border-color: rgba(14, 165, 233, 0.3);
-    color: #22d3ee;
+    color: white;
   }
   
   .preview-content {
     flex: 1;
     padding: 1rem;
     overflow: auto;
-    background: rgba(255, 255, 255, 0.7);
-  }
-  
-  .dark .preview-content {
-    background: rgba(15, 23, 42, 0.7);
-  }
-  
-  /* Navigation buttons */
-  .nav-buttons {
-    position: fixed;
-    right: 2rem;
-    bottom: 2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    z-index: 10;
-  }
-  
-  .nav-btn {
-    width: 3rem;
-    height: 3rem;
-    border-radius: 50%;
-    background: linear-gradient(to right, #0891b2, #2563eb);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3);
-    transition: all 0.2s;
-  }
-  
-  .nav-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(14, 165, 233, 0.4);
+    background: #1a1f32;
+    color: #e2e8f0;
   }
   
   /* Modal styles */
@@ -314,7 +289,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
@@ -331,17 +306,14 @@
   }
   
   .modal-container {
-    background: white;
+    background: #232842;
     border-radius: 1rem;
     width: 90%;
     max-width: 500px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
     transform: translateY(20px);
     transition: transform 0.3s;
-  }
-  
-  .dark .modal-container {
-    background: #1e293b;
+    border: 1px solid rgba(14, 165, 233, 0.2);
   }
   
   .modal-backdrop.active .modal-container {
@@ -356,18 +328,10 @@
     align-items: center;
   }
   
-  .dark .modal-header {
-    border-color: rgba(14, 165, 233, 0.3);
-  }
-  
   .modal-title {
     font-weight: 600;
     font-size: 1.25rem;
-    color: #0e7490;
-  }
-  
-  .dark .modal-title {
-    color: #22d3ee;
+    color: white;
   }
   
   .modal-close {
@@ -378,13 +342,10 @@
     align-items: center;
     justify-content: center;
     background: rgba(14, 165, 233, 0.1);
-    color: #0e7490;
+    color: white;
     transition: all 0.2s;
-  }
-  
-  .dark .modal-close {
-    background: rgba(14, 165, 233, 0.2);
-    color: #22d3ee;
+    border: none;
+    cursor: pointer;
   }
   
   .modal-close:hover {
@@ -394,6 +355,7 @@
   
   .modal-body {
     padding: 1rem;
+    color: #e2e8f0;
   }
   
   .modal-footer {
@@ -402,10 +364,6 @@
     display: flex;
     justify-content: flex-end;
     gap: 0.5rem;
-  }
-  
-  .dark .modal-footer {
-    border-color: rgba(14, 165, 233, 0.3);
   }
   
   /* Form elements */
@@ -417,11 +375,7 @@
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 500;
-    color: #0e7490;
-  }
-  
-  .dark .form-label {
-    color: #22d3ee;
+    color: white;
   }
   
   .form-input {
@@ -429,15 +383,9 @@
     padding: 0.75rem;
     border-radius: 0.5rem;
     border: 1px solid rgba(14, 165, 233, 0.3);
-    background: white;
-    color: #334155;
-    transition: all 0.2s;
-  }
-  
-  .dark .form-input {
-    background: #0f172a;
+    background: #1a1f32;
     color: #e2e8f0;
-    border-color: rgba(14, 165, 233, 0.4);
+    transition: all 0.2s;
   }
   
   .form-input:focus {
@@ -451,41 +399,25 @@
     font-size: 1.875rem;
     font-weight: 700;
     margin-bottom: 1rem;
-    color: #0e7490;
-  }
-  
-  .dark .markdown-content h1 {
-    color: #22d3ee;
+    color: white;
   }
   
   .markdown-content h2 {
     font-size: 1.5rem;
     font-weight: 700;
     margin-bottom: 0.75rem;
-    color: #0e7490;
-  }
-  
-  .dark .markdown-content h2 {
-    color: #22d3ee;
+    color: white;
   }
   
   .markdown-content h3 {
     font-size: 1.25rem;
     font-weight: 700;
     margin-bottom: 0.5rem;
-    color: #0e7490;
-  }
-  
-  .dark .markdown-content h3 {
-    color: #22d3ee;
+    color: white;
   }
   
   .markdown-content p {
     margin-bottom: 1rem;
-    color: #334155;
-  }
-  
-  .dark .markdown-content p {
     color: #cbd5e1;
   }
   
@@ -493,10 +425,6 @@
     list-style-type: disc;
     padding-left: 1.25rem;
     margin-bottom: 1rem;
-    color: #334155;
-  }
-  
-  .dark .markdown-content ul {
     color: #cbd5e1;
   }
   
@@ -504,10 +432,6 @@
     list-style-type: decimal;
     padding-left: 1.25rem;
     margin-bottom: 1rem;
-    color: #334155;
-  }
-  
-  .dark .markdown-content ol {
     color: #cbd5e1;
   }
   
@@ -516,20 +440,14 @@
     padding-left: 1rem;
     font-style: italic;
     margin-bottom: 1rem;
-    color: #475569;
-    background-color: rgba(14, 165, 233, 0.05);
+    color: #94a3b8;
+    background-color: rgba(14, 165, 233, 0.1);
     padding: 0.5rem 1rem;
     border-radius: 0 0.5rem 0.5rem 0;
   }
   
-  .dark .markdown-content blockquote {
-    border-left-color: #0ea5e9;
-    color: #94a3b8;
-    background-color: rgba(14, 165, 233, 0.1);
-  }
-  
   .markdown-content pre {
-    background-color: #f1f5f9;
+    background-color: #131629;
     padding: 1rem;
     border-radius: 0.5rem;
     margin-bottom: 1rem;
@@ -537,23 +455,13 @@
     border: 1px solid rgba(14, 165, 233, 0.1);
   }
   
-  .dark .markdown-content pre {
-    background-color: #0f172a;
-    border-color: rgba(14, 165, 233, 0.2);
-  }
-  
   .markdown-content code {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 0.875rem;
-    background-color: #f1f5f9;
+    background-color: #131629;
     padding: 0.125rem 0.25rem;
     border-radius: 0.25rem;
-    color: #0e7490;
-  }
-  
-  .dark .markdown-content code {
-    background-color: #0f172a;
-    color: #22d3ee;
+    color: white;
   }
   
   .markdown-content pre code {
@@ -562,23 +470,15 @@
   }
   
   .markdown-content a {
-    color: #0ea5e9;
+    color: #38bdf8;
     text-decoration: none;
     transition: all 0.2s;
     border-bottom: 1px dashed rgba(14, 165, 233, 0.3);
   }
   
   .markdown-content a:hover {
-    color: #0284c7;
-    border-bottom: 1px solid rgba(14, 165, 233, 0.6);
-  }
-  
-  .dark .markdown-content a {
-    color: #38bdf8;
-  }
-  
-  .dark .markdown-content a:hover {
     color: #7dd3fc;
+    border-bottom: 1px solid rgba(14, 165, 233, 0.6);
   }
   
   .markdown-content img {
@@ -586,7 +486,7 @@
     height: auto;
     margin-bottom: 1rem;
     border-radius: 0.5rem;
-    box-shadow: 0 4px 6px rgba(14, 165, 233, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   }
   
   .markdown-content table {
@@ -595,37 +495,112 @@
     margin-bottom: 1rem;
     border-radius: 0.5rem;
     overflow: hidden;
-    box-shadow: 0 4px 6px rgba(14, 165, 233, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   }
   
   .markdown-content th,
   .markdown-content td {
-    border: 1px solid #e2e8f0;
+    border: 1px solid #334155;
     padding: 0.75rem;
-    color: #334155;
-  }
-  
-  .dark .markdown-content th,
-  .dark .markdown-content td {
-    border-color: #334155;
     color: #cbd5e1;
   }
   
   .markdown-content th {
-    background: linear-gradient(to right, rgba(6, 182, 212, 0.1), rgba(59, 130, 246, 0.1));
-    color: #0e7490;
+    background: rgba(14, 165, 233, 0.1);
+    color: white;
     font-weight: 600;
   }
   
-  .dark .markdown-content th {
-    background: linear-gradient(to right, rgba(6, 182, 212, 0.2), rgba(59, 130, 246, 0.2));
-    color: #22d3ee;
+  /* Help content */
+  .help-section {
+    margin-bottom: 1.5rem;
+  }
+  
+  .help-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: white;
+  }
+  
+  .help-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .help-list li {
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: flex-start;
+  }
+  
+  .help-list li strong {
+    display: inline-block;
+    min-width: 120px;
+    color: white;
+    background: rgba(14, 165, 233, 0.1);
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    margin-right: 0.5rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+  
+  /* Link button */
+  .link-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    background: rgba(14, 165, 233, 0.1);
+    color: white;
+    border: 1px solid rgba(14, 165, 233, 0.3);
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  
+  .link-button:hover {
+    background: rgba(14, 165, 233, 0.2);
+    transform: translateY(-1px);
+  }
+  
+  /* Link modal */
+  .link-input-group {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .link-input {
+    flex: 1;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(14, 165, 233, 0.3);
+    background: #1a1f32;
+    color: #e2e8f0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.875rem;
+  }
+  
+  .copy-button {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    background: linear-gradient(to right, #0891b2, #2563eb);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .copy-button:hover {
+    box-shadow: 0 4px 8px rgba(14, 165, 233, 0.4);
+    transform: translateY(-1px);
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8 mt-16">
+<div class="page-container">
   <!-- Main editor container -->
   <div class="editor-container">
     <!-- Editor header with title -->
@@ -664,6 +639,12 @@
           </label>
         </div>
         
+        <!-- Get Link button (only visible when public) -->
+        <button type="button" id="getLinkBtn" class="btn-control btn-secondary" {% if not note.is_public %}style="display: none;"{% endif %}>
+          <i class="fas fa-link"></i>
+          <span>Obter Link</span>
+        </button>
+        
         <!-- Help button -->
         <button type="button" id="helpBtn" class="btn-control btn-secondary ml-auto">
           <i class="fas fa-question-circle"></i>
@@ -671,10 +652,16 @@
         </button>
       </div>
       
+      <!-- Mobile tabs -->
+      <div class="mobile-tabs">
+        <div class="mobile-tab active" data-tab="editor">Editor</div>
+        <div class="mobile-tab" data-tab="preview">Visualização</div>
+      </div>
+      
       <!-- Editor layout -->
       <div class="editor-layout">
         <!-- Editor section -->
-        <div class="editor-section">
+        <div class="editor-section active">
           <div class="editor-toolbar">
             <button type="button" class="toolbar-btn" data-action="bold" title="Negrito">
               <i class="fas fa-bold"></i>
@@ -721,16 +708,6 @@
     </form>
   </div>
   
-  <!-- Navigation buttons -->
-  <div class="nav-buttons">
-    <button type="button" id="navUp" class="nav-btn" title="Ir para o topo">
-      <i class="fas fa-chevron-up"></i>
-    </button>
-    <button type="button" id="navDown" class="nav-btn" title="Ir para o final">
-      <i class="fas fa-chevron-down"></i>
-    </button>
-  </div>
-  
   <!-- Edit Title Modal -->
   <div id="titleModal" class="modal-backdrop">
     <div class="modal-container">
@@ -767,30 +744,59 @@
         </button>
       </div>
       <div class="modal-body">
-        <h3 class="text-lg font-semibold mb-3 text-cyan-700 dark:text-cyan-400">Atalhos de Markdown</h3>
-        <ul class="space-y-2 mb-4">
-          <li><strong># Título</strong> - Cria um título de nível 1</li>
-          <li><strong>## Subtítulo</strong> - Cria um título de nível 2</li>
-          <li><strong>**texto**</strong> - Deixa o texto em negrito</li>
-          <li><strong>*texto*</strong> - Deixa o texto em itálico</li>
-          <li><strong>- item</strong> - Cria um item de lista não ordenada</li>
-          <li><strong>1. item</strong> - Cria um item de lista ordenada</li>
-          <li><strong>[texto](url)</strong> - Cria um link</li>
-          <li><strong>```código```</strong> - Cria um bloco de código</li>
-          <li><strong>> texto</strong> - Cria uma citação</li>
-        </ul>
+        <div class="help-section">
+          <div class="help-title">Atalhos de Markdown</div>
+          <ul class="help-list">
+            <li><strong># Título</strong> Cria um título de nível 1</li>
+            <li><strong>## Subtítulo</strong> Cria um título de nível 2</li>
+            <li><strong>**texto**</strong> Deixa o texto em negrito</li>
+            <li><strong>*texto*</strong> Deixa o texto em itálico</li>
+            <li><strong>- item</strong> Cria um item de lista não ordenada</li>
+            <li><strong>1. item</strong> Cria um item de lista ordenada</li>
+            <li><strong>[texto](url)</strong> Cria um link</li>
+            <li><strong>```código```</strong> Cria um bloco de código</li>
+            <li><strong>> texto</strong> Cria uma citação</li>
+          </ul>
+        </div>
         
-        <h3 class="text-lg font-semibold mb-3 text-cyan-700 dark:text-cyan-400">Dicas</h3>
-        <ul class="space-y-2">
-          <li>Use a barra de ferramentas para formatar seu texto rapidamente</li>
-          <li>Visualize suas alterações em tempo real no painel da direita</li>
-          <li>Salve frequentemente para não perder seu trabalho</li>
-          <li>Use os botões de navegação para se mover rapidamente pelo documento</li>
-        </ul>
+        <div class="help-section">
+          <div class="help-title">Dicas</div>
+          <ul class="help-list">
+            <li><strong>Barra de ferramentas</strong> Use para formatar seu texto rapidamente</li>
+            <li><strong>Visualização</strong> Veja suas alterações em tempo real</li>
+            <li><strong>Ctrl+S</strong> Atalho para salvar seu trabalho</li>
+          </ul>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn-control btn-primary" id="closeHelpBtn">
           Entendi
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Link Modal -->
+  <div id="linkModal" class="modal-backdrop">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title">Link Público</div>
+        <button type="button" class="modal-close" id="closeLinkModal">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-4">Compartilhe esta nota usando o link abaixo:</p>
+        <div class="link-input-group">
+          <input type="text" id="publicLinkInput" class="link-input" readonly value="{{ url_for('public_note', slug=note.slug, _external=True) }}">
+          <button type="button" id="copyLinkBtn" class="copy-button">
+            <i class="fas fa-copy"></i>
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-control btn-primary" id="closeLinkBtn">
+          Fechar
         </button>
       </div>
     </div>
@@ -805,8 +811,12 @@
     const modalTitleInput = document.getElementById('modalTitleInput');
     const titleModal = document.getElementById('titleModal');
     const helpModal = document.getElementById('helpModal');
-    const navUp = document.getElementById('navUp');
-    const navDown = document.getElementById('navDown');
+    const linkModal = document.getElementById('linkModal');
+    const mobileTabs = document.querySelectorAll('.mobile-tab');
+    const editorSection = document.querySelector('.editor-section');
+    const previewSection = document.querySelector('.preview-section');
+    const isPublicCheckbox = document.getElementById('is_public');
+    const getLinkBtn = document.getElementById('getLinkBtn');
     
     // Configure marked
     marked.setOptions({
@@ -830,8 +840,35 @@
       }
     }
     
+    // Toggle public link button visibility
+    isPublicCheckbox.addEventListener('change', function() {
+      getLinkBtn.style.display = this.checked ? 'inline-flex' : 'none';
+    });
+    
+    // Mobile tabs
+    mobileTabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        const tabName = this.getAttribute('data-tab');
+        
+        // Update active tab
+        mobileTabs.forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Show/hide sections
+        if (tabName === 'editor') {
+          editorSection.classList.add('active');
+          previewSection.classList.remove('active');
+        } else {
+          editorSection.classList.remove('active');
+          previewSection.classList.add('active');
+          updatePreview(); // Update preview when switching to preview tab
+        }
+      });
+    });
+    
     // Toolbar actions
     const toolbarButtons = document.querySelectorAll('.toolbar-btn');
+    
     toolbarButtons.forEach(button => {
       button.addEventListener('click', function() {
         const action = this.getAttribute('data-action');
@@ -895,20 +932,11 @@
       }, 0);
     }
     
-    // Navigation buttons
-    navUp.addEventListener('click', function() {
-      markdownEditor.scrollTop = 0;
-      markdownPreview.scrollTop = 0;
-    });
-    
-    navDown.addEventListener('click', function() {
-      markdownEditor.scrollTop = markdownEditor.scrollHeight;
-      markdownPreview.scrollTop = markdownPreview.scrollHeight;
-    });
-    
     // Title modal
     document.getElementById('editTitleBtn').addEventListener('click', function() {
       titleModal.classList.add('active');
+      modalTitleInput.focus();
+      modalTitleInput.select();
     });
     
     document.getElementById('closeTitleModal').addEventListener('click', function() {
@@ -941,6 +969,34 @@
       helpModal.classList.remove('active');
     });
     
+    // Link modal
+    document.getElementById('getLinkBtn').addEventListener('click', function() {
+      linkModal.classList.add('active');
+      document.getElementById('publicLinkInput').select();
+    });
+    
+    document.getElementById('closeLinkModal').addEventListener('click', function() {
+      linkModal.classList.remove('active');
+    });
+    
+    document.getElementById('closeLinkBtn').addEventListener('click', function() {
+      linkModal.classList.remove('active');
+    });
+    
+    // Copy link button
+    document.getElementById('copyLinkBtn').addEventListener('click', function() {
+      const linkInput = document.getElementById('publicLinkInput');
+      linkInput.select();
+      document.execCommand('copy');
+      
+      // Show feedback
+      const originalText = this.innerHTML;
+      this.innerHTML = '<i class="fas fa-check"></i>';
+      setTimeout(() => {
+        this.innerHTML = originalText;
+      }, 2000);
+    });
+    
     // Close modals when clicking outside
     window.addEventListener('click', function(event) {
       if (event.target === titleModal) {
@@ -949,12 +1005,15 @@
       if (event.target === helpModal) {
         helpModal.classList.remove('active');
       }
+      if (event.target === linkModal) {
+        linkModal.classList.remove('active');
+      }
     });
     
     // Keyboard shortcuts
     document.addEventListener('keydown', function(e) {
       // Save with Ctrl+S
-      if (e.ctrlKey && e.key === 's') {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
         document.getElementById('noteForm').submit();
       }
@@ -963,6 +1022,36 @@
       if (e.key === 'Escape') {
         titleModal.classList.remove('active');
         helpModal.classList.remove('active');
+        linkModal.classList.remove('active');
+      }
+    });
+    
+    // Auto-resize textarea on mobile
+    function adjustTextareaHeight() {
+      if (window.innerWidth <= 768) {
+        markdownEditor.style.height = 'auto';
+        markdownEditor.style.height = (markdownEditor.scrollHeight) + 'px';
+      } else {
+        markdownEditor.style.height = '';
+      }
+    }
+    
+    // Initial adjustment and on input
+    if (window.innerWidth <= 768) {
+      adjustTextareaHeight();
+      markdownEditor.addEventListener('input', adjustTextareaHeight);
+    }
+    
+    // Handle window resize
+    window.addEventListener('resize', function() {
+      if (window.innerWidth <= 768) {
+        if (!markdownEditor.hasEventListener) {
+          markdownEditor.addEventListener('input', adjustTextareaHeight);
+          markdownEditor.hasEventListener = true;
+        }
+        adjustTextareaHeight();
+      } else {
+        markdownEditor.style.height = '';
       }
     });
   });
