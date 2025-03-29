@@ -596,6 +596,13 @@
     box-shadow: 0 4px 8px rgba(14, 165, 233, 0.4);
     transform: translateY(-1px);
   }
+  
+  /* Fix for input fields in modals */
+  #modalTitleInput, #publicLinkInput {
+    background-color: #1a1f32;
+    color: #e2e8f0;
+    border: 1px solid rgba(14, 165, 233, 0.3);
+  }
 </style>
 {% endblock %}
 
@@ -1053,6 +1060,61 @@
       } else {
         markdownEditor.style.height = '';
       }
+    });
+    
+    // Synchronized scrolling between editor and preview
+    const syncScroll = () => {
+      // Calculate the scroll percentage in the source element
+      const sourceScrollTop = markdownEditor.scrollTop;
+      const sourceScrollHeight = markdownEditor.scrollHeight - markdownEditor.clientHeight;
+      const scrollPercentage = sourceScrollTop / sourceScrollHeight;
+      
+      // Apply the same scroll percentage to the target element
+      const targetScrollHeight = markdownPreview.scrollHeight - markdownPreview.clientHeight;
+      markdownPreview.scrollTop = scrollPercentage * targetScrollHeight;
+    };
+
+    // Sync preview scroll with editor scroll
+    markdownEditor.addEventListener('scroll', function() {
+      // Only sync if we're not currently syncing from the other direction
+      if (!markdownPreview.isScrolling) {
+        markdownEditor.isScrolling = true;
+        syncScroll();
+        setTimeout(() => {
+          markdownEditor.isScrolling = false;
+        }, 100);
+      }
+    });
+
+    // Sync editor scroll with preview scroll
+    markdownPreview.addEventListener('scroll', function() {
+      // Only sync if we're not currently syncing from the other direction
+      if (!markdownEditor.isScrolling) {
+        markdownPreview.isScrolling = true;
+        
+        // Calculate the scroll percentage in the preview
+        const previewScrollTop = markdownPreview.scrollTop;
+        const previewScrollHeight = markdownPreview.scrollHeight - markdownPreview.clientHeight;
+        const scrollPercentage = previewScrollTop / previewScrollHeight;
+        
+        // Apply the same scroll percentage to the editor
+        const editorScrollHeight = markdownEditor.scrollHeight - markdownEditor.clientHeight;
+        markdownEditor.scrollTop = scrollPercentage * editorScrollHeight;
+        
+        setTimeout(() => {
+          markdownPreview.isScrolling = false;
+        }, 100);
+      }
+    });
+
+    // Also sync scroll when content changes
+    markdownEditor.addEventListener('input', function() {
+      // Wait for the preview to update before syncing scroll
+      setTimeout(() => {
+        if (!markdownPreview.isScrolling && !markdownEditor.isScrolling) {
+          syncScroll();
+        }
+      }, 10);
     });
   });
 </script>
