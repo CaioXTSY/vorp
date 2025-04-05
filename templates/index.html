@@ -23,7 +23,7 @@
 <style>
   .feature-card:hover {
     transform: translateY(-5px) scale(1.02);
-    box-shadow: 0 20px 40px rgba(34, 211, 238, 0.3);
+    box-shadow: 0 20px 40px rgba(0, 112, 243, 0.3);
   }
 
   .pricing-card:hover {
@@ -460,12 +460,29 @@
     transform: rotate(12deg);
   }
 
+  .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 112, 243, 0.25);
+  }
+
   .btn-primary:hover i {
     transform: translateX(4px);
   }
 
   .btn-secondary:hover {
     background: rgba(255, 255, 255, 0.1);
+  }
+
+  .dark\:text-cyan-100 {
+    color: #e0f2fe;
+  }
+
+  .bg-gradient-to-r.from-cyan-400.to-blue-400 {
+    background-image: linear-gradient(to right, #22d3ee, #3b82f6);
+  }
+
+  .bg-gradient-to-r.from-cyan-500.to-blue-500 {
+    background-image: linear-gradient(to right, #06b6d4, #3b82f6);
   }
 </style>
 {% endblock %}
@@ -481,3 +498,4 @@
     });
   });
 </script>
+

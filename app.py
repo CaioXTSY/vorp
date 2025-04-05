@@ -23,21 +23,20 @@ from xhtml2pdf import pisa
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 
-# Se utilizar a OpenAI:
-# from openai import OpenAI
-
 # Carrega variáveis de ambiente
 load_dotenv()
 
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # Configuração e Inicialização do App
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 app = Flask(__name__)
 csrf = CSRFProtect(app)
 
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'chave-secreta-trocar-em-producao')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///caiobook.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Pasta de uploads e extensões permitidas
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -73,19 +72,20 @@ def verify_reset_token(token, expiration=1800):
     return email
 
 
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # MODELOS (Models)
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 class User(db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)  # Agora obrigatório
+    email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
     profile_photo = db.Column(db.String(200), nullable=True)
     full_name = db.Column(db.String(100), nullable=True)
     bio = db.Column(db.Text, nullable=True)
     gender = db.Column(db.String(20), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     notes = db.relationship('Note', backref='user', lazy=True)
     versions = db.relationship('Version', backref='user', lazy=True)
@@ -95,6 +95,7 @@ class User(db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
 
 class Note(db.Model):
     __tablename__ = 'note'
@@ -107,6 +108,7 @@ class Note(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
+
 class Version(db.Model):
     __tablename__ = 'version'
     id = db.Column(db.Integer, primary_key=True)
@@ -116,9 +118,9 @@ class Version(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # FUNÇÕES AUXILIARES
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 def is_logged_in():
     return 'user_id' in session
 
@@ -133,8 +135,6 @@ def slugify(value):
     """
     Converte um texto em um slug amigável (usado em URLs).
     """
-    import re
-    import unicodedata
     value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
     value = re.sub(r'[^\w\s-]', '', value).strip().lower()
     value = re.sub(r'[-\s]+', '-', value)
@@ -155,15 +155,13 @@ def generate_unique_slug(title):
 def update_schema():
     """
     Exemplo de lógica para atualizar o schema (opcional).
-    Pode ser substituído por Flask-Migrate.
+    Pode ser substituído por Flask-Migrate ou migrations.
     """
-    # Verifica se a coluna 'slug' existe
     result = db.session.execute(text("PRAGMA table_info(note)"))
     columns = [row[1] for row in result]
     if 'slug' not in columns:
         db.session.execute(text("ALTER TABLE note ADD COLUMN slug TEXT"))
         db.session.commit()
-        # Atualiza as notas existentes
         notes = Note.query.all()
         for note in notes:
             if not note.slug:
@@ -171,9 +169,9 @@ def update_schema():
         db.session.commit()
 
 
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # CONTEXT PROCESSORS E TEMPLATE FILTERS
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 @app.context_processor
 def inject_user():
     return {'is_logged_in': is_logged_in, 'is_admin': is_admin}
@@ -189,9 +187,9 @@ def datetime_format(value, format="%d/%m/%Y %H:%M"):
     return value.strftime(format)
 
 
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # ROTAS - AUTENTICAÇÃO
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -224,7 +222,7 @@ def register():
     
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
-        email = request.form.get('email', '').strip()  # Captura o e-mail
+        email = request.form.get('email', '').strip()
         password = request.form.get('password', '')
         confirm_password = request.form.get('confirm_password', '')
 
@@ -236,14 +234,13 @@ def register():
             flash("As senhas não coincidem.", "danger")
             return redirect(url_for('register'))
         
-        # Verifica se o usuário ou e-mail já existe
         if User.query.filter((User.username == username) | (User.email == email)).first():
             flash("Nome de usuário ou e-mail já existe.", "danger")
             return redirect(url_for('register'))
         
         new_user = User(
             username=username,
-            email=email,  # Salva o e-mail
+            email=email,
         )
         new_user.set_password(password)
         
@@ -256,10 +253,9 @@ def register():
     return render_template('register.html')
 
 
-
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # ROTA - ESQUECI A SENHA (FORGOT PASSWORD)
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
@@ -307,54 +303,117 @@ def reset_password(token):
     return render_template('reset_password.html', token=token)
 
 
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # PERFIL DO USUÁRIO E EDIÇÃO
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 @app.route('/profile/<string:username>')
 def profile(username):
     user = User.query.filter_by(username=username).first_or_404()
     if is_logged_in() and session['user_id'] == user.id:
-        # Se for o próprio usuário, mostra todas as notas
         notes = Note.query.filter_by(user_id=user.id).order_by(Note.updated_at.desc()).all()
     else:
-        # Caso contrário, mostra apenas notas públicas
         notes = Note.query.filter_by(user_id=user.id, is_public=True).order_by(Note.updated_at.desc()).all()
-    return render_template('profile.html', user=user, notes=notes)
+    
+    notes_count = len(notes)
+    created_at = user.created_at
+    recent_notes = notes[:3]
+    recent_activity_count = 5
+    activity_percentage = 60
+    streak_days = 3
+    user_level = 2
+    experience_points = 120
+    level_progress = 40
+    remaining_points = 80
+    achievements = [
+        {
+            'name': 'Primeira Nota',
+            'description': 'Crie a primeira nota',
+            'icon': 'star',
+            'unlocked': notes_count >= 1
+        },
+        {
+            'name': 'Dez Notas',
+            'description': 'Crie 10 notas',
+            'icon': 'star',
+            'unlocked': notes_count >= 10
+        },
+        {
+            'name': 'Maratonista',
+            'description': 'Acesse o sistema 7 dias consecutivos',
+            'icon': 'fire',
+            'unlocked': streak_days >= 7
+        },
+    ]
+    
+    return render_template(
+        'profile.html',
+        user=user,
+        notes_count=notes_count,
+        created_at=created_at,
+        recent_notes=recent_notes,
+        recent_activity_count=recent_activity_count,
+        activity_percentage=activity_percentage,
+        streak_days=streak_days,
+        user_level=user_level,
+        experience_points=experience_points,
+        level_progress=level_progress,
+        remaining_points=remaining_points,
+        achievements=achievements
+    )
 
 
-@app.route('/profile/edit', methods=['GET', 'POST'])
-def edit_profile():
+@app.route('/profile_edit', methods=['GET', 'POST'])
+def profile_edit():
+    """
+    Lida com a edição do perfil do usuário, incluindo upload de imagem e alteração de senha.
+    """
     if not is_logged_in():
         flash("Você precisa estar logado para editar seu perfil.", "warning")
         return redirect(url_for('login'))
 
     user = User.query.get_or_404(session['user_id'])
-    
+
     if request.method == 'POST':
-        user.full_name = request.form.get('full_name', '').strip()
-        user.bio = request.form.get('bio', '').strip()
-        user.gender = request.form.get('gender', '').strip()
-        
-        # Upload de nova foto de perfil (opcional)
-        profile_photo_file = request.files.get('profile_photo')
-        if profile_photo_file and allowed_file(profile_photo_file.filename):
-            filename = secure_filename(f"{datetime.now().timestamp()}-{profile_photo_file.filename}")
-            upload_dir = os.path.join(app.static_folder, 'uploads')
-            os.makedirs(upload_dir, exist_ok=True)
-            filepath = os.path.join(upload_dir, filename)
-            profile_photo_file.save(filepath)
-            user.profile_photo = f"/static/uploads/{filename}"
-        
+        # Upload da foto de perfil, se houver
+        if 'profile_image' in request.files:
+            file = request.files['profile_image']
+            if file and allowed_file(file.filename):
+                filename = secure_filename(f"{datetime.now().timestamp()}-{file.filename}")
+                upload_dir = os.path.join(app.static_folder, 'uploads')
+                os.makedirs(upload_dir, exist_ok=True)
+                file_path = os.path.join(upload_dir, filename)
+                file.save(file_path)
+                user.profile_photo = f"/static/uploads/{filename}"
+
+        # Campos básicos
+        user.username = request.form.get('username', user.username).strip()
+        user.email = request.form.get('email', user.email).strip()
+        user.bio = request.form.get('bio', user.bio)
+
+        # Lidar com mudança de senha
+        current_password = request.form.get('current_password', '')
+        new_password = request.form.get('new_password', '')
+        confirm_password = request.form.get('confirm_password', '')
+
+        if new_password or confirm_password:
+            if not user.check_password(current_password):
+                flash("Senha atual incorreta.", "danger")
+                return redirect(url_for('profile_edit'))
+            if new_password != confirm_password:
+                flash("Nova senha e confirmação não coincidem.", "danger")
+                return redirect(url_for('profile_edit'))
+            user.set_password(new_password)
+
         db.session.commit()
         flash("Perfil atualizado com sucesso!", "success")
         return redirect(url_for('profile', username=user.username))
-    
+
     return render_template('profile_edit.html', user=user)
 
 
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # ROTAS - NOTAS
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -365,9 +424,6 @@ def list_notes():
         flash("Você precisa estar logado para acessar suas notas.", "warning")
         return redirect(url_for('login'))
     user_id = session.get('user_id')
-    if not user_id:
-        flash("Sessão inválida. Faça login novamente.", "danger")
-        return redirect(url_for('login'))
     notes = Note.query.filter_by(user_id=user_id).order_by(Note.updated_at.desc()).all()
     return render_template('notes.html', notes=notes)
 
@@ -412,6 +468,7 @@ def edit_note(note_id):
     if note.user_id != session['user_id']:
         flash("Você não tem permissão para editar esta nota.", "danger")
         return redirect(url_for('list_notes'))
+    
     if request.method == 'POST':
         note.title = request.form['title'].strip()
         note.content = request.form['content']
@@ -458,9 +515,9 @@ def public_note(slug):
     return render_template('view_note.html', note=note, html_content=html_content, toc=toc)
 
 
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # EXPORTAÇÃO DE NOTAS E BANCO DE DADOS
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 @app.route('/export/<int:note_id>', methods=['GET'])
 def export_note(note_id):
     note = Note.query.get_or_404(note_id)
@@ -555,9 +612,9 @@ def export_note(note_id):
         return redirect(url_for('view_note', note_id=note.id))
 
 
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # ADMIN
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 @app.route('/admin')
 def admin_page():
     if not is_admin():
@@ -609,9 +666,9 @@ def admin_notes():
     return render_template('admin_notes.html', notes=notes)
 
 
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # INICIALIZAÇÃO DA APLICAÇÃO
-# -----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
@@ -619,8 +676,8 @@ if __name__ == '__main__':
         # Cria usuário admin padrão, se não existir
         admin_user = User.query.filter_by(username='admin').first()
         if not admin_user:
-            admin_user = User(username='admin')
-            admin_user.set_password('admin')  # Trocar em produção
+            admin_user = User(username='admin', email='admin@example.com')
+            admin_user.set_password('admin')
             db.session.add(admin_user)
             db.session.commit()
 
