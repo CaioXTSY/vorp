@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Editar Perfil{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-10 px-4">
+  <h1 class="text-2xl font-bold mb-6">Editar Perfil</h1>
+  
+  <form method="POST" enctype="multipart/form-data">
+    <!-- Campo oculto para CSRF -->
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    
+    <div class="mb-4">
+      <label for="full_name" class="block text-gray-700 dark:text-gray-300 font-semibold">Nome Completo</label>
+      <input type="text" name="full_name" id="full_name" value="{{ user.full_name or '' }}"
+             class="mt-1 w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 p-2"
+             placeholder="Seu nome completo" />
+    </div>
+
+    <div class="mb-4">
+      <label for="bio" class="block text-gray-700 dark:text-gray-300 font-semibold">Biografia</label>
+      <textarea name="bio" id="bio" rows="3"
+                class="mt-1 w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 p-2"
+                placeholder="Fale um pouco sobre você...">{{ user.bio or '' }}</textarea>
+    </div>
+
+    <div class="mb-4">
+      <label for="gender" class="block text-gray-700 dark:text-gray-300 font-semibold">Gênero</label>
+      <select name="gender" id="gender"
+              class="mt-1 w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 p-2">
+        <option value="" {% if not user.gender %}selected{% endif %}>-- Selecione --</option>
+        <option value="Masculino" {% if user.gender == 'Masculino' %}selected{% endif %}>Masculino</option>
+        <option value="Feminino" {% if user.gender == 'Feminino' %}selected{% endif %}>Feminino</option>
+        <option value="Outro" {% if user.gender == 'Outro' %}selected{% endif %}>Outro</option>
+      </select>
+    </div>
+
+    <div class="mb-4">
+      <label for="profile_photo" class="block text-gray-700 dark:text-gray-300 font-semibold">Foto de Perfil</label>
+      <input type="file" name="profile_photo" id="profile_photo"
+             class="mt-1 w-full text-sm text-gray-500 dark:text-gray-400 file:py-2 file:px-3 file:rounded file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-blue-50 file:text-blue-700
+                    hover:file:bg-blue-100 dark:file:bg-gray-700 dark:file:text-gray-200" />
+    </div>
+
+    <button type="submit"
+            class="inline-block px-6 py-2.5 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700">
+      Salvar
+    </button>
+  </form>
+</div>
+{% endblock %}

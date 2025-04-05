@@ -49,6 +49,12 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
+    # Novos campos para o perfil
+    profile_photo = db.Column(db.String(200), nullable=True)  # Caminho para a foto de perfil
+    full_name = db.Column(db.String(100), nullable=True)
+    bio = db.Column(db.Text, nullable=True)
+    gender = db.Column(db.String(20), nullable=True)  # Ex: "Masculino", "Feminino", "Outro"
+
     versions = db.relationship('Version', backref='user', lazy=True)
     notes = db.relationship('Note', backref='user', lazy=True)
 
@@ -181,9 +187,12 @@ def register():
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '')
         confirm_password = request.form.get('confirm_password', '')
-        
+        full_name = request.form.get('full_name', '').strip()
+        bio = request.form.get('bio', '').strip()
+        gender = request.form.get('gender', '').strip()
+
         if not username or not password or not confirm_password:
-            flash("Preencha todos os campos.", "danger")
+            flash("Preencha todos os campos obrigatórios.", "danger")
             return redirect(url_for('register'))
         
         if password != confirm_password:
@@ -194,8 +203,24 @@ def register():
             flash("Nome de usuário já existe.", "danger")
             return redirect(url_for('register'))
         
-        new_user = User(username=username)
+        new_user = User(
+            username=username,
+            full_name=full_name,
+            bio=bio,
+            gender=gender
+        )
         new_user.set_password(password)
+        
+        # Processa o upload da foto de perfil, se houver
+        profile_photo_file = request.files.get('profile_photo')
+        if profile_photo_file and allowed_file(profile_photo_file.filename):
+            filename = secure_filename(f"{datetime.now().timestamp()}-{profile_photo_file.filename}")
+            upload_dir = os.path.join(app.static_folder, 'uploads')
+            os.makedirs(upload_dir, exist_ok=True)
+            filepath = os.path.join(upload_dir, filename)
+            profile_photo_file.save(filepath)
+            new_user.profile_photo = f"/static/uploads/{filename}"
+        
         db.session.add(new_user)
         db.session.commit()
         
@@ -623,6 +648,38 @@ def process_ai():
     except Exception as e:
         app.logger.error(f"OpenAI API Error: {str(e)}")
         return jsonify({'error': 'Erro ao processar a solicitação'}), 500
+
+
+@app.route('/profile/edit', methods=['GET', 'POST'])
+def edit_profile():
+    if not is_logged_in():
+        flash("Você precisa estar logado para editar seu perfil.", "warning")
+        return redirect(url_for('login'))
+
+    user = User.query.get_or_404(session['user_id'])
+    
+    if request.method == 'POST':
+        user.full_name = request.form.get('full_name', '').strip()
+        user.bio = request.form.get('bio', '').strip()
+        user.gender = request.form.get('gender', '').strip()
+        
+        # Processa o upload da nova foto de perfil, se houver
+        profile_photo_file = request.files.get('profile_photo')
+        if profile_photo_file and allowed_file(profile_photo_file.filename):
+            filename = secure_filename(f"{datetime.now().timestamp()}-{profile_photo_file.filename}")
+            upload_dir = os.path.join(app.static_folder, 'uploads')
+            os.makedirs(upload_dir, exist_ok=True)
+            filepath = os.path.join(upload_dir, filename)
+            profile_photo_file.save(filepath)
+            user.profile_photo = f"/static/uploads/{filename}"
+        
+        db.session.commit()
+        flash("Perfil atualizado com sucesso!", "success")
+        return redirect(url_for('profile', username=user.username))
+    
+    return render_template('profile_edit.html', user=user)
+
+
 
 # -----------------------------------------------------------------------------
 # INICIALIZAÇÃO DA APLICAÇÃO

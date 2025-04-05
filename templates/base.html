@@ -7,14 +7,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#6366f1">
 
-
   <!-- Add in head section -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
 
-<!-- Add before closing body -->
-<script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+  <!-- Add before closing body -->
+  <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+
   <!-- Tailwind CSS com plugins atualizados -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp,container-queries"></script>
 
@@ -102,91 +102,95 @@
   
   <!-- Cabeçalho Moderno -->
   <header class="fixed w-full z-50 backdrop-blur-md border-b border-gray-100 dark:border-gray-800/50 bg-white/90 dark:bg-gray-900/90 transition-colors"
-        x-data="{ isOpen: false }"
-        @scroll.window="isOpen = false">
-  <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="h-16 flex items-center justify-between">
-      
-      <!-- Logo com animação holográfica -->
-      <a href="{{ url_for('index') }}" class="flex items-center group" data-aos="fade-right">
-        <div class="w-9 h-9 rounded-lg flex items-center justify-center 
-                    bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg shadow-cyan-500/20
-                    transition-transform group-hover:rotate-[15deg]">
-          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-          </svg>
-        </div>
-        <span class="ml-3 text-2xl font-bold bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent
-                   relative before:absolute before:-bottom-1 before:h-[2px] before:w-0 before:bg-gradient-to-r 
-                   before:from-cyan-500 before:to-blue-600 before:transition-all before:duration-300 group-hover:before:w-full">
-          VORP
-        </span>
-      </a>
-
-      <!-- Menu Desktop -->
-      <div class="hidden md:flex items-center gap-8" data-aos="fade-down" data-aos-delay="200">
-        <a href="{{ url_for('index') }}" 
-           class="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white px-3 py-2 rounded-lg
-                  relative after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-0 
-                  after:bg-gradient-to-r after:from-cyan-500 after:to-blue-600 after:transition-all 
-                  after:duration-300 hover:after:w-full">
-          Home
-        </a>
+          x-data="{ isOpen: false }"
+          @scroll.window="isOpen = false">
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="h-16 flex items-center justify-between">
         
-        {% if is_logged_in() %}
-          <a href="{{ url_for('list_notes') }}" class="nav-link">Notas</a>
-          <a href="{{ url_for('logout') }}" class="nav-link">Sair</a>
-          {% if is_admin() %}
-            <a href="{{ url_for('admin_page') }}" class="flex items-center gap-2 text-emerald-500 hover:text-emerald-600">
-              <span>Admin</span>
-              <i class="fas fa-shield-alt text-sm mt-0.5"></i>
+        <!-- Logo com animação holográfica -->
+        <a href="{{ url_for('index') }}" class="flex items-center group" data-aos="fade-right">
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center 
+                      bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg shadow-cyan-500/20
+                      transition-transform group-hover:rotate-[15deg]">
+            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+          <span class="ml-3 text-2xl font-bold bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent
+                     relative before:absolute before:-bottom-1 before:h-[2px] before:w-0 before:bg-gradient-to-r 
+                     before:from-cyan-500 before:to-blue-600 before:transition-all before:duration-300 group-hover:before:w-full">
+            VORP
+          </span>
+        </a>
+
+        <!-- Menu Desktop -->
+        <div class="hidden md:flex items-center gap-8" data-aos="fade-down" data-aos-delay="200">
+          <a href="{{ url_for('index') }}" 
+             class="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white px-3 py-2 rounded-lg
+                    relative after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-0 
+                    after:bg-gradient-to-r after:from-cyan-500 after:to-blue-600 after:transition-all 
+                    after:duration-300 hover:after:w-full">
+            Home
+          </a>
+          
+          {% if is_logged_in() %}
+            <!-- ADIÇÃO: Link Meu Perfil -->
+            <a href="{{ url_for('profile', username=session['username']) }}" class="nav-link">Meu Perfil</a>
+            <a href="{{ url_for('list_notes') }}" class="nav-link">Notas</a>
+            <a href="{{ url_for('logout') }}" class="nav-link">Sair</a>
+            {% if is_admin() %}
+              <a href="{{ url_for('admin_page') }}" class="flex items-center gap-2 text-emerald-500 hover:text-emerald-600">
+                <span>Admin</span>
+                <i class="fas fa-shield-alt text-sm mt-0.5"></i>
+              </a>
+            {% endif %}
+          {% else %}
+            <a href="{{ url_for('login') }}" class="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
+              Entrar
+            </a>
+            <a href="{{ url_for('register') }}" 
+               class="btn-primary flex items-center px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 
+                      text-white rounded-xl shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/30 transition-all">
+              <i class="fas fa-magic text-sm mr-2"></i>
+              Começar Agora
             </a>
           {% endif %}
-        {% else %}
-          <a href="{{ url_for('login') }}" class="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
-            Entrar
-          </a>
-          <a href="{{ url_for('register') }}" 
-             class="btn-primary flex items-center px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 
-                    text-white rounded-xl shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/30 transition-all">
-            <i class="fas fa-magic text-sm mr-2"></i>
-            Começar Agora
-          </a>
-        {% endif %}
+        </div>
+
+        <!-- Botão Mobile -->
+        <button @click="isOpen = !isOpen" 
+                class="md:hidden p-2.5 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+          <i class="fas fa-bars text-gray-600 dark:text-gray-300"></i>
+        </button>
       </div>
 
-      <!-- Botão Mobile -->
-      <button @click="isOpen = !isOpen" 
-              class="md:hidden p-2.5 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
-        <i class="fas fa-bars text-gray-600 dark:text-gray-300"></i>
-      </button>
-    </div>
-
-    <!-- Menu Mobile -->
-    <div class="md:hidden overflow-hidden transition-all duration-300 ease-out" 
-         x-ref="mobileMenu"
-         :style="isOpen ? 'max-height: ' + $refs.mobileMenu.scrollHeight + 'px' : 'max-height: 0px'">
-      <div class="pt-2 pb-4 space-y-2">
-        <a href="{{ url_for('index') }}" class="block px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">Home</a>
-        {% if is_logged_in() %}
-          <a href="{{ url_for('list_notes') }}" class="block px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">Notas</a>
-          <a href="{{ url_for('logout') }}" class="block px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">Sair</a>
-          {% if is_admin() %}
-            <a href="{{ url_for('admin_page') }}" class="block px-4 py-3 text-emerald-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
-              Admin <i class="fas fa-shield-alt ml-2"></i>
+      <!-- Menu Mobile -->
+      <div class="md:hidden overflow-hidden transition-all duration-300 ease-out" 
+           x-ref="mobileMenu"
+           :style="isOpen ? 'max-height: ' + $refs.mobileMenu.scrollHeight + 'px' : 'max-height: 0px'">
+        <div class="pt-2 pb-4 space-y-2">
+          <a href="{{ url_for('index') }}" class="block px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">Home</a>
+          {% if is_logged_in() %}
+            <!-- ADIÇÃO: Link Meu Perfil (Mobile) -->
+            <a href="{{ url_for('profile', username=session['username']) }}" class="block px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">Meu Perfil</a>
+            <a href="{{ url_for('list_notes') }}" class="block px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">Notas</a>
+            <a href="{{ url_for('logout') }}" class="block px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">Sair</a>
+            {% if is_admin() %}
+              <a href="{{ url_for('admin_page') }}" class="block px-4 py-3 text-emerald-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+                Admin <i class="fas fa-shield-alt ml-2"></i>
+              </a>
+            {% endif %}
+          {% else %}
+            <a href="{{ url_for('login') }}" class="block px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">Entrar</a>
+            <a href="{{ url_for('register') }}" class="block px-4 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-lg mx-2">
+              Começar Agora
             </a>
           {% endif %}
-        {% else %}
-          <a href="{{ url_for('login') }}" class="block px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">Entrar</a>
-          <a href="{{ url_for('register') }}" class="block px-4 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-lg mx-2">
-            Começar Agora
-          </a>
-        {% endif %}
+        </div>
       </div>
-    </div>
-  </nav>
-</header>
+    </nav>
+  </header>
 
   <!-- Menu Mobile Moderno -->
   <div class="md:hidden fixed inset-0 bg-black/30 z-50 backdrop-blur-sm"
@@ -228,7 +232,7 @@
   </div>
 
   <!-- Conteúdo Principal -->
-  <main class="flex-grow pt-10"> <!-- Alterado de pt-2 para pt-20 para adicionar distância do header -->
+  <main class="flex-grow pt-10">
     <div class="sm:px-1200"></div>
       <!-- Mensagens Flash Modernas -->
       {% with messages = get_flashed_messages(with_categories=true) %}
