@@ -1,6 +1,5 @@
 import os
 import re
-import uuid
 import unicodedata
 from datetime import datetime
 from io import BytesIO
@@ -15,15 +14,19 @@ from flask import (
 from flask_sqlalchemy import SQLAlchemy
 from flask_socketio import SocketIO
 from flask_wtf.csrf import CSRFProtect
-from openai import OpenAI
+from sqlalchemy import text
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from xhtml2pdf import pisa
-from sqlalchemy import text
 
-# -----------------------------------------------------------------------------
-# Carregamento das Variáveis de Ambiente
-# -----------------------------------------------------------------------------
+# Pacotes necessários para envio de e-mail e token:
+from flask_mail import Mail, Message
+from itsdangerous import URLSafeTimedSerializer
+
+# Se utilizar a OpenAI:
+# from openai import OpenAI
+
+# Carrega variáveis de ambiente
 load_dotenv()
 
 # -----------------------------------------------------------------------------
@@ -38,8 +41,37 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
 
+# Configurações de E-mail (Flask-Mail)
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'   # ou smtp.sendgrid.net, etc.
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')  # Ex: 'seuemail@gmail.com'
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')  # Senha de app
+app.config['MAIL_DEFAULT_SENDER'] = ( 'VORP', os.getenv('MAIL_USERNAME') )
+
+# Inicializa extensões
 db = SQLAlchemy(app)
 socketio = SocketIO(app, async_mode='threading')
+mail = Mail(app)
+
+# Itsdangerous serializer para gerar/validar tokens de reset de senha
+serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+
+def generate_reset_token(email):
+    """Gera um token para resetar a senha baseado no e-mail."""
+    return serializer.dumps(email, salt='reset-senha')
+
+def verify_reset_token(token, expiration=1800):
+    """
+    Verifica o token (expira em 1800 segundos = 30 min).
+    Retorna o e-mail ou None se for inválido/expirado.
+    """
+    try:
+        email = serializer.loads(token, salt='reset-senha', max_age=expiration)
+    except:
+        return None
+    return email
+
 
 # -----------------------------------------------------------------------------
 # MODELOS (Models)
@@ -48,21 +80,32 @@ class User(db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)  # Agora obrigatório
     password_hash = db.Column(db.String(128), nullable=False)
-    # Novos campos para o perfil
-    profile_photo = db.Column(db.String(200), nullable=True)  # Caminho para a foto de perfil
+    profile_photo = db.Column(db.String(200), nullable=True)
     full_name = db.Column(db.String(100), nullable=True)
     bio = db.Column(db.Text, nullable=True)
-    gender = db.Column(db.String(20), nullable=True)  # Ex: "Masculino", "Feminino", "Outro"
+    gender = db.Column(db.String(20), nullable=True)
 
-    versions = db.relationship('Version', backref='user', lazy=True)
     notes = db.relationship('Note', backref='user', lazy=True)
+    versions = db.relationship('Version', backref='user', lazy=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+class Note(db.Model):
+    __tablename__ = 'note'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    slug = db.Column(db.String(100), unique=True, nullable=False)  # Link fixo
+    content = db.Column(db.Text, nullable=False)
+    is_public = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 class Version(db.Model):
     __tablename__ = 'version'
@@ -72,19 +115,9 @@ class Version(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-class Note(db.Model):
-    __tablename__ = 'note'
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    slug = db.Column(db.String(100), unique=True, nullable=False)  # Link fixo para acesso público
-    content = db.Column(db.Text, nullable=False)
-    is_public = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 # -----------------------------------------------------------------------------
-# FUNÇÕES AUXILIARES (Helper Functions)
+# FUNÇÕES AUXILIARES
 # -----------------------------------------------------------------------------
 def is_logged_in():
     return 'user_id' in session
@@ -93,12 +126,15 @@ def is_admin():
     return is_logged_in() and session.get('username') == 'admin'
 
 def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+    ext = filename.rsplit('.', 1)[1].lower()
+    return '.' in filename and ext in app.config['ALLOWED_EXTENSIONS']
 
 def slugify(value):
     """
     Converte um texto em um slug amigável (usado em URLs).
     """
+    import re
+    import unicodedata
     value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
     value = re.sub(r'[^\w\s-]', '', value).strip().lower()
     value = re.sub(r'[-\s]+', '-', value)
@@ -118,22 +154,22 @@ def generate_unique_slug(title):
 
 def update_schema():
     """
-    Verifica e atualiza o esquema da tabela 'note'. Se a coluna 'slug' não existir,
-    ela é adicionada e os registros existentes são atualizados.
+    Exemplo de lógica para atualizar o schema (opcional).
+    Pode ser substituído por Flask-Migrate.
     """
+    # Verifica se a coluna 'slug' existe
     result = db.session.execute(text("PRAGMA table_info(note)"))
     columns = [row[1] for row in result]
     if 'slug' not in columns:
-        app.logger.info("Coluna 'slug' não encontrada. Atualizando o esquema da tabela 'note'...")
         db.session.execute(text("ALTER TABLE note ADD COLUMN slug TEXT"))
         db.session.commit()
-        # Atualiza as notas existentes definindo o slug com base no título
+        # Atualiza as notas existentes
         notes = Note.query.all()
         for note in notes:
             if not note.slug:
                 note.slug = generate_unique_slug(note.title)
         db.session.commit()
-        app.logger.info("Esquema atualizado com sucesso.")
+
 
 # -----------------------------------------------------------------------------
 # CONTEXT PROCESSORS E TEMPLATE FILTERS
@@ -148,12 +184,13 @@ def inject_current_year():
 
 @app.template_filter('datetime_format')
 def datetime_format(value, format="%d/%m/%Y %H:%M"):
-    if value is None:
+    if not value:
         return ""
     return value.strftime(format)
 
+
 # -----------------------------------------------------------------------------
-# ROTAS - AUTENTICAÇÃO E PERFIL DO USUÁRIO
+# ROTAS - AUTENTICAÇÃO
 # -----------------------------------------------------------------------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -171,11 +208,13 @@ def login():
             return redirect(url_for('login'))
     return render_template('login.html')
 
+
 @app.route('/logout')
 def logout():
     session.clear()
     flash("Logout realizado com sucesso!", "success")
     return redirect(url_for('login'))
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -185,13 +224,11 @@ def register():
     
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip()  # Captura o e-mail
         password = request.form.get('password', '')
         confirm_password = request.form.get('confirm_password', '')
-        full_name = request.form.get('full_name', '').strip()
-        bio = request.form.get('bio', '').strip()
-        gender = request.form.get('gender', '').strip()
 
-        if not username or not password or not confirm_password:
+        if not username or not email or not password or not confirm_password:
             flash("Preencha todos os campos obrigatórios.", "danger")
             return redirect(url_for('register'))
         
@@ -199,27 +236,16 @@ def register():
             flash("As senhas não coincidem.", "danger")
             return redirect(url_for('register'))
         
-        if User.query.filter_by(username=username).first():
-            flash("Nome de usuário já existe.", "danger")
+        # Verifica se o usuário ou e-mail já existe
+        if User.query.filter((User.username == username) | (User.email == email)).first():
+            flash("Nome de usuário ou e-mail já existe.", "danger")
             return redirect(url_for('register'))
         
         new_user = User(
             username=username,
-            full_name=full_name,
-            bio=bio,
-            gender=gender
+            email=email,  # Salva o e-mail
         )
         new_user.set_password(password)
-        
-        # Processa o upload da foto de perfil, se houver
-        profile_photo_file = request.files.get('profile_photo')
-        if profile_photo_file and allowed_file(profile_photo_file.filename):
-            filename = secure_filename(f"{datetime.now().timestamp()}-{profile_photo_file.filename}")
-            upload_dir = os.path.join(app.static_folder, 'uploads')
-            os.makedirs(upload_dir, exist_ok=True)
-            filepath = os.path.join(upload_dir, filename)
-            profile_photo_file.save(filepath)
-            new_user.profile_photo = f"/static/uploads/{filename}"
         
         db.session.add(new_user)
         db.session.commit()
@@ -229,49 +255,117 @@ def register():
     
     return render_template('register.html')
 
+
+
+# -----------------------------------------------------------------------------
+# ROTA - ESQUECI A SENHA (FORGOT PASSWORD)
+# -----------------------------------------------------------------------------
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        user = User.query.filter_by(email=email).first()
+        if user:
+            token = generate_reset_token(user.email)
+            reset_url = url_for('reset_password', token=token, _external=True)
+            
+            subject = "Recuperação de Senha - VORP"
+            body = f"Olá, clique no link para redefinir sua senha:\n{reset_url}"
+            
+            msg = Message(subject, recipients=[email], body=body)
+            mail.send(msg)
+
+            flash("Verifique seu e-mail para redefinir a senha.", "info")
+            return redirect(url_for('login'))
+        else:
+            flash("E-mail não encontrado.", "danger")
+            return redirect(url_for('forgot_password'))
+    return render_template('forgot_password.html')
+
+
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    email = verify_reset_token(token)
+    if not email:
+        flash("Token inválido ou expirado.", "danger")
+        return redirect(url_for('forgot_password'))
+    
+    user = User.query.filter_by(email=email).first_or_404()
+    
+    if request.method == 'POST':
+        new_password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+        if new_password != confirm_password or not new_password:
+            flash("As senhas não coincidem ou estão vazias.", "danger")
+            return redirect(url_for('reset_password', token=token))
+        
+        user.set_password(new_password)
+        db.session.commit()
+        flash("Senha atualizada com sucesso!", "success")
+        return redirect(url_for('login'))
+    
+    return render_template('reset_password.html', token=token)
+
+
+# -----------------------------------------------------------------------------
+# PERFIL DO USUÁRIO E EDIÇÃO
+# -----------------------------------------------------------------------------
 @app.route('/profile/<string:username>')
 def profile(username):
     user = User.query.filter_by(username=username).first_or_404()
-    if is_logged_in() and session.get('user_id') == user.id:
+    if is_logged_in() and session['user_id'] == user.id:
+        # Se for o próprio usuário, mostra todas as notas
         notes = Note.query.filter_by(user_id=user.id).order_by(Note.updated_at.desc()).all()
     else:
+        # Caso contrário, mostra apenas notas públicas
         notes = Note.query.filter_by(user_id=user.id, is_public=True).order_by(Note.updated_at.desc()).all()
     return render_template('profile.html', user=user, notes=notes)
 
-# -----------------------------------------------------------------------------
-# ROTAS - UPLOAD DE IMAGENS
-# -----------------------------------------------------------------------------
-@app.route('/upload-image', methods=['POST'])
-def upload_image():
-    if 'image' not in request.files:
-        return jsonify({'error': 'No image uploaded'}), 400
-    file = request.files['image']
-    if file.filename == '':
-        return jsonify({'error': 'Empty filename'}), 400
-    if file and allowed_file(file.filename):
-        filename = secure_filename(f"{datetime.now().timestamp()}-{file.filename}")
-        upload_dir = os.path.join(app.static_folder, 'uploads')
-        os.makedirs(upload_dir, exist_ok=True)
-        filepath = os.path.join(upload_dir, filename)
-        file.save(filepath)
-        return jsonify({'url': f"/static/uploads/{filename}"})
-    return jsonify({'error': 'Upload failed'}), 500
+
+@app.route('/profile/edit', methods=['GET', 'POST'])
+def edit_profile():
+    if not is_logged_in():
+        flash("Você precisa estar logado para editar seu perfil.", "warning")
+        return redirect(url_for('login'))
+
+    user = User.query.get_or_404(session['user_id'])
+    
+    if request.method == 'POST':
+        user.full_name = request.form.get('full_name', '').strip()
+        user.bio = request.form.get('bio', '').strip()
+        user.gender = request.form.get('gender', '').strip()
+        
+        # Upload de nova foto de perfil (opcional)
+        profile_photo_file = request.files.get('profile_photo')
+        if profile_photo_file and allowed_file(profile_photo_file.filename):
+            filename = secure_filename(f"{datetime.now().timestamp()}-{profile_photo_file.filename}")
+            upload_dir = os.path.join(app.static_folder, 'uploads')
+            os.makedirs(upload_dir, exist_ok=True)
+            filepath = os.path.join(upload_dir, filename)
+            profile_photo_file.save(filepath)
+            user.profile_photo = f"/static/uploads/{filename}"
+        
+        db.session.commit()
+        flash("Perfil atualizado com sucesso!", "success")
+        return redirect(url_for('profile', username=user.username))
+    
+    return render_template('profile_edit.html', user=user)
+
 
 # -----------------------------------------------------------------------------
-# ROTAS - GERENCIAMENTO DE NOTAS
+# ROTAS - NOTAS
 # -----------------------------------------------------------------------------
 @app.route('/')
 def index():
-    return render_template("index.html")
+    return render_template('index.html')
 
 @app.route('/notes')
 def list_notes():
     if not is_logged_in():
         flash("Você precisa estar logado para acessar suas notas.", "warning")
         return redirect(url_for('login'))
-    try:
-        user_id = int(session['user_id'])
-    except (ValueError, TypeError):
+    user_id = session.get('user_id')
+    if not user_id:
         flash("Sessão inválida. Faça login novamente.", "danger")
         return redirect(url_for('login'))
     notes = Note.query.filter_by(user_id=user_id).order_by(Note.updated_at.desc()).all()
@@ -300,10 +394,7 @@ def new_note():
 def view_note(note_id):
     note = Note.query.get_or_404(note_id)
     if not note.is_public:
-        try:
-            current_user_id = int(session.get('user_id', 0))
-        except (ValueError, TypeError):
-            current_user_id = 0
+        current_user_id = session.get('user_id', 0)
         if current_user_id != note.user_id:
             flash("Esta nota é privada.", "danger")
             return redirect(url_for('login'))
@@ -318,12 +409,7 @@ def edit_note(note_id):
         flash("Você precisa estar logado para editar notas.", "warning")
         return redirect(url_for('login'))
     note = Note.query.get_or_404(note_id)
-    try:
-        current_user_id = int(session.get('user_id', 0))
-    except (ValueError, TypeError):
-        flash("Sessão inválida. Faça login novamente.", "danger")
-        return redirect(url_for('login'))
-    if note.user_id != current_user_id:
+    if note.user_id != session['user_id']:
         flash("Você não tem permissão para editar esta nota.", "danger")
         return redirect(url_for('list_notes'))
     if request.method == 'POST':
@@ -341,12 +427,7 @@ def delete_note(note_id):
         flash("Você precisa estar logado para excluir notas.", "warning")
         return redirect(url_for('login'))
     note = Note.query.get_or_404(note_id)
-    try:
-        current_user_id = int(session.get('user_id', 0))
-    except (ValueError, TypeError):
-        flash("Sessão inválida. Faça login novamente.", "danger")
-        return redirect(url_for('login'))
-    if note.user_id != current_user_id:
+    if note.user_id != session['user_id']:
         flash("Você não tem permissão para excluir esta nota.", "danger")
         return redirect(url_for('list_notes'))
     db.session.delete(note)
@@ -359,11 +440,7 @@ def toggle_public(note_id):
     if not is_logged_in():
         return jsonify({'status': 'error', 'message': 'Você precisa estar logado.'}), 403
     note = Note.query.get_or_404(note_id)
-    try:
-        current_user_id = int(session.get('user_id', 0))
-    except (ValueError, TypeError):
-        return jsonify({'status': 'error', 'message': 'Sessão inválida.'}), 403
-    if note.user_id != current_user_id:
+    if note.user_id != session['user_id']:
         return jsonify({'status': 'error', 'message': 'Você não tem permissão para alterar esta nota.'}), 403
     note.is_public = not note.is_public
     db.session.commit()
@@ -372,7 +449,6 @@ def toggle_public(note_id):
         share_link = f"{request.host_url.rstrip('/')}/p/{note.slug}"
     return jsonify({'status': 'success', 'share_link': share_link})
 
-# Rota para acesso público via slug
 @app.route('/p/<string:slug>')
 def public_note(slug):
     note = Note.query.filter_by(slug=slug, is_public=True).first_or_404()
@@ -381,8 +457,9 @@ def public_note(slug):
     toc = md_instance.toc
     return render_template('view_note.html', note=note, html_content=html_content, toc=toc)
 
+
 # -----------------------------------------------------------------------------
-# ROTAS - EXPORTAÇÃO DE NOTAS E BANCO DE DADOS
+# EXPORTAÇÃO DE NOTAS E BANCO DE DADOS
 # -----------------------------------------------------------------------------
 @app.route('/export/<int:note_id>', methods=['GET'])
 def export_note(note_id):
@@ -391,6 +468,7 @@ def export_note(note_id):
         flash("Acesso negado para exportar esta nota.", "danger")
         return redirect(url_for('login'))
     try:
+        import markdown
         html_content = markdown.markdown(
             note.content, 
             extensions=['fenced_code', 'tables', 'codehilite']
@@ -476,30 +554,9 @@ def export_note(note_id):
         flash("Falha ao gerar PDF.", "danger")
         return redirect(url_for('view_note', note_id=note.id))
 
-@app.route('/admin/export_db', methods=['GET'])
-def export_db():
-    if not is_admin():
-        flash("Acesso negado. Permissões insuficientes.", "danger")
-        return redirect(url_for('login'))
-    
-    db_uri = app.config['SQLALCHEMY_DATABASE_URI']
-    if db_uri.startswith("sqlite:///"):
-        db_filename = db_uri.replace("sqlite:///", "", 1)
-        db_path = os.path.abspath(os.path.join(app.root_path, 'instance', db_filename))
-    else:
-        flash("Exportação de banco de dados não suportada para este tipo de URI.", "danger")
-        return redirect(url_for('admin_page'))
-    
-    app.logger.info(f"Tentando exportar banco de dados a partir do caminho: {db_path}")
-    
-    if not os.path.exists(db_path):
-        flash(f"Banco de dados não encontrado no caminho: {db_path}", "danger")
-        return redirect(url_for('admin_page'))
-    
-    return send_file(db_path, as_attachment=True, download_name="caiobook.db", mimetype="application/octet-stream")
 
 # -----------------------------------------------------------------------------
-# ROTAS - ADMIN (Painel Administrativo)
+# ADMIN
 # -----------------------------------------------------------------------------
 @app.route('/admin')
 def admin_page():
@@ -551,135 +608,6 @@ def admin_notes():
     notes = Note.query.order_by(Note.updated_at.desc()).all()
     return render_template('admin_notes.html', notes=notes)
 
-# -----------------------------------------------------------------------------
-# ROTAS - ASSISTENTE IA (OpenAI)
-# -----------------------------------------------------------------------------
-@app.route('/ask', methods=['POST'])
-@csrf.exempt
-def ask_question():
-    data = request.get_json()
-    question = data.get('question', '')
-    context = data.get('context', '')
-    conversation_history = data.get('history', [])
-    conversation_history = conversation_history[-10:]
-    
-    try:
-        client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
-        messages = [
-            {
-                "role": "system",
-                "content": f"""
-Você é Bonny, uma assistente de estudos eficiente, focada e com um tom profissional. Utilize o contexto abaixo apenas se for relevante:
-
-{context}
-
-Regras de estilo:
-- Seja direto e objetivo nas respostas.
-- Respostas claras e informativas (máximo de 2 parágrafos).
-- Use Markdown básico para formatação.
-- Se a pergunta não estiver relacionada ao contexto ou fora do escopo de estudos, informe educadamente que não pode ajudar com esse assunto.
-- Se não houver informações suficientes, solicite mais detalhes de forma concisa.
-"""
-            }
-        ]
-        for msg in conversation_history:
-            role = msg.get("role", "user").lower()
-            content = msg.get("content", "")
-            if role not in ["system", "user", "assistant"]:
-                role = "user"
-            messages.append({"role": role, "content": content})
-        messages.append({"role": "user", "content": question})
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=messages,
-            temperature=0.4,
-            max_tokens=5000
-        )
-        answer = response.choices[0].message.content
-        return jsonify({'answer': answer})
-    except Exception as e:
-        app.logger.error(f"OpenAI API Error: {str(e)}")
-        return jsonify({'error': 'Erro ao processar a pergunta'}), 500
-
-@app.route('/process-ai', methods=['POST'])
-@csrf.exempt
-def process_ai():
-    data = request.get_json()
-    action = data.get('action', '')
-    text = data.get('text', '')
-    
-    if not text or not action:
-        return jsonify({'error': 'Parâmetros inválidos'}), 400
-    
-    try:
-        client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
-        
-        if action == 'summarize':
-            system_prompt = "Você é um assistente especializado em resumir textos. Crie um resumo conciso do texto fornecido, mantendo os pontos principais."
-            user_prompt = f"Resuma o seguinte texto em um parágrafo curto:\n\n{text}"
-        elif action == 'enhance':
-            system_prompt = "Você é um assistente especializado em melhorar a escrita. Melhore o texto fornecido, mantendo o significado original, mas tornando-o mais claro, conciso e profissional."
-            user_prompt = f"Melhore o seguinte texto:\n\n{text}"
-        elif action == 'format-md':
-            system_prompt = "Você é um assistente especializado em formatação Markdown. Converta o texto fornecido em Markdown bem formatado, adicionando cabeçalhos, listas, ênfase e outros elementos apropriados."
-            user_prompt = f"Converta o seguinte texto em Markdown bem formatado:\n\n{text}"
-        elif action == 'explain':
-            system_prompt = "Você é um assistente educacional especializado em explicar conceitos de forma clara e concisa."
-            user_prompt = f"Explique o seguinte conceito de forma simples e educativa:\n\n{text}"
-        elif action == 'translate':
-            system_prompt = "Você é um assistente especializado em tradução. Traduza o texto fornecido para o português, mantendo o significado e o tom originais."
-            user_prompt = f"Traduza o seguinte texto para o português:\n\n{text}"
-        else:
-            return jsonify({'error': 'Ação não reconhecida'}), 400
-        
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            temperature=0.4,
-            max_tokens=2000
-        )
-        
-        result = response.choices[0].message.content
-        return jsonify({'result': result})
-    
-    except Exception as e:
-        app.logger.error(f"OpenAI API Error: {str(e)}")
-        return jsonify({'error': 'Erro ao processar a solicitação'}), 500
-
-
-@app.route('/profile/edit', methods=['GET', 'POST'])
-def edit_profile():
-    if not is_logged_in():
-        flash("Você precisa estar logado para editar seu perfil.", "warning")
-        return redirect(url_for('login'))
-
-    user = User.query.get_or_404(session['user_id'])
-    
-    if request.method == 'POST':
-        user.full_name = request.form.get('full_name', '').strip()
-        user.bio = request.form.get('bio', '').strip()
-        user.gender = request.form.get('gender', '').strip()
-        
-        # Processa o upload da nova foto de perfil, se houver
-        profile_photo_file = request.files.get('profile_photo')
-        if profile_photo_file and allowed_file(profile_photo_file.filename):
-            filename = secure_filename(f"{datetime.now().timestamp()}-{profile_photo_file.filename}")
-            upload_dir = os.path.join(app.static_folder, 'uploads')
-            os.makedirs(upload_dir, exist_ok=True)
-            filepath = os.path.join(upload_dir, filename)
-            profile_photo_file.save(filepath)
-            user.profile_photo = f"/static/uploads/{filename}"
-        
-        db.session.commit()
-        flash("Perfil atualizado com sucesso!", "success")
-        return redirect(url_for('profile', username=user.username))
-    
-    return render_template('profile_edit.html', user=user)
-
-
 
 # -----------------------------------------------------------------------------
 # INICIALIZAÇÃO DA APLICAÇÃO
@@ -687,11 +615,12 @@ def edit_profile():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-        update_schema()  # Atualiza o esquema se necessário, adicionando a coluna "slug"
+        update_schema()  # Exemplo, se precisar criar coluna 'slug' em 'note'
+        # Cria usuário admin padrão, se não existir
         admin_user = User.query.filter_by(username='admin').first()
         if not admin_user:
             admin_user = User(username='admin')
-            admin_user.set_password('admin')  # Alterar para produção
+            admin_user.set_password('admin')  # Trocar em produção
             db.session.add(admin_user)
             db.session.commit()
 

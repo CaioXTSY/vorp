@@ -7,3 +7,5 @@ xhtml2pdf
 openai
 python-dotenv
 reportlab
+Flask-Mail==0.9.1
+Werkzeug==2.3.4

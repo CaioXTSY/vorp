@@ -4,14 +4,10 @@
 {% block content %}
 <div class="min-h-screen bg-gradient-to-br from-gray-900 to-indigo-900 flex items-center justify-center px-4">
   <div class="w-full max-w-md relative">
-    <!-- Efeito de fundo glassmorphism -->
     <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 backdrop-blur-2xl rounded-3xl shadow-2xl"></div>
     
-    <div class="relative bg-gray-800/50 border border-cyan-500/20 rounded-3xl p-8 shadow-2xl backdrop-blur-xl"
-         data-aos="fade-up"
-         data-aos-delay="200">
+    <div class="relative bg-gray-800/50 border border-cyan-500/20 rounded-3xl p-8 shadow-2xl backdrop-blur-xl">
       <div class="text-center mb-8">
-        <!-- Logo animada -->
         <a href="{{ url_for('index') }}" class="inline-flex items-center space-x-3 group mb-6">
           <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center 
                       shadow-lg shadow-cyan-500/20 transition-transform group-hover:rotate-12">
@@ -30,13 +26,12 @@
       </div>
 
       <form class="space-y-6" method="POST" action="{{ url_for('login') }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         
         <div class="space-y-5">
-          <!-- Input com efeito de foco gradiente -->
           <div class="group">
             <label for="username" class="block text-sm font-medium text-cyan-200 mb-2">Usuário</label>
-            <div class="relative rounded-xl bg-gradient-to-r from-cyan-500/10 to-blue-600/10 p-px hover:from-cyan-500/20 hover:to-blue-600/20 transition-all">
+            <div class="relative rounded-xl bg-gradient-to-r from-cyan-500/10 to-blue-600/10 p-px transition-all">
               <input id="username" name="username" type="text" required
                      class="w-full px-4 py-3 bg-gray-900/50 border border-transparent rounded-[11px] text-white placeholder-cyan-200/50 
                             focus:outline-none focus:ring-2 focus:ring-cyan-500/50">
@@ -45,7 +40,7 @@
 
           <div class="group">
             <label for="password" class="block text-sm font-medium text-cyan-200 mb-2">Senha</label>
-            <div class="relative rounded-xl bg-gradient-to-r from-cyan-500/10 to-blue-600/10 p-px hover:from-cyan-500/20 hover:to-blue-600/20 transition-all">
+            <div class="relative rounded-xl bg-gradient-to-r from-cyan-500/10 to-blue-600/10 p-px transition-all">
               <input id="password" name="password" type="password" required
                      class="w-full px-4 py-3 bg-gray-900/50 border border-transparent rounded-[11px] text-white placeholder-cyan-200/50 
                             focus:outline-none focus:ring-2 focus:ring-cyan-500/50">
@@ -64,9 +59,15 @@
       <div class="mt-6 text-center">
         <p class="text-sm text-cyan-300">
           Não tem uma conta?
-          <a href="{{ url_for('register') }}" 
-             class="font-semibold text-white hover:text-cyan-300 transition-colors">
+          <a href="{{ url_for('register') }}" class="font-semibold text-white hover:text-cyan-300 transition-colors">
             Crie agora
+          </a>
+        </p>
+
+        <!-- Link de “Esqueci a Senha” -->
+        <p class="text-sm text-cyan-300 mt-3">
+          <a href="{{ url_for('forgot_password') }}" class="text-white hover:text-cyan-300 transition-colors">
+            Esqueci minha senha
           </a>
         </p>
       </div>
