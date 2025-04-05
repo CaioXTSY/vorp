@@ -3,85 +3,95 @@
 
 {% block head_extras %}
 <style>
-  /* Core styles with corrected color scheme */
+  /* Core styles with improved color scheme */
   :root {
-    --primary: #0070f3;
-    --primary-dark: #0050b3;
-    --primary-light: #3291ff;
-    --secondary: #0099cc;
-    --accent: #00d4ff;
+    --primary: #3b82f6;
+    --primary-dark: #2563eb;
+    --primary-light: #60a5fa;
+    --secondary: #0ea5e9;
+    --accent: #38bdf8;
     --dark: #111827;
     --light: #f8fafc;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
   }
   
   body {
     background-color: var(--dark);
     color: #f1f5f9;
-  }
-  
-  /* Animations */
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-  }
-  
-  @keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(0, 194, 255, 0.4); }
-    50% { box-shadow: 0 0 20px 5px rgba(0, 194, 255, 0.6); }
-  }
-  
-  @keyframes gradient-shift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
   
   /* Layout and components */
   .note-container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 0 1rem;
+    padding: 0 1.5rem;
+    position: relative; /* Ensure proper stacking context */
   }
   
-  /* Hero section - smoother gradient transition */
+  /* Improved hero section with cleaner design */
   .hero-section {
-    background: linear-gradient(135deg, #0070f3, #0099cc, #00b4d8);
-    background-size: 200% 200%;
-    animation: gradient-shift 15s ease infinite;
-    border-radius: 0 0 2.5rem 2.5rem;
-    padding: 6rem 2rem 8rem;
-    margin-bottom: -5rem;
+    background-color: var(--primary);
+    border-radius: 0 0 2rem 2rem;
+    padding: 5rem 2rem 6rem;
+    margin-bottom: -4rem;
     position: relative;
-    overflow: hidden;
-    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3);
+    overflow: visible; /* Changed from hidden to visible */
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
   }
-
   
+  /* Add subtle pattern to hero */
+  .hero-section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none; /* Ensure clicks pass through */
+  }
   
-  /* Improved note title with better contrast */
+  /* Improved note title with better typography */
   .note-title {
-    font-size: 2.5rem;
+    font-size: 2.75rem;
     font-weight: 800;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
     color: white;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+    position: relative; /* Ensure proper stacking */
   }
   
   .note-meta {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 1.25rem;
     color: rgba(255, 255, 255, 0.95);
-    font-size: 0.95rem;
+    font-size: 1rem;
     justify-content: center;
     width: 100%; 
     text-align: center;
+    margin-bottom: 2rem;
+    position: relative; /* Ensure proper stacking */
   }
   
   .note-meta > div {
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 0.5rem;
+  }
+  
+  .note-meta a {
+    color: white;
+    text-decoration: none;
+    transition: all 0.2s;
   }
   
   .note-meta a:hover {
@@ -91,46 +101,46 @@
   .action-buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: 2rem;
+    gap: 1rem;
     justify-content: center;
+    position: relative; /* Ensure proper stacking */
+    z-index: 10; /* Ensure buttons are clickable */
   }
   
+  /* Improved button styling */
   .action-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
     padding: 0.75rem 1.5rem;
-    border-radius: 9999px;
+    border-radius: 0.75rem;
     font-weight: 600;
     transition: all 0.3s;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     border: none;
     cursor: pointer;
+    font-size: 0.95rem;
+    position: relative; /* Ensure proper stacking */
   }
   
   .action-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
   }
   
-  /* Improved button styling */
   .btn-primary {
     background-color: white;
     color: var(--primary);
-    font-weight: 600;
   }
 
   .btn-primary:hover {
-    background-color: #f8fafc;
-    transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    background-color: var(--gray-100);
   }
   
   .btn-secondary {
     background-color: rgba(255, 255, 255, 0.2);
     color: white;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(4px);
   }
   
   .btn-secondary:hover {
@@ -142,7 +152,8 @@
     grid-template-columns: 1fr;
     gap: 2rem;
     position: relative;
-    z-index: 10;
+    z-index: 5; /* Lower than action buttons */
+    margin-top: 2rem;
   }
   
   @media (min-width: 1024px) {
@@ -151,13 +162,13 @@
     }
   }
   
+  /* Improved content card styling */
   .note-content {
-    background-color: rgba(255, 255, 255, 0.05);
-    border-radius: 1.5rem;
-    padding: 2rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
+    background-color: var(--gray-800);
+    border-radius: 1rem;
+    padding: 2.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     color: #e2e8f0;
   }
   
@@ -168,12 +179,11 @@
   }
   
   .sidebar-card {
-    background-color: rgba(255, 255, 255, 0.05);
-    border-radius: 1.5rem;
+    background-color: var(--gray-800);
+    border-radius: 1rem;
     padding: 1.5rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     position: sticky;
     top: 2rem;
   }
@@ -183,10 +193,11 @@
     font-size: 1.25rem;
     font-weight: 700;
     color: white;
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    font-family: 'Poppins', 'Inter', system-ui, sans-serif;
   }
   
   .toc-container {
@@ -198,7 +209,7 @@
   }
   
   .toc-container::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
   }
   
   .toc-container::-webkit-scrollbar-track {
@@ -239,7 +250,7 @@
   }
 
   .toc-container a:hover {
-    background-color: rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.1);
     color: white;
     font-weight: 600;
   }
@@ -249,10 +260,10 @@
     position: fixed;
     bottom: 2rem;
     left: 2rem;
-    width: 4rem;
-    height: 4rem;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 0.75rem;
+    background-color: var(--primary);
     color: white;
     display: none;
     align-items: center;
@@ -261,11 +272,11 @@
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     z-index: 50;
     transition: all 0.3s;
-    animation: pulse-glow 2s infinite;
   }
   
   .toc-balloon:hover {
-    transform: scale(1.1);
+    transform: scale(1.05);
+    background-color: var(--primary-dark);
   }
   
   .mobile-toc-container {
@@ -274,8 +285,8 @@
     left: 2rem;
     width: 22rem;
     max-width: calc(100vw - 4rem);
-    background-color: rgba(30, 41, 59, 0.95);
-    border-radius: 1.5rem;
+    background-color: var(--gray-800);
+    border-radius: 1rem;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     z-index: 50;
     overflow: hidden;
@@ -286,7 +297,7 @@
     display: none;
     flex-direction: column;
     max-height: 80vh;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
   }
   
   .mobile-toc-container.active {
@@ -297,7 +308,7 @@
   
   /* Mobile TOC header with better styling */
   .mobile-toc-header {
-    background: linear-gradient(135deg, #0070f3, #0099cc);
+    background-color: var(--primary);
     color: white;
     padding: 1rem 1.5rem;
     display: flex;
@@ -341,10 +352,10 @@
     position: fixed;
     bottom: 2rem;
     right: 2rem;
-    width: 4rem;
-    height: 4rem;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 0.75rem;
+    background-color: var(--primary);
     color: white;
     display: flex;
     align-items: center;
@@ -353,7 +364,6 @@
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     z-index: 50;
     transition: all 0.3s;
-    animation: pulse-glow 2s infinite;
     overflow: hidden;
   }
   
@@ -364,7 +374,8 @@
   }
   
   .chatbot-toggle:hover {
-    transform: scale(1.1);
+    transform: scale(1.05);
+    background-color: var(--primary-dark);
   }
   
   .chatbot-container {
@@ -373,8 +384,8 @@
     right: 2rem;
     width: 22rem;
     max-width: calc(100vw - 2rem);
-    background-color: rgba(30, 41, 59, 0.95);
-    border-radius: 1.5rem;
+    background-color: var(--gray-800);
+    border-radius: 1rem;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     z-index: 50;
     overflow: hidden;
@@ -385,7 +396,7 @@
     display: flex;
     flex-direction: column;
     max-height: 80vh;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
   }
   
   .chatbot-container.active {
@@ -396,7 +407,7 @@
   
   /* Chatbot styling improvements */
   .chatbot-header {
-    background: linear-gradient(135deg, #0070f3, #0099cc);
+    background-color: var(--primary);
     color: white;
     padding: 1rem 1.5rem;
     display: flex;
@@ -415,7 +426,7 @@
     width: 2.5rem;
     height: 2.5rem;
     background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 0.75rem;
+    border-radius: 0.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -459,7 +470,7 @@
   }
   
   .chatbot-messages::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
   }
   
   .chatbot-messages::-webkit-scrollbar-track {
@@ -486,9 +497,16 @@
   /* Chatbot styling improvements */
   .message.bot {
     align-self: flex-start;
-    background-color: rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.1);
     color: #f1f5f9;
     border-bottom-left-radius: 0.25rem;
+  }
+  
+  .message.user {
+    align-self: flex-end;
+    background-color: var(--primary);
+    color: white;
+    border-bottom-right-radius: 0.25rem;
   }
   
   .chatbot-input {
@@ -511,7 +529,7 @@
   
   .chatbot-input input:focus {
     border-color: var(--primary-light);
-    box-shadow: 0 0 0 3px rgba(0, 194, 255, 0.1);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
   
   .chatbot-input button {
@@ -547,6 +565,7 @@
     color: white;
     border-bottom: 2px solid rgba(255, 255, 255, 0.1);
     padding-bottom: 0.5rem;
+    font-family: 'Poppins', 'Inter', system-ui, sans-serif;
   }
 
   .markdown-content h2 {
@@ -554,6 +573,7 @@
     font-weight: 700;
     margin: 1.5rem 0 1rem;
     color: white;
+    font-family: 'Poppins', 'Inter', system-ui, sans-serif;
   }
 
   .markdown-content h3 {
@@ -561,6 +581,7 @@
     font-weight: 600;
     margin: 1.25rem 0 0.75rem;
     color: #f1f5f9;
+    font-family: 'Poppins', 'Inter', system-ui, sans-serif;
   }
   
   .markdown-content p {
@@ -588,7 +609,7 @@
   .markdown-content code {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 0.9em;
-    background-color: rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.1);
     padding: 0.2em 0.4em;
     border-radius: 0.25rem;
     color: #38bdf8;
@@ -669,7 +690,7 @@
   }
   
   .share-modal-content {
-    background-color: var(--dark);
+    background-color: var(--gray-800);
     border-radius: 1rem;
     width: 90%;
     max-width: 500px;
@@ -695,6 +716,7 @@
     font-size: 1.25rem;
     font-weight: 600;
     color: white;
+    font-family: 'Poppins', 'Inter', system-ui, sans-serif;
   }
   
   .share-modal-close {
@@ -725,30 +747,31 @@
     margin-top: 1rem;
   }
   
-  /* Correção para o campo de compartilhamento */
+  /* Improved share link input */
   .share-link-input {
     flex: 1;
     padding: 0.75rem 1rem;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 0.5rem 0 0 0.5rem;
     font-size: 0.875rem;
-    color: #e2e8f0; /* Cor clara para o texto */
-    background-color: #1a1f32; /* Fundo escuro para contraste */
+    color: #e2e8f0;
+    background-color: rgba(255, 255, 255, 0.05);
   }
   
-  /* Garantir que o botão de copiar tenha cores adequadas */
+  /* Improved copy button */
   .copy-btn {
-    background-color: #0070f3; /* Azul mais visível */
+    background-color: var(--primary);
     color: white;
     border: none;
     padding: 0 1rem;
     border-radius: 0 0.5rem 0.5rem 0;
     cursor: pointer;
     transition: all 0.2s;
+    font-weight: 500;
   }
   
   .copy-btn:hover {
-    background-color: #0051a8;
+    background-color: var(--primary-dark);
   }
   
   .share-options {
@@ -761,7 +784,7 @@
   .share-option {
     width: 3rem;
     height: 3rem;
-    border-radius: 50%;
+    border-radius: 0.75rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -809,7 +832,7 @@
   
   @media (max-width: 768px) {
     .hero-section {
-      padding: 5rem 1rem 7rem;
+      padding: 4rem 1rem 5rem;
     }
     
     .note-title {
@@ -842,38 +865,26 @@
     }
   }
 
-  /* Add a third font for more interest */
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-
-  .note-title {
-    font-family: 'Poppins', 'Inter', system-ui, sans-serif;
-  }
-
-  .markdown-content h1, 
-  .markdown-content h2, 
-  .markdown-content h3 {
-    font-family: 'Poppins', 'Inter', system-ui, sans-serif;
-    font-weight: 700;
-  }
+  /* Import Poppins font for headings */
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
 </style>
 {% endblock %}
 
 {% block content %}
 <!-- Hero section with title and metadata -->
 <section class="hero-section">
-  
   <div class="note-container">
     <div class="text-center">
       <h1 class="note-title">{{ note.title }}</h1>
       
       <div class="note-meta">
         <div>
-          <i class="fas fa-user-circle mr-2"></i>
+          <i class="fas fa-user-circle"></i>
           <a href="{{ url_for('profile', username=note.user.username) }}">{{ note.user.username }}</a>
         </div>
         <div>•</div>
         <div>
-          <i class="fas fa-clock mr-2"></i>
+          <i class="fas fa-clock"></i>
           {{ note.updated_at|datetime_format }}
         </div>
       </div>
