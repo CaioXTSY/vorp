@@ -21,10 +21,17 @@ from werkzeug.utils import secure_filename
 from xhtml2pdf import pisa
 from sqlalchemy import text
 
+# -----------------------------------------------------------------------------
+# Carregamento das Variáveis de Ambiente
+# -----------------------------------------------------------------------------
 load_dotenv()
 
+# -----------------------------------------------------------------------------
+# Configuração e Inicialização do App
+# -----------------------------------------------------------------------------
 app = Flask(__name__)
 csrf = CSRFProtect(app)
+
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'chave-secreta-trocar-em-producao')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///caiobook.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -35,9 +42,8 @@ db = SQLAlchemy(app)
 socketio = SocketIO(app, async_mode='threading')
 
 # -----------------------------------------------------------------------------
-# MODELS
+# MODELOS (Models)
 # -----------------------------------------------------------------------------
-
 class User(db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
@@ -64,7 +70,7 @@ class Note(db.Model):
     __tablename__ = 'note'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
-    slug = db.Column(db.String(100), unique=True, nullable=False)  # Link fixo
+    slug = db.Column(db.String(100), unique=True, nullable=False)  # Link fixo para acesso público
     content = db.Column(db.Text, nullable=False)
     is_public = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -72,9 +78,8 @@ class Note(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 # -----------------------------------------------------------------------------
-# HELPER FUNCTIONS
+# FUNÇÕES AUXILIARES (Helper Functions)
 # -----------------------------------------------------------------------------
-
 def is_logged_in():
     return 'user_id' in session
 
@@ -84,15 +89,19 @@ def is_admin():
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
-# Função para criar um slug a partir do título
 def slugify(value):
+    """
+    Converte um texto em um slug amigável (usado em URLs).
+    """
     value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
     value = re.sub(r'[^\w\s-]', '', value).strip().lower()
     value = re.sub(r'[-\s]+', '-', value)
     return value
 
-# Função para garantir a unicidade do slug
 def generate_unique_slug(title):
+    """
+    Gera um slug único para cada nota, evitando duplicatas.
+    """
     base_slug = slugify(title)
     slug = base_slug
     counter = 1
@@ -103,8 +112,8 @@ def generate_unique_slug(title):
 
 def update_schema():
     """
-    Verifica se a coluna 'slug' existe na tabela 'note'. Se não existir,
-    adiciona a coluna e atualiza todas as notas existentes.
+    Verifica e atualiza o esquema da tabela 'note'. Se a coluna 'slug' não existir,
+    ela é adicionada e os registros existentes são atualizados.
     """
     result = db.session.execute(text("PRAGMA table_info(note)"))
     columns = [row[1] for row in result]
@@ -121,19 +130,25 @@ def update_schema():
         app.logger.info("Esquema atualizado com sucesso.")
 
 # -----------------------------------------------------------------------------
-# LOGIN / LOGOUT
+# CONTEXT PROCESSORS E TEMPLATE FILTERS
 # -----------------------------------------------------------------------------
+@app.context_processor
+def inject_user():
+    return {'is_logged_in': is_logged_in, 'is_admin': is_admin}
 
-@app.route('/profile/<string:username>')
-def profile(username):
-    user = User.query.filter_by(username=username).first_or_404()
-    if is_logged_in() and session.get('user_id') == user.id:
-        notes = Note.query.filter_by(user_id=user.id).order_by(Note.updated_at.desc()).all()
-    else:
-        notes = Note.query.filter_by(user_id=user.id, is_public=True).order_by(Note.updated_at.desc()).all()
-    return render_template('profile.html', user=user, notes=notes)
+@app.context_processor
+def inject_current_year():
+    return {'current_year': datetime.utcnow().year}
 
+@app.template_filter('datetime_format')
+def datetime_format(value, format="%d/%m/%Y %H:%M"):
+    if value is None:
+        return ""
+    return value.strftime(format)
 
+# -----------------------------------------------------------------------------
+# ROTAS - AUTENTICAÇÃO E PERFIL DO USUÁRIO
+# -----------------------------------------------------------------------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -155,26 +170,6 @@ def logout():
     session.clear()
     flash("Logout realizado com sucesso!", "success")
     return redirect(url_for('login'))
-
-# -----------------------------------------------------------------------------
-# UPLOAD DE IMAGENS
-# -----------------------------------------------------------------------------
-
-@app.route('/upload-image', methods=['POST'])
-def upload_image():
-    if 'image' not in request.files:
-        return jsonify({'error': 'No image uploaded'}), 400
-    file = request.files['image']
-    if file.filename == '':
-        return jsonify({'error': 'Empty filename'}), 400
-    if file and allowed_file(file.filename):
-        filename = secure_filename(f"{datetime.now().timestamp()}-{file.filename}")
-        upload_dir = os.path.join(app.static_folder, 'uploads')
-        os.makedirs(upload_dir, exist_ok=True)
-        filepath = os.path.join(upload_dir, filename)
-        file.save(filepath)
-        return jsonify({'url': f"/static/uploads/{filename}"})
-    return jsonify({'error': 'Upload failed'}), 500
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -209,13 +204,130 @@ def register():
     
     return render_template('register.html')
 
-# -----------------------------------------------------------------------------
-# NOTAS (Funcionalidade estilo HackMD)
-# -----------------------------------------------------------------------------
+@app.route('/profile/<string:username>')
+def profile(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    if is_logged_in() and session.get('user_id') == user.id:
+        notes = Note.query.filter_by(user_id=user.id).order_by(Note.updated_at.desc()).all()
+    else:
+        notes = Note.query.filter_by(user_id=user.id, is_public=True).order_by(Note.updated_at.desc()).all()
+    return render_template('profile.html', user=user, notes=notes)
 
+# -----------------------------------------------------------------------------
+# ROTAS - UPLOAD DE IMAGENS
+# -----------------------------------------------------------------------------
+@app.route('/upload-image', methods=['POST'])
+def upload_image():
+    if 'image' not in request.files:
+        return jsonify({'error': 'No image uploaded'}), 400
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({'error': 'Empty filename'}), 400
+    if file and allowed_file(file.filename):
+        filename = secure_filename(f"{datetime.now().timestamp()}-{file.filename}")
+        upload_dir = os.path.join(app.static_folder, 'uploads')
+        os.makedirs(upload_dir, exist_ok=True)
+        filepath = os.path.join(upload_dir, filename)
+        file.save(filepath)
+        return jsonify({'url': f"/static/uploads/{filename}"})
+    return jsonify({'error': 'Upload failed'}), 500
+
+# -----------------------------------------------------------------------------
+# ROTAS - GERENCIAMENTO DE NOTAS
+# -----------------------------------------------------------------------------
 @app.route('/')
 def index():
     return render_template("index.html")
+
+@app.route('/notes')
+def list_notes():
+    if not is_logged_in():
+        flash("Você precisa estar logado para acessar suas notas.", "warning")
+        return redirect(url_for('login'))
+    try:
+        user_id = int(session['user_id'])
+    except (ValueError, TypeError):
+        flash("Sessão inválida. Faça login novamente.", "danger")
+        return redirect(url_for('login'))
+    notes = Note.query.filter_by(user_id=user_id).order_by(Note.updated_at.desc()).all()
+    return render_template('notes.html', notes=notes)
+
+@app.route('/notes/new', methods=['POST'])
+def new_note():
+    if not is_logged_in():
+        flash("Você precisa estar logado para criar notas.", "warning")
+        return redirect(url_for('login'))
+    
+    title = request.form.get('title', '').strip()
+    if not title:
+        flash("O título não pode estar vazio.", "danger")
+        return redirect(url_for('list_notes'))
+    
+    slug = generate_unique_slug(title)
+    note = Note(title=title, slug=slug, content="", is_public=False, user_id=session['user_id'])
+    db.session.add(note)
+    db.session.commit()
+    
+    flash("Nota criada com sucesso!", "success")
+    return redirect(url_for('list_notes'))
+
+@app.route('/notes/<int:note_id>')
+def view_note(note_id):
+    note = Note.query.get_or_404(note_id)
+    if not note.is_public:
+        try:
+            current_user_id = int(session.get('user_id', 0))
+        except (ValueError, TypeError):
+            current_user_id = 0
+        if current_user_id != note.user_id:
+            flash("Esta nota é privada.", "danger")
+            return redirect(url_for('login'))
+    md_instance = markdown.Markdown(extensions=['fenced_code', 'tables', 'toc', 'codehilite'])
+    html_content = md_instance.convert(note.content)
+    toc = md_instance.toc
+    return render_template('view_note.html', note=note, html_content=html_content, toc=toc)
+
+@app.route('/notes/<int:note_id>/edit', methods=['GET', 'POST'])
+def edit_note(note_id):
+    if not is_logged_in():
+        flash("Você precisa estar logado para editar notas.", "warning")
+        return redirect(url_for('login'))
+    note = Note.query.get_or_404(note_id)
+    try:
+        current_user_id = int(session.get('user_id', 0))
+    except (ValueError, TypeError):
+        flash("Sessão inválida. Faça login novamente.", "danger")
+        return redirect(url_for('login'))
+    if note.user_id != current_user_id:
+        flash("Você não tem permissão para editar esta nota.", "danger")
+        return redirect(url_for('list_notes'))
+    if request.method == 'POST':
+        note.title = request.form['title'].strip()
+        note.content = request.form['content']
+        note.is_public = True if request.form.get('is_public') == 'on' else False
+        db.session.commit()
+        flash("Nota atualizada com sucesso!", "success")
+        return redirect(url_for('view_note', note_id=note.id))
+    return render_template('edit_note.html', note=note)
+
+@app.route('/notes/<int:note_id>/delete', methods=['POST'])
+def delete_note(note_id):
+    if not is_logged_in():
+        flash("Você precisa estar logado para excluir notas.", "warning")
+        return redirect(url_for('login'))
+    note = Note.query.get_or_404(note_id)
+    try:
+        current_user_id = int(session.get('user_id', 0))
+    except (ValueError, TypeError):
+        flash("Sessão inválida. Faça login novamente.", "danger")
+        return redirect(url_for('login'))
+    if note.user_id != current_user_id:
+        flash("Você não tem permissão para excluir esta nota.", "danger")
+        return redirect(url_for('list_notes'))
+    db.session.delete(note)
+    db.session.commit()
+    flash("Nota excluída com sucesso.", "success")
+    return redirect(url_for('list_notes'))
 
 @app.route('/notes/<int:note_id>/toggle_public', methods=['POST'])
 def toggle_public(note_id):
@@ -235,14 +347,18 @@ def toggle_public(note_id):
         share_link = f"{request.host_url.rstrip('/')}/p/{note.slug}"
     return jsonify({'status': 'success', 'share_link': share_link})
 
-@app.route('/admin')
-def admin_page():
-    if not is_admin():
-        flash("Acesso negado. Permissões insuficientes.", "danger")
-        return redirect(url_for('login'))
-    all_notes = Note.query.order_by(Note.updated_at.desc()).all()
-    return render_template('admin.html', notes=all_notes)
+# Rota para acesso público via slug
+@app.route('/p/<string:slug>')
+def public_note(slug):
+    note = Note.query.filter_by(slug=slug, is_public=True).first_or_404()
+    md_instance = markdown.Markdown(extensions=['fenced_code', 'tables', 'toc', 'codehilite'])
+    html_content = md_instance.convert(note.content)
+    toc = md_instance.toc
+    return render_template('view_note.html', note=note, html_content=html_content, toc=toc)
 
+# -----------------------------------------------------------------------------
+# ROTAS - EXPORTAÇÃO DE NOTAS E BANCO DE DADOS
+# -----------------------------------------------------------------------------
 @app.route('/export/<int:note_id>', methods=['GET'])
 def export_note(note_id):
     note = Note.query.get_or_404(note_id)
@@ -335,109 +451,38 @@ def export_note(note_id):
         flash("Falha ao gerar PDF.", "danger")
         return redirect(url_for('view_note', note_id=note.id))
 
-@app.route('/notes')
-def list_notes():
-    if not is_logged_in():
-        flash("Você precisa estar logado para acessar suas notas.", "warning")
-        return redirect(url_for('login'))
-    try:
-        user_id = int(session['user_id'])
-    except (ValueError, TypeError):
-        flash("Sessão inválida. Faça login novamente.", "danger")
-        return redirect(url_for('login'))
-    notes = Note.query.filter_by(user_id=user_id).order_by(Note.updated_at.desc()).all()
-    return render_template('notes.html', notes=notes)
-
-@app.route('/notes/new', methods=['POST'])
-def new_note():
-    if not is_logged_in():
-        flash("Você precisa estar logado para criar notas.", "warning")
+@app.route('/admin/export_db', methods=['GET'])
+def export_db():
+    if not is_admin():
+        flash("Acesso negado. Permissões insuficientes.", "danger")
         return redirect(url_for('login'))
     
-    title = request.form.get('title', '').strip()
-    if not title:
-        flash("O título não pode estar vazio.", "danger")
-        return redirect(url_for('list_notes'))
+    db_uri = app.config['SQLALCHEMY_DATABASE_URI']
+    if db_uri.startswith("sqlite:///"):
+        db_filename = db_uri.replace("sqlite:///", "", 1)
+        db_path = os.path.abspath(os.path.join(app.root_path, 'instance', db_filename))
+    else:
+        flash("Exportação de banco de dados não suportada para este tipo de URI.", "danger")
+        return redirect(url_for('admin_page'))
     
-    slug = generate_unique_slug(title)
-    note = Note(title=title, slug=slug, content="", is_public=False, user_id=session['user_id'])
-    db.session.add(note)
-    db.session.commit()
+    app.logger.info(f"Tentando exportar banco de dados a partir do caminho: {db_path}")
     
-    flash("Nota criada com sucesso!", "success")
-    return redirect(url_for('list_notes'))
-
-@app.route('/notes/<int:note_id>')
-def view_note(note_id):
-    note = Note.query.get_or_404(note_id)
-    if not note.is_public:
-        try:
-            current_user_id = int(session.get('user_id', 0))
-        except (ValueError, TypeError):
-            current_user_id = 0
-        if current_user_id != note.user_id:
-            flash("Esta nota é privada.", "danger")
-            return redirect(url_for('login'))
-    md_instance = markdown.Markdown(extensions=['fenced_code', 'tables', 'toc', 'codehilite'])
-    html_content = md_instance.convert(note.content)
-    toc = md_instance.toc
-    return render_template('view_note.html', note=note, html_content=html_content, toc=toc)
-
-@app.route('/notes/<int:note_id>/edit', methods=['GET', 'POST'])
-def edit_note(note_id):
-    if not is_logged_in():
-        flash("Você precisa estar logado para editar notas.", "warning")
-        return redirect(url_for('login'))
-    note = Note.query.get_or_404(note_id)
-    try:
-        current_user_id = int(session.get('user_id', 0))
-    except (ValueError, TypeError):
-        flash("Sessão inválida. Faça login novamente.", "danger")
-        return redirect(url_for('login'))
-    if note.user_id != current_user_id:
-        flash("Você não tem permissão para editar esta nota.", "danger")
-        return redirect(url_for('list_notes'))
-    if request.method == 'POST':
-        note.title = request.form['title'].strip()
-        note.content = request.form['content']
-        is_public = True if request.form.get('is_public') == 'on' else False
-        note.is_public = is_public
-        db.session.commit()
-        flash("Nota atualizada com sucesso!", "success")
-        return redirect(url_for('view_note', note_id=note.id))
-    return render_template('edit_note.html', note=note)
-
-@app.route('/notes/<int:note_id>/delete', methods=['POST'])
-def delete_note(note_id):
-    if not is_logged_in():
-        flash("Você precisa estar logado para excluir notas.", "warning")
-        return redirect(url_for('login'))
-    note = Note.query.get_or_404(note_id)
-    try:
-        current_user_id = int(session.get('user_id', 0))
-    except (ValueError, TypeError):
-        flash("Sessão inválida. Faça login novamente.", "danger")
-        return redirect(url_for('login'))
-    if note.user_id != current_user_id:
-        flash("Você não tem permissão para excluir esta nota.", "danger")
-        return redirect(url_for('list_notes'))
-    db.session.delete(note)
-    db.session.commit()
-    flash("Nota excluída com sucesso.", "success")
-    return redirect(url_for('list_notes'))
-
-# Rota para acesso público via slug
-@app.route('/p/<string:slug>')
-def public_note(slug):
-    note = Note.query.filter_by(slug=slug, is_public=True).first_or_404()
-    md_instance = markdown.Markdown(extensions=['fenced_code', 'tables', 'toc', 'codehilite'])
-    html_content = md_instance.convert(note.content)
-    toc = md_instance.toc
-    return render_template('view_note.html', note=note, html_content=html_content, toc=toc)
+    if not os.path.exists(db_path):
+        flash(f"Banco de dados não encontrado no caminho: {db_path}", "danger")
+        return redirect(url_for('admin_page'))
+    
+    return send_file(db_path, as_attachment=True, download_name="caiobook.db", mimetype="application/octet-stream")
 
 # -----------------------------------------------------------------------------
-# ENDPOINTS ADMIN
+# ROTAS - ADMIN (Painel Administrativo)
 # -----------------------------------------------------------------------------
+@app.route('/admin')
+def admin_page():
+    if not is_admin():
+        flash("Acesso negado. Permissões insuficientes.", "danger")
+        return redirect(url_for('login'))
+    all_notes = Note.query.order_by(Note.updated_at.desc()).all()
+    return render_template('admin.html', notes=all_notes)
 
 @app.route('/admin/users')
 def admin_users():
@@ -481,33 +526,9 @@ def admin_notes():
     notes = Note.query.order_by(Note.updated_at.desc()).all()
     return render_template('admin_notes.html', notes=notes)
 
-# Novo endpoint para exportar o arquivo .db
-@app.route('/admin/export_db', methods=['GET'])
-def export_db():
-    if not is_admin():
-        flash("Acesso negado. Permissões insuficientes.", "danger")
-        return redirect(url_for('login'))
-    
-    db_uri = app.config['SQLALCHEMY_DATABASE_URI']
-    if db_uri.startswith("sqlite:///"):
-        db_filename = db_uri.replace("sqlite:///", "", 1)
-        db_path = os.path.abspath(os.path.join(app.root_path, 'instance', db_filename))
-    else:
-        flash("Exportação de banco de dados não suportada para este tipo de URI.", "danger")
-        return redirect(url_for('admin_page'))
-    
-    app.logger.info(f"Tentando exportar banco de dados a partir do caminho: {db_path}")
-    
-    if not os.path.exists(db_path):
-        flash(f"Banco de dados não encontrado no caminho: {db_path}", "danger")
-        return redirect(url_for('admin_page'))
-    
-    return send_file(db_path, as_attachment=True, download_name="caiobook.db", mimetype="application/octet-stream")
-
 # -----------------------------------------------------------------------------
-# ASSISTENTE IA (OpenAI)
+# ROTAS - ASSISTENTE IA (OpenAI)
 # -----------------------------------------------------------------------------
-
 @app.route('/ask', methods=['POST'])
 @csrf.exempt
 def ask_question():
@@ -555,33 +576,6 @@ Regras de estilo:
         app.logger.error(f"OpenAI API Error: {str(e)}")
         return jsonify({'error': 'Erro ao processar a pergunta'}), 500
 
-# -----------------------------------------------------------------------------
-# CONTEXT PROCESSORS
-# -----------------------------------------------------------------------------
-
-@app.context_processor
-def inject_user():
-    return {'is_logged_in': is_logged_in, 'is_admin': is_admin}
-
-@app.context_processor
-def inject_current_year():
-    return {'current_year': datetime.utcnow().year}
-
-# -----------------------------------------------------------------------------
-# TEMPLATE FILTERS
-# -----------------------------------------------------------------------------
-
-@app.template_filter('datetime_format')
-def datetime_format(value, format="%d/%m/%Y %H:%M"):
-    if value is None:
-        return ""
-    return value.strftime(format)
-
-# -----------------------------------------------------------------------------
-# INIT
-# -----------------------------------------------------------------------------
-
-
 @app.route('/process-ai', methods=['POST'])
 @csrf.exempt
 def process_ai():
@@ -598,29 +592,23 @@ def process_ai():
         if action == 'summarize':
             system_prompt = "Você é um assistente especializado em resumir textos. Crie um resumo conciso do texto fornecido, mantendo os pontos principais."
             user_prompt = f"Resuma o seguinte texto em um parágrafo curto:\n\n{text}"
-        
         elif action == 'enhance':
             system_prompt = "Você é um assistente especializado em melhorar a escrita. Melhore o texto fornecido, mantendo o significado original, mas tornando-o mais claro, conciso e profissional."
             user_prompt = f"Melhore o seguinte texto:\n\n{text}"
-        
         elif action == 'format-md':
             system_prompt = "Você é um assistente especializado em formatação Markdown. Converta o texto fornecido em Markdown bem formatado, adicionando cabeçalhos, listas, ênfase e outros elementos apropriados."
             user_prompt = f"Converta o seguinte texto em Markdown bem formatado:\n\n{text}"
-        
         elif action == 'explain':
             system_prompt = "Você é um assistente educacional especializado em explicar conceitos de forma clara e concisa."
             user_prompt = f"Explique o seguinte conceito de forma simples e educativa:\n\n{text}"
-        
         elif action == 'translate':
             system_prompt = "Você é um assistente especializado em tradução. Traduza o texto fornecido para o português, mantendo o significado e o tom originais."
             user_prompt = f"Traduza o seguinte texto para o português:\n\n{text}"
-        
         else:
             return jsonify({'error': 'Ação não reconhecida'}), 400
         
-        # Fazer a chamada para a API
         response = client.chat.completions.create(
-            model="gpt-4o-mini",  # Ou outro modelo disponível
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
@@ -635,8 +623,10 @@ def process_ai():
     except Exception as e:
         app.logger.error(f"OpenAI API Error: {str(e)}")
         return jsonify({'error': 'Erro ao processar a solicitação'}), 500
-    
 
+# -----------------------------------------------------------------------------
+# INICIALIZAÇÃO DA APLICAÇÃO
+# -----------------------------------------------------------------------------
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
