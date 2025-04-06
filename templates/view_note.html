@@ -37,12 +37,12 @@
     position: relative; /* Ensure proper stacking context */
   }
   
-  /* Improved hero section with cleaner design */
+  /* Improved hero section with cleaner design and better mobile responsiveness */
   .hero-section {
     background-color: var(--primary);
-    border-radius: 0 0 2rem 2rem;
-    padding: 5rem 2rem 6rem;
-    margin-bottom: -4rem;
+    border-radius: 0 0 1.5rem 1.5rem;
+    padding: 3rem 1rem 4rem;
+    margin-bottom: -3rem;
     position: relative;
     overflow: visible; /* Changed from hidden to visible */
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
@@ -60,29 +60,33 @@
     pointer-events: none; /* Ensure clicks pass through */
   }
   
-  /* Improved note title with better typography */
+  /* Improved note title with better typography and mobile responsiveness */
   .note-title {
-    font-size: 2.75rem;
+    font-size: clamp(1.5rem, 5vw, 2.75rem);
     font-weight: 800;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     color: white;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     font-family: 'Poppins', 'Inter', system-ui, sans-serif;
     letter-spacing: -0.025em;
     line-height: 1.2;
     position: relative; /* Ensure proper stacking */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
   }
   
   .note-meta {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 1.25rem;
+    gap: 0.75rem;
     color: rgba(255, 255, 255, 0.95);
-    font-size: 1rem;
+    font-size: 0.875rem;
     justify-content: center;
     width: 100%; 
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     position: relative; /* Ensure proper stacking */
   }
   
@@ -105,26 +109,27 @@
   .action-buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 0.75rem;
     justify-content: center;
     position: relative; /* Ensure proper stacking */
     z-index: 10; /* Ensure buttons are clickable */
   }
   
-  /* Improved button styling */
+  /* Improved button styling with better mobile sizing */
   .action-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
+    padding: 0.625rem 1.25rem;
     border-radius: 0.75rem;
     font-weight: 600;
     transition: all 0.3s;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     border: none;
     cursor: pointer;
-    font-size: 0.95rem;
+    font-size: 0.875rem;
     position: relative; /* Ensure proper stacking */
+    white-space: nowrap;
   }
   
   .action-btn:hover {
@@ -163,6 +168,31 @@
   @media (min-width: 1024px) {
     .content-grid {
       grid-template-columns: 3fr 1fr;
+    }
+    
+    .hero-section {
+      padding: 5rem 2rem 6rem;
+      margin-bottom: -4rem;
+      border-radius: 0 0 2rem 2rem;
+    }
+    
+    .note-title {
+      margin-bottom: 1.5rem;
+    }
+    
+    .note-meta {
+      font-size: 1rem;
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+    
+    .action-btn {
+      padding: 0.75rem 1.5rem;
+      font-size: 0.95rem;
+    }
+    
+    .action-buttons {
+      gap: 1rem;
     }
   }
   
@@ -975,11 +1005,31 @@
   
   @media (max-width: 768px) {
     .hero-section {
-      padding: 4rem 1rem 5rem;
+      padding: 3rem 1rem 4rem;
+      margin-bottom: -2.5rem;
     }
     
     .note-title {
-      font-size: 2rem;
+      font-size: 1.75rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    .note-meta {
+      font-size: 0.8rem;
+      margin-bottom: 1rem;
+    }
+    
+    .note-meta > div {
+      gap: 0.3rem;
+    }
+    
+    .action-buttons {
+      gap: 0.5rem;
+    }
+    
+    .action-btn {
+      padding: 0.5rem 1rem;
+      font-size: 0.8rem;
     }
     
     .note-content {
@@ -1005,6 +1055,39 @@
     .mobile-toc-container {
       left: 1rem;
       width: calc(100% - 2rem);
+    }
+  }
+  
+  /* Small mobile devices */
+  @media (max-width: 480px) {
+    .hero-section {
+      padding: 2.5rem 0.75rem 3.5rem;
+      margin-bottom: -2rem;
+    }
+    
+    .note-title {
+      font-size: 1.5rem;
+    }
+    
+    .note-meta {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .note-meta > div:nth-child(2) {
+      display: none; /* Hide the bullet separator on very small screens */
+    }
+    
+    .action-buttons {
+      flex-direction: column;
+      width: 100%;
+      max-width: 250px;
+      margin: 0 auto;
+    }
+    
+    .action-btn {
+      width: 100%;
+      justify-content: center;
     }
   }
 
@@ -1178,28 +1261,23 @@
       <p>Compartilhe esta nota usando o link abaixo:</p>
       
       <div class="share-link-container">
-        <input type="text" class="share-link-input" id="shareLink" readonly value="{{ url_for('public_note', share_hash=note.share_hash, _external=True) }}
-">
+        <input type="text" class="share-link-input" id="shareLink" readonly value="{{ url_for('public_note', share_hash=note.share_hash, _external=True) }}">
         <button class="copy-btn" id="copyLink">
           <i class="fas fa-copy"></i>
         </button>
       </div>
       
       <div class="share-options">
-        <a href="https://twitter.com/intent/tweet?url={{ url_for('public_note', share_hash=note.share_hash, _external=True) }}
-&text={{ note.title }}" target="_blank" class="share-option twitter">
+        <a href="https://twitter.com/intent/tweet?url={{ url_for('public_note', share_hash=note.share_hash, _external=True) }}&text={{ note.title }}" target="_blank" class="share-option twitter">
           <i class="fab fa-twitter"></i>
         </a>
-        <a href="https://www.facebook.com/sharer/sharer.php?u={{ url_for('public_note', share_hash=note.share_hash, _external=True) }}
-" target="_blank" class="share-option facebook">
+        <a href="https://www.facebook.com/sharer/sharer.php?u={{ url_for('public_note', share_hash=note.share_hash, _external=True) }}" target="_blank" class="share-option facebook">
           <i class="fab fa-facebook-f"></i>
         </a>
-        <a href="https://wa.me/?text={{ note.title }}%20{{ url_for('public_note', share_hash=note.share_hash, _external=True) }}
-" target="_blank" class="share-option whatsapp">
+        <a href="https://wa.me/?text={{ note.title }}%20{{ url_for('public_note', share_hash=note.share_hash, _external=True) }}" target="_blank" class="share-option whatsapp">
           <i class="fab fa-whatsapp"></i>
         </a>
-        <a href="https://t.me/share/url?url={{ url_for('public_note', share_hash=note.share_hash, _external=True) }}
-&text={{ note.title }}" target="_blank" class="share-option telegram">
+        <a href="https://t.me/share/url?url={{ url_for('public_note', share_hash=note.share_hash, _external=True) }}&text={{ note.title }}" target="_blank" class="share-option telegram">
           <i class="fab fa-telegram-plane"></i>
         </a>
       </div>
