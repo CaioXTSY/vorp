@@ -10,55 +10,57 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1) Faz checkout do seu código no runner
       - name: Check out repository
         uses: actions/checkout@v3
 
-      - name: Deploy via SSH to server
+      # 2) Sincroniza apenas o que interessa para o servidor
+      - name: Sync code to server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: 22
+          source: "."
+          target: "/www/wwwroot/caiobook"
+          # não envie venv, logs, .git, etc.
+          exclude: |
+            .git
+            .github
+            venv
+            logs
+            __pycache__
+
+      # 3) Roda o deploy no servidor
+      - name: Run remote deploy commands
         uses: appleboy/ssh-action@v0.1.8
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASSWORD }}
+          port: 22
           script: |
-            # Caminhos
             PROJECT_PATH="/www/wwwroot/caiobook"
             LOG_DIR="$PROJECT_PATH/logs/deploy"
 
-            # 1) prepara diretório de logs
+            # prepara logs
             mkdir -p "$LOG_DIR" && chmod 755 "$LOG_DIR"
-
-            # 2) nome do arquivo de log com timestamp
             TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
             LOG_FILE="$LOG_DIR/deploy-$TIMESTAMP.log"
-
             echo "=== Deploy iniciado em $(date) ===" >> "$LOG_FILE"
-            # todo output a partir de agora vai para o log e para o console da Action
             exec > >(tee -a "$LOG_FILE") 2>&1
 
-            # 3) vai para a pasta pai do projeto
-            cd "$(dirname "$PROJECT_PATH")" || { echo "Falha ao acessar $(dirname "$PROJECT_PATH")"; exit 1; }
+            cd "$PROJECT_PATH" || { echo "Diretório $PROJECT_PATH não encontrado"; exit 1; }
 
-            # 4) se não tiver clone, clona; senão atualiza
-            if [ ! -d "caiobook/.git" ]; then
-              echo "--- Repositório não encontrado. Clonando... ---"
-              rm -rf caiobook
-              git clone https://github.com/CaioXTSY/caiobook.git caiobook || { echo "Falha no clone"; exit 1; }
-            fi
-
-            cd caiobook
-
-            # 5) atualiza o código
-            echo "--- Atualizando código ---"
-            git pull origin main
-
-            # 6) (re)cria e ativa venv, instala dependências
+            # instala/atualiza deps
             echo "--- Preparando ambiente Python ---"
             [ ! -d "venv" ] && python3 -m venv venv
             source venv/bin/activate
             pip install --upgrade pip
             pip install -r requirements.txt
 
-            # 7) reinicia o serviço
+            # reinicia serviço
             echo "--- Reiniciando meu_notion.service ---"
             sudo systemctl restart meu_notion.service \
               && echo "Serviço reiniciado com sucesso." \
@@ -66,5 +68,3 @@ jobs:
 
             echo "=== Deploy finalizado em $(date) ==="
             echo "Logs disponíveis em $LOG_FILE"
-            echo "=== Fim do deploy ==="
-            
