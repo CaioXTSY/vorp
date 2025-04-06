@@ -5,57 +5,59 @@ on:
     branches:
       - main
 
+env:
+  # caminho do seu projeto no servidor
+  PROJECT_PATH: /www/wwwroot/caiobook
+  # onde os logs de deploy vão ficar
+  LOG_DIR: ${{ env.PROJECT_PATH }}/logs/deploy
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out repository (runner)
+      - name: Check out repository
         uses: actions/checkout@v3
-
-      - name: Set up Python (runner)
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.13.2'
-
-      # Essa etapa é opcional e roda no runner (não no servidor)
-      - name: Install dependencies on runner (optional)
-        run: |
-          python3 -m venv venv
-          source venv/bin/activate
-          pip install --upgrade pip
-          pip install -r requirements.txt
 
       - name: Deploy via SSH to server
         uses: appleboy/ssh-action@v0.1.8
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
-          password: ${{ secrets.SERVER_PASSWORD }}
+          # recomendo usar chave SSH ao invés de password
+          key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            # Acesse o diretório do projeto no servidor
-            cd /www/wwwroot/caiobook || { echo "Diretório /www/wwwroot/Caiobook não encontrado"; exit 1; }
-            
-            # Se for um repositório git, atualiza o código; caso contrário, informe o usuário.
-            if [ -d ".git" ]; then
-              echo "Repositório encontrado. Atualizando..."
-              git pull origin main
-            else
-              echo "Não é um repositório git. Verifique se o código foi clonado corretamente."
-            fi
-            
-            # Cria o ambiente virtual se não existir
-            if [ ! -d "venv" ]; then
-              echo "Criando ambiente virtual..."
-              python3 -m venv venv
-            fi
-            
-            # Ativa o ambiente virtual e instala as dependências
-            echo "Ativando ambiente virtual e instalando dependências..."
+            # 1) prepara diretório de logs
+            mkdir -p "$LOG_DIR"
+            chmod 755 "$LOG_DIR"
+
+            # 2) cria arquivo de log com timestamp
+            TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
+            LOG_FILE="$LOG_DIR/deploy-$TIMESTAMP.log"
+            echo "=== Deploy iniciado em $(date) ===" >> "$LOG_FILE"
+
+            # 3) tudo que vier depois vai para o log e para o console da Action
+            exec > >(tee -a "$LOG_FILE") 2>&1
+
+            # 4) entra no diretório do projeto
+            cd "$PROJECT_PATH" || { echo "Diretório $PROJECT_PATH não encontrado"; exit 1; }
+
+            # 5) atualiza o código
+            echo "--- Atualizando código ---"
+            git pull origin main
+
+            # 6) (re)cria e ativa venv
+            echo "--- Preparando ambiente Python ---"
+            [ ! -d venv ] && python3 -m venv venv
             source venv/bin/activate
             pip install --upgrade pip
             pip install -r requirements.txt
-            
-            # Reinicia o serviço (verifique se o nome do serviço está correto)
-            echo "Reiniciando o serviço..."
-            sudo systemctl restart meu_notion.service || echo "Serviço 'meu_notion.service' não encontrado."
+
+            # 7) reinicia o serviço systemd
+            echo "--- Reiniciando meu_notion.service ---"
+            sudo systemctl restart meu_notion.service \
+              && echo "Serviço reiniciado com sucesso." \
+              || echo "Falha ao reiniciar serviço."
+
+            echo "=== Deploy finalizado em $(date) ==="
+            echo "Logs disponíveis em $LOG_FILE"
