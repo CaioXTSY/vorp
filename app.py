@@ -6,6 +6,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 from io import BytesIO
 from pathlib import Path
+import hashlib
 
 import markdown
 from dotenv import load_dotenv
@@ -116,13 +117,13 @@ class Note(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     slug = db.Column(db.String(100), unique=True, nullable=False)  # Link fixo
+    share_hash = db.Column(db.String(64), unique=True, nullable=True)  # Campo para hash fixo
     content = db.Column(db.Text, nullable=False)
     is_public = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=now_sp)
     updated_at = db.Column(db.DateTime, default=now_sp, onupdate=now_sp)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     
-    # Novo campo para registrar visualizações
     views = db.Column(db.Integer, default=0)
 
 
@@ -168,6 +169,13 @@ def generate_unique_slug(title):
         counter += 1
     return slug
 
+def generate_share_hash(note_id):
+    """
+    Gera um hash fixo para compartilhamento baseado no ID da nota e na chave secreta.
+    """
+    salt = app.config.get('SECRET_KEY', 'default_secret')
+    return hashlib.sha256(f"{note_id}-{salt}".encode('utf-8')).hexdigest()[:10]
+
 def update_schema():
     """
     Exemplo de lógica para atualizar o schema (opcional).
@@ -175,6 +183,7 @@ def update_schema():
     """
     result = db.session.execute(text("PRAGMA table_info(note)"))
     columns = [row[1] for row in result]
+    
     if 'slug' not in columns:
         db.session.execute(text("ALTER TABLE note ADD COLUMN slug TEXT"))
         db.session.commit()
@@ -183,8 +192,18 @@ def update_schema():
             if not note.slug:
                 note.slug = generate_unique_slug(note.title)
         db.session.commit()
+    
     if 'views' not in columns:
         db.session.execute(text("ALTER TABLE note ADD COLUMN views INTEGER DEFAULT 0"))
+        db.session.commit()
+    
+    if 'share_hash' not in columns:
+        db.session.execute(text("ALTER TABLE note ADD COLUMN share_hash TEXT"))
+        db.session.commit()
+        notes = Note.query.all()
+        for note in notes:
+            if not note.share_hash:
+                note.share_hash = generate_share_hash(note.id)
         db.session.commit()
 
 # ---------------------------------------------------------------------------
@@ -423,6 +442,10 @@ def new_note():
     db.session.add(note)
     db.session.commit()
     
+    # Atualiza o share_hash após o commit (para ter o note.id)
+    note.share_hash = generate_share_hash(note.id)
+    db.session.commit()
+    
     flash("Nota criada com sucesso!", "success")
     return redirect(url_for('list_notes'))
 
@@ -492,12 +515,12 @@ def toggle_public(note_id):
     db.session.commit()
     share_link = ""
     if note.is_public:
-        share_link = f"{request.host_url.rstrip('/')}/p/{note.slug}"
+        share_link = f"{request.host_url.rstrip('/')}/p/{note.share_hash}"
     return jsonify({'status': 'success', 'share_link': share_link})
 
-@app.route('/p/<string:slug>')
-def public_note(slug):
-    note = Note.query.filter_by(slug=slug, is_public=True).first_or_404()
+@app.route('/p/<string:share_hash>')
+def public_note(share_hash):
+    note = Note.query.filter_by(share_hash=share_hash, is_public=True).first_or_404()
     
     # Atualiza o contador de visualizações sem alterar updated_at
     Note.query.filter_by(id=note.id).update({
@@ -796,8 +819,7 @@ def process_ai():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-        update_schema()  # Atualiza o schema para incluir 'slug' e 'views'
-        # Cria usuário admin padrão, se não existir
+        update_schema()
         admin_user = User.query.filter_by(username='admin').first()
         if not admin_user:
             admin_user = User(username='admin', email='admin@example.com')

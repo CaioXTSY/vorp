@@ -883,7 +883,8 @@
       <div class="modal-body">
         <p class="mb-4">Compartilhe esta nota usando o link abaixo:</p>
         <div class="link-input-group">
-          <input type="text" id="publicLinkInput" class="link-input" readonly value="{{ url_for('public_note', slug=note.slug, _external=True) }}">
+          <input type="text" id="publicLinkInput" class="link-input" readonly value="{{ url_for('public_note', share_hash=note.share_hash, _external=True) }}
+          ">
           <button type="button" id="copyLinkBtn" class="copy-button">
             <i class="fas fa-copy"></i>
           </button>

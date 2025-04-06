@@ -1178,23 +1178,28 @@
       <p>Compartilhe esta nota usando o link abaixo:</p>
       
       <div class="share-link-container">
-        <input type="text" class="share-link-input" id="shareLink" readonly value="{{ url_for('public_note', slug=note.slug, _external=True) }}">
+        <input type="text" class="share-link-input" id="shareLink" readonly value="{{ url_for('public_note', share_hash=note.share_hash, _external=True) }}
+">
         <button class="copy-btn" id="copyLink">
           <i class="fas fa-copy"></i>
         </button>
       </div>
       
       <div class="share-options">
-        <a href="https://twitter.com/intent/tweet?url={{ url_for('public_note', slug=note.slug, _external=True) }}&text={{ note.title }}" target="_blank" class="share-option twitter">
+        <a href="https://twitter.com/intent/tweet?url={{ url_for('public_note', share_hash=note.share_hash, _external=True) }}
+&text={{ note.title }}" target="_blank" class="share-option twitter">
           <i class="fab fa-twitter"></i>
         </a>
-        <a href="https://www.facebook.com/sharer/sharer.php?u={{ url_for('public_note', slug=note.slug, _external=True) }}" target="_blank" class="share-option facebook">
+        <a href="https://www.facebook.com/sharer/sharer.php?u={{ url_for('public_note', share_hash=note.share_hash, _external=True) }}
+" target="_blank" class="share-option facebook">
           <i class="fab fa-facebook-f"></i>
         </a>
-        <a href="https://wa.me/?text={{ note.title }}%20{{ url_for('public_note', slug=note.slug, _external=True) }}" target="_blank" class="share-option whatsapp">
+        <a href="https://wa.me/?text={{ note.title }}%20{{ url_for('public_note', share_hash=note.share_hash, _external=True) }}
+" target="_blank" class="share-option whatsapp">
           <i class="fab fa-whatsapp"></i>
         </a>
-        <a href="https://t.me/share/url?url={{ url_for('public_note', slug=note.slug, _external=True) }}&text={{ note.title }}" target="_blank" class="share-option telegram">
+        <a href="https://t.me/share/url?url={{ url_for('public_note', share_hash=note.share_hash, _external=True) }}
+&text={{ note.title }}" target="_blank" class="share-option telegram">
           <i class="fab fa-telegram-plane"></i>
         </a>
       </div>
