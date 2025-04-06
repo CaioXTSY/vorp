@@ -6,10 +6,7 @@ on:
       - main
 
 env:
-  # caminho do seu projeto no servidor
   PROJECT_PATH: /www/wwwroot/caiobook
-  # onde os logs de deploy vão ficar
-  LOG_DIR: ${{ env.PROJECT_PATH }}/logs/deploy
 
 jobs:
   deploy:
@@ -24,36 +21,30 @@ jobs:
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
-          # recomendo usar chave SSH ao invés de password
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            # 1) prepara diretório de logs
+            # monta LOG_DIR a partir de PROJECT_PATH
+            LOG_DIR="${PROJECT_PATH}/logs/deploy"
             mkdir -p "$LOG_DIR"
             chmod 755 "$LOG_DIR"
 
-            # 2) cria arquivo de log com timestamp
             TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
             LOG_FILE="$LOG_DIR/deploy-$TIMESTAMP.log"
-            echo "=== Deploy iniciado em $(date) ===" >> "$LOG_FILE"
 
-            # 3) tudo que vier depois vai para o log e para o console da Action
+            echo "=== Deploy iniciado em $(date) ===" >> "$LOG_FILE"
             exec > >(tee -a "$LOG_FILE") 2>&1
 
-            # 4) entra no diretório do projeto
             cd "$PROJECT_PATH" || { echo "Diretório $PROJECT_PATH não encontrado"; exit 1; }
 
-            # 5) atualiza o código
             echo "--- Atualizando código ---"
             git pull origin main
 
-            # 6) (re)cria e ativa venv
             echo "--- Preparando ambiente Python ---"
             [ ! -d venv ] && python3 -m venv venv
             source venv/bin/activate
             pip install --upgrade pip
             pip install -r requirements.txt
 
-            # 7) reinicia o serviço systemd
             echo "--- Reiniciando meu_notion.service ---"
             sudo systemctl restart meu_notion.service \
               && echo "Serviço reiniciado com sucesso." \
