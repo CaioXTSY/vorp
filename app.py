@@ -71,7 +71,7 @@ def verify_reset_token(token, expiration=1800):
     """
     try:
         email = serializer.loads(token, salt='reset-senha', max_age=expiration)
-    except:
+    except Exception:
         return None
     return email
 
@@ -110,6 +110,9 @@ class Note(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
+    # Novo campo para registrar visualizações
+    views = db.Column(db.Integer, default=0)
 
 
 class Version(db.Model):
@@ -168,6 +171,9 @@ def update_schema():
         for note in notes:
             if not note.slug:
                 note.slug = generate_unique_slug(note.title)
+        db.session.commit()
+    if 'views' not in columns:
+        db.session.execute(text("ALTER TABLE note ADD COLUMN views INTEGER DEFAULT 0"))
         db.session.commit()
 
 # ---------------------------------------------------------------------------
@@ -447,6 +453,15 @@ def view_note(note_id):
         if current_user_id != note.user_id:
             flash("Esta nota é privada.", "danger")
             return redirect(url_for('login'))
+    
+    # Atualiza o contador de visualizações sem alterar updated_at
+    Note.query.filter_by(id=note.id).update({
+        "views": Note.views + 1,
+        "updated_at": note.updated_at
+    })
+    db.session.commit()
+    db.session.refresh(note)
+    
     md_instance = markdown.Markdown(extensions=['fenced_code', 'tables', 'toc', 'codehilite'])
     html_content = md_instance.convert(note.content)
     toc = md_instance.toc
@@ -502,6 +517,15 @@ def toggle_public(note_id):
 @app.route('/p/<string:slug>')
 def public_note(slug):
     note = Note.query.filter_by(slug=slug, is_public=True).first_or_404()
+    
+    # Atualiza o contador de visualizações sem alterar updated_at
+    Note.query.filter_by(id=note.id).update({
+        "views": Note.views + 1,
+        "updated_at": note.updated_at
+    })
+    db.session.commit()
+    db.session.refresh(note)
+    
     md_instance = markdown.Markdown(extensions=['fenced_code', 'tables', 'toc', 'codehilite'])
     html_content = md_instance.convert(note.content)
     toc = md_instance.toc
@@ -759,7 +783,7 @@ def process_ai():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-        update_schema()  # Exemplo, se precisar criar coluna 'slug' em 'note'
+        update_schema()  # Atualiza o schema para incluir 'slug' e 'views'
         # Cria usuário admin padrão, se não existir
         admin_user = User.query.filter_by(username='admin').first()
         if not admin_user:
