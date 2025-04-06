@@ -18,6 +18,7 @@ from sqlalchemy import text
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from xhtml2pdf import pisa
+import openai  # Utilize a abordagem global da biblioteca OpenAI
 
 # Pacotes necessários para envio de e-mail e token:
 from flask_mail import Mail, Message
@@ -25,6 +26,9 @@ from itsdangerous import URLSafeTimedSerializer
 
 # Carrega variáveis de ambiente
 load_dotenv()
+
+# Configura a chave da API do OpenAI globalmente
+openai.api_key = os.getenv('OPENAI_API_KEY')
 
 # ---------------------------------------------------------------------------
 # Configuração e Inicialização do App
@@ -46,7 +50,7 @@ app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')  # Ex: 'seuemail@gmail.com'
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')  # Senha de app
-app.config['MAIL_DEFAULT_SENDER'] = ( 'VORP', os.getenv('MAIL_USERNAME') )
+app.config['MAIL_DEFAULT_SENDER'] = ('VORP', os.getenv('MAIL_USERNAME'))
 
 # Inicializa extensões
 db = SQLAlchemy(app)
@@ -70,7 +74,6 @@ def verify_reset_token(token, expiration=1800):
     except:
         return None
     return email
-
 
 # ---------------------------------------------------------------------------
 # MODELOS (Models)
@@ -116,7 +119,6 @@ class Version(db.Model):
     content = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-
 
 # ---------------------------------------------------------------------------
 # FUNÇÕES AUXILIARES
@@ -168,7 +170,6 @@ def update_schema():
                 note.slug = generate_unique_slug(note.title)
         db.session.commit()
 
-
 # ---------------------------------------------------------------------------
 # CONTEXT PROCESSORS E TEMPLATE FILTERS
 # ---------------------------------------------------------------------------
@@ -185,7 +186,6 @@ def datetime_format(value, format="%d/%m/%Y %H:%M"):
     if not value:
         return ""
     return value.strftime(format)
-
 
 # ---------------------------------------------------------------------------
 # ROTAS - AUTENTICAÇÃO
@@ -206,13 +206,11 @@ def login():
             return redirect(url_for('login'))
     return render_template('login.html')
 
-
 @app.route('/logout')
 def logout():
     session.clear()
     flash("Logout realizado com sucesso!", "success")
     return redirect(url_for('login'))
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -252,7 +250,6 @@ def register():
     
     return render_template('register.html')
 
-
 # ---------------------------------------------------------------------------
 # ROTA - ESQUECI A SENHA (FORGOT PASSWORD)
 # ---------------------------------------------------------------------------
@@ -278,7 +275,6 @@ def forgot_password():
             return redirect(url_for('forgot_password'))
     return render_template('forgot_password.html')
 
-
 @app.route('/reset_password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
     email = verify_reset_token(token)
@@ -301,7 +297,6 @@ def reset_password(token):
         return redirect(url_for('login'))
     
     return render_template('reset_password.html', token=token)
-
 
 # ---------------------------------------------------------------------------
 # PERFIL DO USUÁRIO E EDIÇÃO
@@ -361,7 +356,6 @@ def profile(username):
         achievements=achievements
     )
 
-
 @app.route('/profile_edit', methods=['GET', 'POST'])
 def profile_edit():
     """
@@ -409,7 +403,6 @@ def profile_edit():
         return redirect(url_for('profile', username=user.username))
 
     return render_template('profile_edit.html', user=user)
-
 
 # ---------------------------------------------------------------------------
 # ROTAS - NOTAS
@@ -514,7 +507,6 @@ def public_note(slug):
     toc = md_instance.toc
     return render_template('view_note.html', note=note, html_content=html_content, toc=toc)
 
-
 # ---------------------------------------------------------------------------
 # EXPORTAÇÃO DE NOTAS E BANCO DE DADOS
 # ---------------------------------------------------------------------------
@@ -611,7 +603,6 @@ def export_note(note_id):
         flash("Falha ao gerar PDF.", "danger")
         return redirect(url_for('view_note', note_id=note.id))
 
-
 # ---------------------------------------------------------------------------
 # ADMIN
 # ---------------------------------------------------------------------------
@@ -665,10 +656,106 @@ def admin_notes():
     notes = Note.query.order_by(Note.updated_at.desc()).all()
     return render_template('admin_notes.html', notes=notes)
 
+# ---------------------------------------------------------------------------
+# ASSISTENTE IA (OpenAI)
+# ---------------------------------------------------------------------------
+@app.route('/ask', methods=['POST'])
+@csrf.exempt
+def ask_question():
+    data = request.get_json()
+    question = data.get('question', '')
+    context = data.get('context', '')
+    conversation_history = data.get('history', [])
+    conversation_history = conversation_history[-10:]
+    
+    try:
+        messages = [
+            {
+                "role": "system",
+                "content": f"""
+Você é Vorp, um assistente de estudos eficiente, focada e com um tom profissional. Utilize o contexto abaixo apenas se for relevante:
 
-# ---------------------------------------------------------------------------
-# INICIALIZAÇÃO DA APLICAÇÃO
-# ---------------------------------------------------------------------------
+{context}
+
+Regras de estilo:
+- Seja direto e objetivo nas respostas.
+- Respostas claras e informativas (máximo de 2 parágrafos).
+- Use Markdown básico para formatação.
+- Se a pergunta não estiver relacionada ao contexto ou fora do escopo de estudos, informe educadamente que não pode ajudar com esse assunto.
+- Se não houver informações suficientes, solicite mais detalhes de forma concisa.
+"""
+            }
+        ]
+        for msg in conversation_history:
+            role = msg.get("role", "user").lower()
+            content = msg.get("content", "")
+            if role not in ["system", "user", "assistant"]:
+                role = "user"
+            messages.append({"role": role, "content": content})
+        messages.append({"role": "user", "content": question})
+        response = openai.ChatCompletion.create(
+            model="gpt-4o-mini",
+            messages=messages,
+            temperature=0.4,
+            max_tokens=5000
+        )
+        answer = response.choices[0].message.content
+        return jsonify({'answer': answer})
+    except Exception as e:
+        app.logger.error(f"OpenAI API Error: {str(e)}")
+        return jsonify({'error': 'Erro ao processar a pergunta'}), 500
+
+@app.route('/process-ai', methods=['POST'])
+@csrf.exempt
+def process_ai():
+    data = request.get_json()
+    action = data.get('action', '')
+    text = data.get('text', '')
+    
+    if not text or not action:
+        return jsonify({'error': 'Parâmetros inválidos'}), 400
+    
+    try:
+        if action == 'summarize':
+            system_prompt = "Você é um assistente especializado em resumir textos. Crie um resumo conciso do texto fornecido, mantendo os pontos principais."
+            user_prompt = f"Resuma o seguinte texto em um parágrafo curto:\n\n{text}"
+        
+        elif action == 'enhance':
+            system_prompt = "Você é um assistente especializado em melhorar a escrita. Melhore o texto fornecido, mantendo o significado original, mas tornando-o mais claro, conciso e profissional."
+            user_prompt = f"Melhore o seguinte texto:\n\n{text}"
+        
+        elif action == 'format-md':
+            system_prompt = "Você é um assistente especializado em formatação Markdown. Converta o texto fornecido em Markdown bem formatado, adicionando cabeçalhos, listas, ênfase e outros elementos apropriados."
+            user_prompt = f"Converta o seguinte texto em Markdown bem formatado:\n\n{text}"
+        
+        elif action == 'explain':
+            system_prompt = "Você é um assistente educacional especializado em explicar conceitos de forma clara e concisa."
+            user_prompt = f"Explique o seguinte conceito de forma simples e educativa:\n\n{text}"
+        
+        elif action == 'translate':
+            system_prompt = "Você é um assistente especializado em tradução. Traduza o texto fornecido para o português, mantendo o significado e o tom originais."
+            user_prompt = f"Traduza o seguinte texto para o português:\n\n{text}"
+        
+        else:
+            return jsonify({'error': 'Ação não reconhecida'}), 400
+        
+        response = openai.ChatCompletion.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=0.4,
+            max_tokens=2000
+        )
+        
+        result = response.choices[0].message.content
+        return jsonify({'result': result})
+    
+    except Exception as e:
+        app.logger.error(f"OpenAI API Error: {str(e)}")
+        return jsonify({'error': 'Erro ao processar a solicitação'}), 500
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
