@@ -1,7 +1,9 @@
 import os
 import re
 import unicodedata
+import locale
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from io import BytesIO
 from pathlib import Path
 
@@ -24,11 +26,20 @@ import openai  # Utilize a abordagem global da biblioteca OpenAI
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 
+# Define o locale para português do Brasil (certifique-se que o locale está instalado no sistema)
+locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+
 # Carrega variáveis de ambiente
 load_dotenv()
 
 # Configura a chave da API do OpenAI globalmente
 openai.api_key = os.getenv('OPENAI_API_KEY')
+
+# ---------------------------------------------------------------------------
+# Função auxiliar para retornar o horário atual com o fuso "America/Sao_Paulo"
+# ---------------------------------------------------------------------------
+def now_sp():
+    return datetime.now(ZoneInfo("America/Sao_Paulo"))
 
 # ---------------------------------------------------------------------------
 # Configuração e Inicialização do App
@@ -88,7 +99,7 @@ class User(db.Model):
     full_name = db.Column(db.String(100), nullable=True)
     bio = db.Column(db.Text, nullable=True)
     gender = db.Column(db.String(20), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=now_sp)
 
     notes = db.relationship('Note', backref='user', lazy=True)
     versions = db.relationship('Version', backref='user', lazy=True)
@@ -107,8 +118,8 @@ class Note(db.Model):
     slug = db.Column(db.String(100), unique=True, nullable=False)  # Link fixo
     content = db.Column(db.Text, nullable=False)
     is_public = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=now_sp)
+    updated_at = db.Column(db.DateTime, default=now_sp, onupdate=now_sp)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     
     # Novo campo para registrar visualizações
@@ -120,7 +131,7 @@ class Version(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     discipline = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=now_sp)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 # ---------------------------------------------------------------------------
@@ -185,12 +196,17 @@ def inject_user():
 
 @app.context_processor
 def inject_current_year():
-    return {'current_year': datetime.utcnow().year}
+    return {'current_year': now_sp().year}
 
 @app.template_filter('datetime_format')
 def datetime_format(value, format="%d/%m/%Y %H:%M"):
     if not value:
         return ""
+    # Se o objeto for "naive", assumimos que já está no fuso de São Paulo
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=ZoneInfo("America/Sao_Paulo"))
+    else:
+        value = value.astimezone(ZoneInfo("America/Sao_Paulo"))
     return value.strftime(format)
 
 # ---------------------------------------------------------------------------
@@ -318,33 +334,6 @@ def profile(username):
     notes_count = len(notes)
     created_at = user.created_at
     recent_notes = notes[:3]
-    recent_activity_count = 5
-    activity_percentage = 60
-    streak_days = 3
-    user_level = 2
-    experience_points = 120
-    level_progress = 40
-    remaining_points = 80
-    achievements = [
-        {
-            'name': 'Primeira Nota',
-            'description': 'Crie a primeira nota',
-            'icon': 'star',
-            'unlocked': notes_count >= 1
-        },
-        {
-            'name': 'Dez Notas',
-            'description': 'Crie 10 notas',
-            'icon': 'star',
-            'unlocked': notes_count >= 10
-        },
-        {
-            'name': 'Maratonista',
-            'description': 'Acesse o sistema 7 dias consecutivos',
-            'icon': 'fire',
-            'unlocked': streak_days >= 7
-        },
-    ]
     
     return render_template(
         'profile.html',
@@ -352,14 +341,6 @@ def profile(username):
         notes_count=notes_count,
         created_at=created_at,
         recent_notes=recent_notes,
-        recent_activity_count=recent_activity_count,
-        activity_percentage=activity_percentage,
-        streak_days=streak_days,
-        user_level=user_level,
-        experience_points=experience_points,
-        level_progress=level_progress,
-        remaining_points=remaining_points,
-        achievements=achievements
     )
 
 @app.route('/profile_edit', methods=['GET', 'POST'])
@@ -378,7 +359,7 @@ def profile_edit():
         if 'profile_image' in request.files:
             file = request.files['profile_image']
             if file and allowed_file(file.filename):
-                filename = secure_filename(f"{datetime.now().timestamp()}-{file.filename}")
+                filename = secure_filename(f"{now_sp().timestamp()}-{file.filename}")
                 upload_dir = os.path.join(app.static_folder, 'uploads')
                 os.makedirs(upload_dir, exist_ok=True)
                 file_path = os.path.join(upload_dir, filename)
