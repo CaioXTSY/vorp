@@ -2,6 +2,10 @@
 {% block title %}{{ note.title }} - CAIOBOOK{% endblock %}
 
 {% block head_extras %}
+<!-- Add Marked.js for Markdown parsing -->
+<script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.6/dist/purify.min.js"></script>
+
 <style>
   /* Core styles with improved color scheme */
   :root {
@@ -347,7 +351,7 @@
     max-height: 60vh;
   }
   
-  /* Chatbot styles */
+  /* Enhanced Chatbot styles */
   .chatbot-toggle {
     position: fixed;
     bottom: 2rem;
@@ -389,12 +393,13 @@
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     z-index: 50;
     overflow: hidden;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
     opacity: 0;
     transform: translateY(20px) scale(0.95);
     pointer-events: none;
     display: flex;
     flex-direction: column;
+    height: 80vh;
     max-height: 80vh;
     border: 1px solid rgba(255, 255, 255, 0.05);
   }
@@ -403,6 +408,21 @@
     opacity: 1;
     transform: translateY(0) scale(1);
     pointer-events: all;
+  }
+  
+  /* Fullscreen chat styles */
+  .chatbot-container.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: 100%;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+    z-index: 1000;
   }
   
   /* Chatbot styling improvements */
@@ -420,6 +440,11 @@
     align-items: center;
     gap: 0.75rem;
     font-weight: 600;
+    cursor: pointer; /* Add cursor pointer to indicate it's clickable */
+  }
+  
+  .chatbot-title:hover {
+    opacity: 0.9; /* Add hover effect */
   }
   
   .chatbot-icon {
@@ -431,6 +456,11 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    cursor: pointer; /* Add cursor pointer to indicate it's clickable */
+  }
+  
+  .chatbot-icon:hover {
+    background-color: rgba(255, 255, 255, 0.3); /* Add hover effect */
   }
   
   .chatbot-icon img {
@@ -439,7 +469,13 @@
     object-fit: cover;
   }
   
-  .chatbot-close {
+  .chatbot-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  
+  .chatbot-fullscreen, .chatbot-close {
     background: none;
     border: none;
     color: white;
@@ -453,7 +489,7 @@
     transition: all 0.2s;
   }
   
-  .chatbot-close:hover {
+  .chatbot-fullscreen:hover, .chatbot-close:hover {
     background-color: rgba(255, 255, 255, 0.2);
   }
   
@@ -464,7 +500,6 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    max-height: 50vh;
     scrollbar-width: thin;
     scrollbar-color: var(--primary-light) rgba(30, 41, 59, 0.5);
   }
@@ -507,6 +542,114 @@
     background-color: var(--primary);
     color: white;
     border-bottom-right-radius: 0.25rem;
+  }
+  
+  /* Message content styling for markdown */
+  .message-content {
+    line-height: 1.5;
+    word-break: break-word;
+  }
+  
+  .message-content p {
+    margin-bottom: 0.75rem;
+  }
+  
+  .message-content p:last-child {
+    margin-bottom: 0;
+  }
+  
+  .message-content a {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+  
+  .message-content ul, .message-content ol {
+    margin-left: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .message-content h1, .message-content h2, .message-content h3, 
+  .message-content h4, .message-content h5, .message-content h6 {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
+  
+  .message-content code {
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 0.2em 0.4em;
+    border-radius: 0.25rem;
+    font-family: monospace;
+    font-size: 0.9em;
+  }
+  
+  .message-content pre {
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin: 0.75rem 0;
+  }
+  
+  .message-content pre code {
+    background-color: transparent;
+    padding: 0;
+  }
+  
+  .message-content blockquote {
+    border-left: 3px solid var(--primary);
+    padding-left: 1rem;
+    margin-left: 0;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  /* Suggested questions section */
+  .suggested-questions {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(30, 41, 59, 0.5);
+    transition: all 0.3s ease;
+    max-height: 200px;
+    overflow: hidden;
+  }
+  
+  .suggested-questions.hidden {
+    max-height: 0;
+    padding: 0 1.5rem;
+    opacity: 0;
+  }
+  
+  .suggested-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 0.75rem;
+  }
+  
+  .question-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .question-chip {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 1rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .question-chip:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
   }
   
   .chatbot-input {
@@ -974,23 +1117,49 @@
   <img src="{{ url_for('static', filename='vorp.png') }}" alt="Vorp Assistant">
 </div>
 
-<!-- Chatbot container -->
+<!-- Enhanced Chatbot container -->
 <div class="chatbot-container" id="chatbotContainer">
   <div class="chatbot-header">
-    <div class="chatbot-title">
-      <div class="chatbot-icon">
+    <div class="chatbot-title" id="chatbotTitle">
+      <div class="chatbot-icon" id="chatbotHeaderIcon">
         <img src="{{ url_for('static', filename='vorp.png') }}" alt="Vorp">
       </div>
       <span>VorpIA</span>
     </div>
-    <button class="chatbot-close" id="chatbotClose">
-      <i class="fas fa-times"></i>
-    </button>
+    <div class="chatbot-actions">
+      <button class="chatbot-fullscreen" id="chatbotFullscreen" title="Tela cheia">
+        <i class="fas fa-expand"></i>
+      </button>
+      <button class="chatbot-close" id="chatbotClose" title="Fechar">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
   </div>
   
   <div class="chatbot-messages" id="chatMessages">
     <div class="message bot">
-      Olá! Sou Vorp, seu assistente de estudos. Como posso ajudar com este conteúdo?
+      <div class="message-content">
+        Olá! Sou Vorp, seu assistente de estudos. Como posso ajudar com este conteúdo?
+      </div>
+    </div>
+  </div>
+  
+  <!-- Suggested questions section -->
+  <div class="suggested-questions" id="suggestedQuestions">
+    <div class="suggested-title">Sugestões:</div>
+    <div class="question-chips">
+      <div class="question-chip" data-question="Gere um resumo deste conteúdo">
+        <i class="fas fa-file-alt"></i> Gerar resumo
+      </div>
+      <div class="question-chip" data-question="Gere 3 questões sobre este conteúdo">
+        <i class="fas fa-question-circle"></i> Gerar questões
+      </div>
+      <div class="question-chip" data-question="Explique os conceitos principais">
+        <i class="fas fa-lightbulb"></i> Explicar conceitos
+      </div>
+      <div class="question-chip" data-question="Como aplicar este conteúdo na prática?">
+        <i class="fas fa-hammer"></i> Aplicação prática
+      </div>
     </div>
   </div>
   
@@ -1041,13 +1210,26 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Marked.js with options
+    marked.setOptions({
+      breaks: true,
+      gfm: true,
+      headerIds: true,
+      sanitize: false // We'll use DOMPurify for sanitization
+    });
+    
     // Chatbot functionality
     const chatbotToggle = document.getElementById('chatbotToggle');
     const chatbotContainer = document.getElementById('chatbotContainer');
     const chatbotClose = document.getElementById('chatbotClose');
+    const chatbotFullscreen = document.getElementById('chatbotFullscreen');
     const chatMessages = document.getElementById('chatMessages');
     const chatInput = document.getElementById('chatInput');
     const sendMessage = document.getElementById('sendMessage');
+    const questionChips = document.querySelectorAll('.question-chip');
+    const suggestedQuestions = document.getElementById('suggestedQuestions');
+    const chatbotTitle = document.getElementById('chatbotTitle');
+    const chatbotHeaderIcon = document.getElementById('chatbotHeaderIcon');
     
     // TOC mobile functionality
     const tocBalloon = document.getElementById('tocBalloon');
@@ -1064,14 +1246,62 @@
     // Conversation history for the AI
     let conversationHistory = [];
     
+    // Fullscreen state
+    let isFullscreen = false;
+    
+    // Function to close the chat
+    function closeChat() {
+      chatbotContainer.classList.remove('active');
+      // If in fullscreen, exit fullscreen first
+      if (isFullscreen) {
+        toggleFullscreen();
+      }
+    }
+    
     // Toggle chatbot visibility
     chatbotToggle.addEventListener('click', function() {
       chatbotContainer.classList.add('active');
     });
     
-    chatbotClose.addEventListener('click', function() {
-      chatbotContainer.classList.remove('active');
-    });
+    // Close chat when clicking the X button
+    chatbotClose.addEventListener('click', closeChat);
+    
+    // Close chat when clicking on the Vorp icon or title in the header
+    chatbotTitle.addEventListener('click', closeChat);
+    chatbotHeaderIcon.addEventListener('click', closeChat);
+    
+    // Toggle fullscreen functionality with improved animation
+    chatbotFullscreen.addEventListener('click', toggleFullscreen);
+    
+    function toggleFullscreen() {
+      if (!isFullscreen) {
+        // Enter fullscreen
+        document.body.style.overflow = 'hidden'; // Prevent scrolling
+        chatbotContainer.style.transition = 'all 0.3s ease';
+        chatbotContainer.classList.add('fullscreen');
+        chatbotFullscreen.innerHTML = '<i class="fas fa-compress"></i>';
+        isFullscreen = true;
+      } else {
+        // Exit fullscreen
+        document.body.style.overflow = ''; // Restore scrolling
+        chatbotContainer.style.transition = 'all 0.3s ease';
+        chatbotContainer.classList.remove('fullscreen');
+        chatbotFullscreen.innerHTML = '<i class="fas fa-expand"></i>';
+        isFullscreen = false;
+      }
+      // Scroll to the latest message
+      setTimeout(scrollToBottom, 300);
+    }
+    
+    // Hide suggested questions
+    function hideSuggestedQuestions() {
+      suggestedQuestions.classList.add('hidden');
+    }
+    
+    // Show suggested questions
+    function showSuggestedQuestions() {
+      suggestedQuestions.classList.remove('hidden');
+    }
     
     // Toggle mobile TOC visibility
     tocBalloon.addEventListener('click', function() {
@@ -1083,8 +1313,8 @@
     });
     
     // Mobile TOC link click handler
-    document.querySelectorAll('.mobile-toc-content a').forEach(link => {
-      link.addEventListener('click', function(e) {
+    document.querySelectorAll('.mobile-toc-content a').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
         e.preventDefault();
         const targetId = this.getAttribute('href').substring(1);
         const targetElement = document.getElementById(targetId);
@@ -1102,6 +1332,22 @@
       });
     });
     
+    // Handle suggested question clicks
+    questionChips.forEach(chip => {
+      chip.addEventListener('click', function() {
+        const question = this.getAttribute('data-question');
+        chatInput.value = question;
+        sendUserMessage();
+        hideSuggestedQuestions(); // Hide suggestions after clicking
+      });
+    });
+    
+    // Parse markdown to HTML with sanitization
+    function parseMarkdown(text) {
+      const rawHtml = marked.parse(text);
+      return DOMPurify.sanitize(rawHtml);
+    }
+    
     // Send message function
     function sendUserMessage() {
       const message = chatInput.value.trim();
@@ -1112,6 +1358,9 @@
       
       // Clear input
       chatInput.value = '';
+      
+      // Hide suggested questions after sending a message
+      hideSuggestedQuestions();
       
       // Show typing indicator
       const typingIndicator = document.createElement('div');
@@ -1151,7 +1400,8 @@
         if (data.error) {
           addMessage('Desculpe, ocorreu um erro ao processar sua pergunta. Por favor, tente novamente.', 'bot');
         } else {
-          addMessage(data.answer, 'bot');
+          // Parse markdown in the response
+          addMarkdownMessage(data.answer, 'bot');
           
           // Add to conversation history
           conversationHistory.push({
@@ -1173,11 +1423,30 @@
       });
     }
     
-    // Add message to chat
+    // Add plain text message to chat
     function addMessage(text, sender) {
       const messageDiv = document.createElement('div');
       messageDiv.className = `message ${sender}`;
-      messageDiv.textContent = text;
+      
+      const contentDiv = document.createElement('div');
+      contentDiv.className = 'message-content';
+      contentDiv.textContent = text;
+      
+      messageDiv.appendChild(contentDiv);
+      chatMessages.appendChild(messageDiv);
+      scrollToBottom();
+    }
+    
+    // Add markdown message to chat
+    function addMarkdownMessage(text, sender) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${sender}`;
+      
+      const contentDiv = document.createElement('div');
+      contentDiv.className = 'message-content';
+      contentDiv.innerHTML = parseMarkdown(text);
+      
+      messageDiv.appendChild(contentDiv);
       chatMessages.appendChild(messageDiv);
       scrollToBottom();
     }
@@ -1195,6 +1464,13 @@
       if (e.key === 'Enter') {
         sendUserMessage();
       }
+    });
+    
+    // Focus on input when chat is opened
+    chatbotToggle.addEventListener('click', function() {
+      setTimeout(() => {
+        chatInput.focus();
+      }, 300);
     });
     
     // Share modal functionality
@@ -1246,6 +1522,20 @@
           });
         }
       });
+    });
+    
+    // Convert existing messages to markdown format
+    document.querySelectorAll('.message').forEach(message => {
+      if (!message.querySelector('.message-content')) {
+        const text = message.textContent;
+        message.textContent = '';
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        contentDiv.innerHTML = parseMarkdown(text);
+        
+        message.appendChild(contentDiv);
+      }
     });
   });
 </script>
