@@ -630,6 +630,29 @@ def export_note(note_id):
         app.logger.error(f"Erro na geração do PDF: {str(e)}")
         flash("Falha ao gerar PDF.", "danger")
         return redirect(url_for('view_note', note_id=note.id))
+    
+@app.route('/export_db', methods=['GET'])
+def export_db():
+    if not is_admin():
+        flash("Acesso negado. Permissões insuficientes.", "danger")
+        return redirect(url_for('login'))
+    
+    try:
+        db_path = Path(app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///', ''))
+        backup_path = db_path.with_suffix('.bak')
+        with open(backup_path, 'wb') as f:
+            with open(db_path, 'rb') as original_db:
+                f.write(original_db.read())
+        return send_file(
+            backup_path,
+            mimetype='application/octet-stream',
+            as_attachment=True,
+            download_name=backup_path.name
+        )
+    except Exception as e:
+        app.logger.error(f"Erro ao exportar o banco de dados: {str(e)}")
+        flash("Falha ao exportar o banco de dados.", "danger")
+        return redirect(url_for('admin_page'))
 
 # ---------------------------------------------------------------------------
 # ADMIN
