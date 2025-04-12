@@ -1,0 +1,159 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block title %}Minhas Notas - CAIOBOOK{% endblock %}
+
+{% block content %}
+<style>
+  .group:hover .group-hover\:opacity-100 {
+    opacity: 1 !important;
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<section class="relative bg-gradient-to-br from-gray-900 to-indigo-900 min-h-screen">
+  <!-- Background Texture -->
+  <div class="absolute inset-0 opacity-20" style="background-image: url('data:image/svg+xml,%3Csvg width=\'52\' height=\'26\' viewBox=\'0 0 52 26\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%239C92AC\' fill-opacity=\'0.2\'%3E%3Cpath d=\'M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z\' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-4 py-28">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row items-center justify-between mb-20 gap-8" data-aos="fade-up">
+      <div class="space-y-4">
+        <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+          Minhas Notas
+        </h1>
+        <p class="text-xl text-cyan-100 max-w-xl">
+          Todo seu conhecimento organizado de forma inteligente
+        </p>
+      </div>
+      
+      <button onclick="createNote()" 
+              class="group relative flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-xl shadow-2xl hover:shadow-cyan-500/30 transition-all transform hover:-translate-y-1">
+        <i class="fas fa-plus text-lg"></i>
+        Nova Nota
+        <div class="absolute inset-0 border-2 border-cyan-500/20 rounded-xl group-hover:border-cyan-400/30 transition-all"></div>
+      </button>
+    </div>
+
+    <!-- Grid de Notas -->
+    {% if notes %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" data-aos="fade-up" data-aos-delay="200">
+      {% for note in notes %}
+      <div class="relative group bg-gray-800/50 backdrop-blur-xl rounded-2xl border border-cyan-500/20 p-6 hover:border-cyan-400/40 transition-all duration-300 hover:-translate-y-2">
+        <!-- Conteúdo do card -->
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-semibold text-white truncate">{{ note.title }}</h2>
+          
+          <!-- Container dos ícones -->
+          <div class="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <a href="{% url 'notes:view_note' note.id %}" class="p-2 hover:bg-cyan-500/10 rounded-lg transition-colors">
+              <i class="fas fa-eye text-cyan-400 text-lg"></i>
+            </a>
+            <a href="{% url 'notes:edit_note' note.id %}" class="p-2 hover:bg-cyan-500/10 rounded-lg transition-colors">
+              <i class="fas fa-pen-to-square text-cyan-400 text-lg"></i>
+            </a>
+          </div>
+        </div>
+
+        <div class="text-sm text-cyan-300 mb-4 flex items-center gap-3">
+          <i class="fas fa-clock"></i>
+          <span>{{ note.updated_at|date:"d/m/Y H:i" }}</span>
+          <span class="px-2 py-1 rounded-full bg-cyan-500/10 text-cyan-400 text-xs">
+            {% if note.is_public %}Pública{% else %}Privada{% endif %}
+          </span>
+        </div>
+
+        <div class="prose prose-sm max-w-none text-cyan-100 line-clamp-3">
+          {{ note.content|safe }}
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-cyan-500/20">
+          <form method="POST" action="{% url 'notes:delete_note' note.id %}" onsubmit="return confirm('Tem certeza que deseja excluir esta nota?');">
+            {% csrf_token %}
+            <button type="submit" class="text-rose-400 hover:text-rose-300 flex items-center gap-2 w-full justify-end">
+              <i class="fas fa-trash-can"></i>
+              <span class="text-sm">Excluir</span>
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+      {% if user == request.user %}
+      <!-- Caso não haja notas e o usuário seja o dono, exibe a opção para criar nota -->
+      <div class="text-center py-20 space-y-6" data-aos="fade-up">
+        <div class="inline-flex p-6 bg-cyan-500/10 rounded-2xl animate-pulse-slow">
+          <i class="fa-regular fa-note-sticky text-4xl text-cyan-400"></i>
+        </div>
+        <h2 class="text-2xl font-semibold text-white">Nenhuma nota encontrada</h2>
+        <p class="text-cyan-300 max-w-md mx-auto">
+          Comece organizando seu conhecimento criando sua primeira nota!
+        </p>
+      </div>
+      {% endif %}
+    {% endif %}
+  </div>
+</section>
+
+<script>
+  function createNote() {
+    Swal.fire({
+      title: 'Criar Nova Nota',
+      input: 'text',
+      inputLabel: 'Título da Nota',
+      inputPlaceholder: 'Digite um título para sua nova nota...',
+      showCancelButton: true,
+      confirmButtonColor: '#06b6d4',
+      cancelButtonColor: '#4b5563',
+      confirmButtonText: 'Criar',
+      cancelButtonText: 'Cancelar',
+      inputValidator: (value) => {
+        if (!value) return 'Por favor, insira um título!'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const form = document.createElement('form')
+        form.method = 'POST'
+        form.action = "{% url 'notes:new_note' %}"
+        
+        const titleInput = document.createElement('input')
+        titleInput.type = 'hidden'
+        titleInput.name = 'title'
+        titleInput.value = result.value
+        form.appendChild(titleInput)
+        
+        const csrfInput = document.createElement('input')
+        csrfInput.type = 'hidden'
+        csrfInput.name = 'csrfmiddlewaretoken'
+        csrfInput.value = "{{ csrf_token }}"
+        form.appendChild(csrfInput)
+        
+        document.body.appendChild(form)
+        form.submit()
+      }
+    })
+  }
+</script>
+
+<style>
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  .prose {
+    color: #e5e7eb;
+  }
+  .prose h1, .prose h2, .prose h3 {
+    color: #e5e7eb;
+  }
+  .prose a {
+    color: #38bdf8;
+  }
+  .prose code {
+    background: #1e293b;
+    color: #7dd3fc;
+  }
+</style>
+{% endblock %}
