@@ -8,3 +8,17 @@ notebooks/
 *.bmp
 *.tiff
 *.svg
+*.db
+__pycache__/
+*.log
+*.pot
+*.pyc
+*.pyo
+*.sqlite3
+db.sqlite3
+media/
+staticfiles/
+.DS_Store
+*.mo
+*.swp
+*.swo

@@ -3,7 +3,7 @@ import sys
 
 def main():
     """Ponto de entrada para o Django."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'caiobook_django.settings')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'vorp.settings')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

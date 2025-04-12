@@ -30,7 +30,7 @@ class Note(models.Model):
             base_slug = slugify(self.title)
             slug_candidate = base_slug
             counter = 1
-            from db.notes_models import Note
+            from db.notes_models import Note 
             while Note.objects.filter(slug=slug_candidate).exclude(pk=self.pk).exists():
                 slug_candidate = f"{base_slug}-{counter}"
                 counter += 1
