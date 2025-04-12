@@ -22,3 +22,7 @@ staticfiles/
 *.mo
 *.swp
 *.swo
+migrations/
+*/migrations/
+*/migrations/*.pyc
+*/migrations/*.pyo
