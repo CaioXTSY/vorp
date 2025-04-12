@@ -26,18 +26,26 @@ class Note(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
+        
         if not self.slug:
             base_slug = slugify(self.title)
             slug_candidate = base_slug
             counter = 1
-            from db.notes_models import Note 
-            while Note.objects.filter(slug=slug_candidate).exclude(pk=self.pk).exists():
+            
+            while self.__class__.objects.filter(slug=slug_candidate).exclude(pk=self.pk).exists():
                 slug_candidate = f"{base_slug}-{counter}"
                 counter += 1
             self.slug = slug_candidate
 
+        
+        if not self.pk:
+            force_insert = kwargs.pop('force_insert', False)
+            super().save(force_insert=force_insert, *args, **kwargs)
+
+        
         if not self.share_hash:
-            super().save(*args, **kwargs)
             secret = settings.SECRET_KEY
             self.share_hash = generate_share_hash(self.id, secret)
+                    
+        kwargs.pop('force_insert', None)
         super().save(*args, **kwargs)

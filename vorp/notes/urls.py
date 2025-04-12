@@ -12,4 +12,5 @@ urlpatterns = [
     path('<int:note_id>/toggle_public/', views.toggle_public, name='toggle_public'),
     path('p/<str:share_hash>/', views.public_note, name='public_note'),
     path('export/<int:note_id>/', views.export_note, name='export_note'),
+    
 ]
