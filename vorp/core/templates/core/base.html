@@ -60,10 +60,43 @@
       transition: all 0.3s ease;
     }
     
+    /* Corrigindo cores para dark mode - garantindo que os links fiquem BRANCOS */
+    .dark .nav-link {
+      color: #ffffff !important; /* Forçando cor BRANCA no dark mode */
+    }
+    
     .nav-link:hover::after {
       /* Estilo para underline animado */
       left: 0;
       width: 100%;
+    }
+    
+    /* Estilo para botões */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.625rem 1.25rem;
+      font-weight: 500;
+      font-size: 0.875rem;
+      border-radius: 0.5rem;
+      background: linear-gradient(135deg, #0070f3 0%, #0099cc 100%);
+      color: white;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 6px -1px rgba(0, 112, 243, 0.2), 0 2px 4px -1px rgba(0, 112, 243, 0.1);
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 10px -1px rgba(0, 112, 243, 0.25), 0 4px 6px -1px rgba(0, 112, 243, 0.15);
+    }
+    
+    /* Gradiente de texto */
+    .text-gradient {
+      background: linear-gradient(135deg, #0070f3 0%, #0099cc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-fill-color: transparent;
     }
     
     /* Outras estilizações para botões, cards, alertas e gradientes podem ser ajustadas conforme necessário */
@@ -92,11 +125,11 @@
         
         <!-- Menu Desktop -->
         <div class="hidden md:flex items-center gap-8" data-aos="fade-down" data-aos-delay="200">
-          <a href="{% url 'core:index' %}" class="nav-link">Home</a>
+          <a href="{% url 'core:index' %}" class="nav-link dark:text-white hover:text-[#0070f3] dark:hover:text-[#0099cc]">Home</a>
           {% if user.is_authenticated %}
-            <a href="{% url 'accounts:profile' user.username %}" class="nav-link">Meu Perfil</a>
-            <a href="{% url 'notes:list_notes' %}" class="nav-link">Notas</a>
-            <a href="{% url 'accounts:logout' %}" class="nav-link">Sair</a>
+            <a href="{% url 'accounts:profile' user.username %}" class="nav-link dark:text-white hover:text-[#0070f3] dark:hover:text-[#0099cc]">Meu Perfil</a>
+            <a href="{% url 'notes:list_notes' %}" class="nav-link dark:text-white hover:text-[#0070f3] dark:hover:text-[#0099cc]">Notas</a>
+            <a href="{% url 'accounts:logout' %}" class="nav-link dark:text-white hover:text-[#0070f3] dark:hover:text-[#0099cc]">Sair</a>
             {% if user.is_staff %}
               <a href="{% url 'admin:index' %}" class="flex items-center gap-2 text-emerald-500 hover:text-emerald-600">
                 <span>Admin</span>
@@ -104,7 +137,7 @@
               </a>
             {% endif %}
           {% else %}
-            <a href="{% url 'accounts:login' %}" class="nav-link">Entrar</a>
+            <a href="{% url 'accounts:login' %}" class="nav-link dark:text-white hover:text-[#0070f3] dark:hover:text-[#0099cc]">Entrar</a>
             <a href="{% url 'accounts:register' %}" class="btn-primary flex items-center px-5 py-2.5">
               <i class="fas fa-magic text-sm mr-2"></i>
               Começar Agora
@@ -123,18 +156,18 @@
            x-ref="mobileMenu"
            :style="isOpen ? 'max-height: ' + $refs.mobileMenu.scrollHeight + 'px' : 'max-height: 0px'">
         <div class="pt-2 pb-4 space-y-2">
-          <a href="{% url 'core:index' %}" class="block px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">Home</a>
+          <a href="{% url 'core:index' %}" class="block px-4 py-3 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">Home</a>
           {% if user.is_authenticated %}
-            <a href="{% url 'accounts:profile' user.username %}" class="block px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">Meu Perfil</a>
-            <a href="{% url 'notes:list_notes' %}" class="block px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">Notas</a>
-            <a href="{% url 'accounts:logout' %}" class="block px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">Sair</a>
+            <a href="{% url 'accounts:profile' user.username %}" class="block px-4 py-3 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">Meu Perfil</a>
+            <a href="{% url 'notes:list_notes' %}" class="block px-4 py-3 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">Notas</a>
+            <a href="{% url 'accounts:logout' %}" class="block px-4 py-3 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">Sair</a>
             {% if user.is_staff %}
               <a href="{% url 'admin:index' %}" class="block px-4 py-3 text-emerald-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
                 Admin <i class="fas fa-shield-alt ml-2"></i>
               </a>
             {% endif %}
           {% else %}
-            <a href="{% url 'accounts:login' %}" class="block px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">Entrar</a>
+            <a href="{% url 'accounts:login' %}" class="block px-4 py-3 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">Entrar</a>
             <a href="{% url 'accounts:register' %}" class="btn-primary w-full justify-center mt-2">Criar Conta</a>
           {% endif %}
         </div>

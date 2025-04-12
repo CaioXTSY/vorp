@@ -328,21 +328,6 @@
     </div>
   </footer>
 
-  <!-- Scripts -->
-  <script src="https://unpkg.com/alpinejs" defer></script>
-  <script>
-    document.addEventListener('alpine:init', () => {
-      Alpine.store('darkMode', {
-        on: window.matchMedia('(prefers-color-scheme: dark)').matches,
-
-        toggle() {
-          this.on = !this.on
-          document.documentElement.classList.toggle('dark', this.on)
-        }
-      })
-    })
-  </script>
-
   {% block socket_config %}{% endblock %}
 </body>
 </html>
