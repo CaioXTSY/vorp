@@ -1,0 +1,1640 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}{{ note.title }} - CAIOBOOK{% endblock %}
+
+{% block head_extras %}
+<!-- Add Marked.js and DOMPurify for Markdown parsing -->
+<script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.6/dist/purify.min.js"></script>
+
+<style>
+    /* Core styles with improved color scheme */
+    :root {
+      --primary: #3b82f6;
+      --primary-dark: #2563eb;
+      --primary-light: #60a5fa;
+      --secondary: #0ea5e9;
+      --accent: #38bdf8;
+      --dark: #111827;
+      --light: #f8fafc;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-700: #374151;
+      --gray-800: #1f2937;
+    }
+    
+    body {
+      background-color: var(--dark);
+      color: #f1f5f9;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    
+    /* Layout and components */
+    .note-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      position: relative; /* Ensure proper stacking context */
+    }
+    
+    /* Improved hero section with cleaner design and better mobile responsiveness */
+    .hero-section {
+      background-color: var(--primary);
+      border-radius: 0 0 1.5rem 1.5rem;
+      padding: 3rem 1rem 4rem;
+      margin-bottom: -3rem;
+      position: relative;
+      overflow: visible; /* Changed from hidden to visible */
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Add subtle pattern to hero */
+    .hero-section::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none; /* Ensure clicks pass through */
+    }
+    
+    /* Improved note title with better typography and mobile responsiveness */
+    .note-title {
+      font-size: clamp(1.5rem, 5vw, 2.75rem);
+      font-weight: 800;
+      margin-bottom: 1rem;
+      color: white;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+      letter-spacing: -0.025em;
+      line-height: 1.2;
+      position: relative; /* Ensure proper stacking */
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      hyphens: auto;
+    }
+    
+    .note-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+      color: rgba(255, 255, 255, 0.95);
+      font-size: 0.875rem;
+      justify-content: center;
+      width: 100%; 
+      text-align: center;
+      margin-bottom: 1.5rem;
+      position: relative; /* Ensure proper stacking */
+    }
+    
+    .note-meta > div {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .note-meta a {
+      color: white;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    
+    .note-meta a:hover {
+      text-decoration: underline;
+    }
+    
+    .action-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+      position: relative; /* Ensure proper stacking */
+      z-index: 10; /* Ensure buttons are clickable */
+    }
+    
+    /* Improved button styling with better mobile sizing */
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.625rem 1.25rem;
+      border-radius: 0.75rem;
+      font-weight: 600;
+      transition: all 0.3s;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border: none;
+      cursor: pointer;
+      font-size: 0.875rem;
+      position: relative; /* Ensure proper stacking */
+      white-space: nowrap;
+    }
+    
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .btn-primary {
+      background-color: white;
+      color: var(--primary);
+    }
+  
+    .btn-primary:hover {
+      background-color: var(--gray-100);
+    }
+    
+    .btn-secondary {
+      background-color: rgba(255, 255, 255, 0.2);
+      color: white;
+      backdrop-filter: blur(4px);
+    }
+    
+    .btn-secondary:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      position: relative;
+      z-index: 5; /* Lower than action buttons */
+      margin-top: 2rem;
+    }
+    
+    @media (min-width: 1024px) {
+      .content-grid {
+        grid-template-columns: 3fr 1fr;
+      }
+      
+      .hero-section {
+        padding: 5rem 2rem 6rem;
+        margin-bottom: -4rem;
+        border-radius: 0 0 2rem 2rem;
+      }
+      
+      .note-title {
+        margin-bottom: 1.5rem;
+      }
+      
+      .note-meta {
+        font-size: 1rem;
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+      }
+      
+      .action-btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.95rem;
+      }
+      
+      .action-buttons {
+        gap: 1rem;
+      }
+    }
+    
+    /* Improved content card styling */
+    .note-content {
+      background-color: var(--gray-800);
+      border-radius: 1rem;
+      padding: 2.5rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      color: #e2e8f0;
+    }
+    
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    
+    .sidebar-card {
+      background-color: var(--gray-800);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      position: sticky;
+      top: 2rem;
+    }
+    
+    /* TOC styling with better contrast */
+    .sidebar-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+    }
+    
+    .toc-container {
+      max-height: 70vh;
+      overflow-y: auto;
+      padding-right: 0.5rem;
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary-light) rgba(255, 255, 255, 0.05);
+    }
+    
+    .toc-container::-webkit-scrollbar {
+      width: 4px;
+    }
+    
+    .toc-container::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+    }
+    
+    .toc-container::-webkit-scrollbar-thumb {
+      background-color: var(--primary-light);
+      border-radius: 10px;
+    }
+    
+    /* TOC styling */
+    .toc-container ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 0;
+    }
+    
+    .toc-container ul ul {
+      padding-left: 1.25rem;
+      margin-top: 0.25rem;
+    }
+    
+    .toc-container li {
+      margin-bottom: 0.5rem;
+    }
+    
+    .toc-container a {
+      color: #e2e8f0;
+      text-decoration: none;
+      display: block;
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.5rem;
+      transition: all 0.2s;
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+  
+    .toc-container a:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+      font-weight: 600;
+    }
+    
+    /* Mobile TOC balloon */
+    .toc-balloon {
+      position: fixed;
+      bottom: 2rem;
+      left: 2rem;
+      width: 3.5rem;
+      height: 3.5rem;
+      border-radius: 0.75rem;
+      background-color: var(--primary);
+      color: white;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      z-index: 50;
+      transition: all 0.3s;
+    }
+    
+    .toc-balloon:hover {
+      transform: scale(1.05);
+      background-color: var(--primary-dark);
+    }
+    
+    .mobile-toc-container {
+      position: fixed;
+      bottom: 7rem;
+      left: 2rem;
+      width: 22rem;
+      max-width: calc(100vw - 4rem);
+      background-color: var(--gray-800);
+      border-radius: 1rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      z-index: 50;
+      overflow: hidden;
+      transition: all 0.3s;
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+      pointer-events: none;
+      display: none;
+      flex-direction: column;
+      max-height: 80vh;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .mobile-toc-container.active {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: all;
+    }
+    
+    /* Mobile TOC header with better styling */
+    .mobile-toc-header {
+      background-color: var(--primary);
+      color: white;
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .mobile-toc-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 600;
+    }
+    
+    .mobile-toc-close {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      width: 2rem;
+      height: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.2s;
+    }
+    
+    .mobile-toc-close:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    .mobile-toc-content {
+      padding: 1.5rem;
+      overflow-y: auto;
+      max-height: 60vh;
+    }
+    
+    /* Enhanced Chatbot styles */
+    .chatbot-toggle {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 3.5rem;
+      height: 3.5rem;
+      border-radius: 0.75rem;
+      background-color: var(--primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      z-index: 50;
+      transition: all 0.3s;
+      overflow: hidden;
+    }
+    
+    .chatbot-toggle img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .chatbot-toggle:hover {
+      transform: scale(1.05);
+      background-color: var(--primary-dark);
+    }
+    
+    .chatbot-container {
+      position: fixed;
+      bottom: 7rem;
+      right: 2rem;
+      width: 22rem;
+      max-width: calc(100vw - 2rem);
+      background-color: var(--gray-800);
+      border-radius: 1rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      z-index: 50;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      height: 80vh;
+      max-height: 80vh;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .chatbot-container.active {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: all;
+    }
+    
+    /* Fullscreen chat styles */
+    .chatbot-container.fullscreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      max-width: 100%;
+      height: 100vh;
+      max-height: 100vh;
+      border-radius: 0;
+      z-index: 1000;
+    }
+    
+    /* Chatbot styling improvements */
+    .chatbot-header {
+      background-color: var(--primary);
+      color: white;
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .chatbot-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 600;
+      cursor: pointer; /* Indicates it's clickable */
+    }
+    
+    .chatbot-title:hover {
+      opacity: 0.9;
+    }
+    
+    .chatbot-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    
+    .chatbot-icon:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .chatbot-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .chatbot-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    
+    .chatbot-fullscreen, .chatbot-close {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      width: 2rem;
+      height: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.2s;
+    }
+    
+    .chatbot-fullscreen:hover, .chatbot-close:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    .chatbot-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary-light) rgba(30, 41, 59, 0.5);
+    }
+    
+    .chatbot-messages::-webkit-scrollbar {
+      width: 4px;
+    }
+    
+    .chatbot-messages::-webkit-scrollbar-track {
+      background: rgba(30, 41, 59, 0.5);
+    }
+    
+    .chatbot-messages::-webkit-scrollbar-thumb {
+      background-color: var(--primary-light);
+      border-radius: 10px;
+    }
+    
+    .message {
+      max-width: 80%;
+      padding: 0.75rem 1rem;
+      border-radius: 1rem;
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Chatbot styling improvements */
+    .message.bot {
+      align-self: flex-start;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #f1f5f9;
+      border-bottom-left-radius: 0.25rem;
+    }
+    
+    .message.user {
+      align-self: flex-end;
+      background-color: var(--primary);
+      color: white;
+      border-bottom-right-radius: 0.25rem;
+    }
+    
+    /* Message content styling for markdown */
+    .message-content {
+      line-height: 1.5;
+      word-break: break-word;
+    }
+    
+    .message-content p {
+      margin-bottom: 0.75rem;
+    }
+    
+    .message-content p:last-child {
+      margin-bottom: 0;
+    }
+    
+    .message-content a {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+    
+    .message-content ul, .message-content ol {
+      margin-left: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    .message-content h1, .message-content h2, .message-content h3, 
+    .message-content h4, .message-content h5, .message-content h6 {
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+    
+    .message-content code {
+      background-color: rgba(0, 0, 0, 0.2);
+      padding: 0.2em 0.4em;
+      border-radius: 0.25rem;
+      font-family: monospace;
+      font-size: 0.9em;
+    }
+    
+    .message-content pre {
+      background-color: rgba(0, 0, 0, 0.2);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      overflow-x: auto;
+      margin: 0.75rem 0;
+    }
+    
+    .message-content pre code {
+      background-color: transparent;
+      padding: 0;
+    }
+    
+    .message-content blockquote {
+      border-left: 4px solid var(--primary);
+      padding: 0.5rem 0 0.5rem 1.5rem;
+      margin: 1.5rem 0;
+      background-color: rgba(255, 255, 255, 0.05);
+      border-radius: 0 0.5rem 0.5rem 0;
+      color: #cbd5e1;
+      font-style: italic;
+    }
+    
+    /* Suggested questions section */
+    .suggested-questions {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      background-color: rgba(30, 41, 59, 0.5);
+      transition: all 0.3s ease;
+      max-height: 200px;
+      overflow: hidden;
+    }
+    
+    .suggested-questions.hidden {
+      max-height: 0;
+      padding: 0 1.5rem;
+      opacity: 0;
+    }
+    
+    .suggested-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 0.75rem;
+    }
+    
+    .question-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .question-chip {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 1rem;
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .question-chip:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+    
+    .chatbot-input {
+      display: flex;
+      padding: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      background-color: rgba(30, 41, 59, 0.8);
+    }
+    
+    .chatbot-input input {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.5rem;
+      outline: none;
+      transition: all 0.2s;
+      background-color: rgba(255, 255, 255, 0.05);
+      color: white;
+    }
+    
+    .chatbot-input input:focus {
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .chatbot-input button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 0.5rem;
+      margin-left: 0.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    
+    .chatbot-input button:hover {
+      background-color: var(--primary-dark);
+    }
+    
+    /* Markdown content styling with better contrast */
+    .markdown-content {
+      color: #f1f5f9;
+      line-height: 1.7;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+  
+    .markdown-content h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin: 2rem 0 1rem;
+      color: white;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 0.5rem;
+      font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+    }
+  
+    .markdown-content h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 1.5rem 0 1rem;
+      color: white;
+      font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+    }
+  
+    .markdown-content h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 1.25rem 0 0.75rem;
+      color: #f1f5f9;
+      font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+    }
+    
+    .markdown-content p {
+      margin-bottom: 1.25rem;
+    }
+    
+    .markdown-content ul, .markdown-content ol {
+      margin-bottom: 1.25rem;
+      padding-left: 1.5rem;
+    }
+    
+    .markdown-content li {
+      margin-bottom: 0.5rem;
+    }
+    
+    .markdown-content pre {
+      background-color: rgba(0, 0, 0, 0.3);
+      color: #f8fafc;
+      padding: 1.25rem;
+      border-radius: 0.75rem;
+      overflow-x: auto;
+      margin: 1.5rem 0;
+    }
+    
+    .markdown-content code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.9em;
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 0.2em 0.4em;
+      border-radius: 0.25rem;
+      color: #38bdf8;
+    }
+    
+    .markdown-content pre code {
+      background-color: transparent;
+      color: inherit;
+      padding: 0;
+      border-radius: 0;
+    }
+    
+    .markdown-content blockquote {
+      border-left: 4px solid var(--primary);
+      padding: 0.5rem 0 0.5rem 1.5rem;
+      margin: 1.5rem 0;
+      background-color: rgba(255, 255, 255, 0.05);
+      border-radius: 0 0.5rem 0.5rem 0;
+      color: #cbd5e1;
+      font-style: italic;
+    }
+    
+    .markdown-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 0.75rem;
+      margin: 1.5rem 0;
+    }
+    
+    .markdown-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      border-radius: 0.5rem;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    }
+    
+    .markdown-content th {
+      background-color: rgba(255, 255, 255, 0.1);
+      font-weight: 600;
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+      color: #f1f5f9;
+    }
+    
+    .markdown-content td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .markdown-content tr:last-child td {
+      border-bottom: none;
+    }
+    
+    /* Share modal */
+    .share-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(5px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s;
+    }
+    
+    .share-modal.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+    
+    .share-modal-content {
+      background-color: var(--gray-800);
+      border-radius: 1rem;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+      transform: translateY(20px) scale(0.95);
+      transition: all 0.3s;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .share-modal.active .share-modal-content {
+      transform: translateY(0) scale(1);
+    }
+    
+    .share-modal-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .share-modal-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: white;
+      font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+    }
+    
+    .share-modal-close {
+      background: none;
+      border: none;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #cbd5e1;
+      transition: all 0.2s;
+    }
+    
+    .share-modal-close:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+    
+    .share-modal-body {
+      padding: 1.5rem;
+    }
+    
+    .share-link-container {
+      display: flex;
+      margin-top: 1rem;
+    }
+    
+    /* Improved share link input */
+    .share-link-input {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.5rem 0 0 0.5rem;
+      font-size: 0.875rem;
+      color: #e2e8f0;
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    /* Improved copy button */
+    .copy-btn {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 0 1rem;
+      border-radius: 0 0.5rem 0.5rem 0;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+    
+    .copy-btn:hover {
+      background-color: var(--primary-dark);
+    }
+    
+    .share-options {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      justify-content: center;
+    }
+    
+    .share-option {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .share-option:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .share-option.twitter {
+      background-color: #1DA1F2;
+    }
+    
+    .share-option.facebook {
+      background-color: #4267B2;
+    }
+    
+    .share-option.whatsapp {
+      background-color: #25D366;
+    }
+    
+    .share-option.telegram {
+      background-color: #0088cc;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 1023px) {
+      .sidebar-card {
+        display: none;
+      }
+      
+      .toc-balloon {
+        display: flex;
+      }
+      
+      .mobile-toc-container {
+        display: flex;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .hero-section {
+        padding: 3rem 1rem 4rem;
+        margin-bottom: -2.5rem;
+      }
+      
+      .note-title {
+        font-size: 1.75rem;
+        margin-bottom: 0.75rem;
+      }
+      
+      .note-meta {
+        font-size: 0.8rem;
+        margin-bottom: 1rem;
+      }
+      
+      .note-meta > div {
+        gap: 0.3rem;
+      }
+      
+      .action-buttons {
+        gap: 0.5rem;
+      }
+      
+      .action-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+      }
+      
+      .note-content {
+        padding: 1.5rem;
+      }
+      
+      .chatbot-container {
+        width: calc(100% - 2rem);
+        right: 1rem;
+        bottom: 6rem;
+      }
+      
+      .chatbot-toggle {
+        right: 1rem;
+        bottom: 1rem;
+      }
+      
+      .toc-balloon {
+        left: 1rem;
+        bottom: 1rem;
+      }
+      
+      .mobile-toc-container {
+        left: 1rem;
+        width: calc(100% - 2rem);
+      }
+    }
+    
+    /* Small mobile devices */
+    @media (max-width: 480px) {
+      .hero-section {
+        padding: 2.5rem 0.75rem 3.5rem;
+        margin-bottom: -2rem;
+      }
+      
+      .note-title {
+        font-size: 1.5rem;
+      }
+      
+      .note-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      
+      .note-meta > div:nth-child(2) {
+        display: none; /* Hide the bullet separator on very small screens */
+      }
+      
+      .action-buttons {
+        flex-direction: column;
+        width: 100%;
+        max-width: 250px;
+        margin: 0 auto;
+      }
+      
+      .action-btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  
+    /* Import Poppins font for headings */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+  </style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero section with title and metadata -->
+<section class="hero-section">
+  <div class="note-container">
+    <div class="text-center">
+      <h1 class="note-title">{{ note.title }}</h1>
+      <div class="note-meta">
+        <div>
+          <i class="fas fa-user-circle"></i>
+          {% url 'profile' note.user.username as profile_url %}
+          <a href="{{ profile_url }}">{{ note.user.username }}</a>
+        </div>
+        <div>•</div>
+        <div>
+          <i class="fas fa-clock"></i>
+          {{ note.updated_at|date:"d/m/Y H:i" }}
+        </div>
+        <div>
+          <i class="fas fa-eye"></i>
+          {{ note.views }} visualizações
+        </div>
+      </div>
+      <div class="action-buttons">
+        {% if user.is_authenticated and note.user_id == user.id %}
+        <a href="{% url 'notes:edit_note' note.id %}" class="action-btn btn-primary">
+          <i class="fas fa-pen-to-square"></i>
+          <span>Editar</span>
+        </a>
+        {% endif %}
+        <a href="{% url 'notes:export_note' note.id %}" class="action-btn btn-primary">
+          <i class="fas fa-file-pdf"></i>
+          <span>Exportar PDF</span>
+        </a>
+        {% if note.is_public %}
+        <button id="shareBtn" class="action-btn btn-secondary">
+          <i class="fas fa-share-nodes"></i>
+          <span>Compartilhar</span>
+        </button>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Main content area -->
+<div class="note-container">
+  <div class="content-grid">
+    <!-- Note content -->
+    <article class="note-content markdown-content">
+      {{ html_content|safe }}
+    </article>
+    <!-- Sidebar with TOC -->
+    <aside class="sidebar">
+      <div class="sidebar-card">
+        <h3 class="sidebar-title">
+          <i class="fas fa-list-ol"></i>
+          <span>Sumário</span>
+        </h3>
+        <div class="toc-container">
+          {% if toc %}
+            {{ toc|safe }}
+          {% else %}
+            <p class="text-gray-300 text-sm">Nenhum sumário disponível para este conteúdo.</p>
+          {% endif %}
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- Floating TOC button for mobile -->
+<div class="toc-balloon" id="tocBalloon">
+  <i class="fas fa-list-ol"></i>
+</div>
+
+<!-- Mobile TOC container -->
+<div class="mobile-toc-container" id="mobileTocContainer">
+  <div class="mobile-toc-header">
+    <div class="mobile-toc-title">
+      <i class="fas fa-list-ol"></i>
+      <span>Sumário</span>
+    </div>
+    <button class="mobile-toc-close" id="closeMobileToc">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="mobile-toc-content">
+    {% if toc %}
+      {{ toc|safe }}
+    {% else %}
+      <p class="text-gray-300 text-sm">Nenhum sumário disponível para este conteúdo.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Floating chatbot button with Vorp image -->
+<div class="chatbot-toggle" id="chatbotToggle">
+  <img src="{% static 'vorp.png' %}" alt="Vorp Assistant">
+</div>
+
+<!-- Enhanced Chatbot container -->
+<div class="chatbot-container" id="chatbotContainer">
+  <div class="chatbot-header">
+    <div class="chatbot-title" id="chatbotTitle">
+      <div class="chatbot-icon" id="chatbotHeaderIcon">
+        <img src="{% static 'vorp.png' %}" alt="Vorp">
+      </div>
+      <span>VorpIA</span>
+    </div>
+    <div class="chatbot-actions">
+      <button class="chatbot-fullscreen" id="chatbotFullscreen" title="Tela cheia">
+        <i class="fas fa-expand"></i>
+      </button>
+      <button class="chatbot-close" id="chatbotClose" title="Fechar">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+  
+  <div class="chatbot-messages" id="chatMessages">
+    <div class="message bot">
+      <div class="message-content">
+        Olá! Sou Vorp, seu assistente de estudos. Como posso ajudar com este conteúdo?
+      </div>
+    </div>
+  </div>
+  
+  <!-- Suggested questions section -->
+  <div class="suggested-questions" id="suggestedQuestions">
+    <div class="suggested-title">Sugestões:</div>
+    <div class="question-chips">
+      <div class="question-chip" data-question="Gere 3 questões sobre este conteúdo">
+        <i class="fas fa-question-circle"></i> Gerar questões
+      </div>
+      <div class="question-chip" data-question="Explique os conceitos principais">
+        <i class="fas fa-lightbulb"></i> Explicar conceitos
+      </div>
+    </div>
+  </div>
+  
+  <div class="chatbot-input">
+    <input type="text" id="chatInput" placeholder="Digite sua pergunta..." autocomplete="off">
+    <button id="sendMessage">
+      <i class="fas fa-paper-plane"></i>
+    </button>
+  </div>
+</div>
+
+<!-- Share modal -->
+<div class="share-modal" id="shareModal">
+  <div class="share-modal-content">
+    <div class="share-modal-header">
+      <h3 class="share-modal-title">Compartilhar Nota</h3>
+      <button class="share-modal-close" id="closeShareModal">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="share-modal-body">
+      <p>Compartilhe esta nota usando o link abaixo:</p>
+      <div class="share-link-container">
+        <input type="text" class="share-link-input" id="shareLink" readonly value="{% url 'notes:public_note' note.share_hash %}">
+        <button class="copy-btn" id="copyLink">
+          <i class="fas fa-copy"></i>
+        </button>
+      </div>
+      <div class="share-options">
+        <a href="https://twitter.com/intent/tweet?url={% url 'notes:public_note' note.share_hash %}&text={{ note.title }}" target="_blank" class="share-option twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+        <a href="https://www.facebook.com/sharer/sharer.php?u={% url 'notes:public_note' note.share_hash %}" target="_blank" class="share-option facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+        <a href="https://wa.me/?text={{ note.title }}%20{% url 'notes:public_note' note.share_hash %}" target="_blank" class="share-option whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+        <a href="https://t.me/share/url?url={% url 'notes:public_note' note.share_hash %}&text={{ note.title }}" target="_blank" class="share-option telegram">
+          <i class="fab fa-telegram-plane"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize Marked.js with options
+      marked.setOptions({
+        breaks: true,
+        gfm: true,
+        headerIds: true,
+        sanitize: false // We'll use DOMPurify for sanitization
+      });
+      
+      // Chatbot functionality
+      const chatbotToggle = document.getElementById('chatbotToggle');
+      const chatbotContainer = document.getElementById('chatbotContainer');
+      const chatbotClose = document.getElementById('chatbotClose');
+      const chatbotFullscreen = document.getElementById('chatbotFullscreen');
+      const chatMessages = document.getElementById('chatMessages');
+      const chatInput = document.getElementById('chatInput');
+      const sendMessage = document.getElementById('sendMessage');
+      const questionChips = document.querySelectorAll('.question-chip');
+      const suggestedQuestions = document.getElementById('suggestedQuestions');
+      const chatbotTitle = document.getElementById('chatbotTitle');
+      const chatbotHeaderIcon = document.getElementById('chatbotHeaderIcon');
+      
+      // TOC mobile functionality
+      const tocBalloon = document.getElementById('tocBalloon');
+      const mobileTocContainer = document.getElementById('mobileTocContainer');
+      const closeMobileToc = document.getElementById('closeMobileToc');
+      
+      // Share modal functionality
+      const shareBtn = document.getElementById('shareBtn');
+      const shareModal = document.getElementById('shareModal');
+      const closeShareModal = document.getElementById('closeShareModal');
+      const copyLink = document.getElementById('copyLink');
+      const shareLink = document.getElementById('shareLink');
+      
+      // Conversation history for the AI
+      let conversationHistory = [];
+      
+      // Fullscreen state
+      let isFullscreen = false;
+      
+      // Function to close the chat
+      function closeChat() {
+        chatbotContainer.classList.remove('active');
+        // If in fullscreen, exit fullscreen first
+        if (isFullscreen) {
+          toggleFullscreen();
+        }
+      }
+      
+      // Toggle chatbot visibility
+      chatbotToggle.addEventListener('click', function() {
+        chatbotContainer.classList.add('active');
+      });
+      
+      // Close chat when clicking the X button
+      chatbotClose.addEventListener('click', closeChat);
+      
+      // Close chat when clicking on the Vorp icon or title in the header
+      chatbotTitle.addEventListener('click', closeChat);
+      chatbotHeaderIcon.addEventListener('click', closeChat);
+      
+      // Toggle fullscreen functionality with improved animation
+      chatbotFullscreen.addEventListener('click', toggleFullscreen);
+      
+      function toggleFullscreen() {
+        if (!isFullscreen) {
+          // Enter fullscreen
+          document.body.style.overflow = 'hidden'; // Prevent scrolling
+          chatbotContainer.style.transition = 'all 0.3s ease';
+          chatbotContainer.classList.add('fullscreen');
+          chatbotFullscreen.innerHTML = '<i class="fas fa-compress"></i>';
+          isFullscreen = true;
+        } else {
+          // Exit fullscreen
+          document.body.style.overflow = ''; // Restore scrolling
+          chatbotContainer.style.transition = 'all 0.3s ease';
+          chatbotContainer.classList.remove('fullscreen');
+          chatbotFullscreen.innerHTML = '<i class="fas fa-expand"></i>';
+          isFullscreen = false;
+        }
+        // Scroll to the latest message
+        setTimeout(scrollToBottom, 300);
+      }
+      
+      // Hide suggested questions
+      function hideSuggestedQuestions() {
+        suggestedQuestions.classList.add('hidden');
+      }
+      
+      // Show suggested questions
+      function showSuggestedQuestions() {
+        suggestedQuestions.classList.remove('hidden');
+      }
+      
+      // Toggle mobile TOC visibility
+      tocBalloon.addEventListener('click', function() {
+        mobileTocContainer.classList.add('active');
+      });
+      
+      closeMobileToc.addEventListener('click', function() {
+        mobileTocContainer.classList.remove('active');
+      });
+      
+      // Mobile TOC link click handler
+      document.querySelectorAll('.mobile-toc-content a').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+          e.preventDefault();
+          const targetId = this.getAttribute('href').substring(1);
+          const targetElement = document.getElementById(targetId);
+          
+          if (targetElement) {
+            // Scroll to the target element
+            window.scrollTo({
+              top: targetElement.offsetTop - 100,
+              behavior: 'smooth'
+            });
+            
+            // Hide the mobile TOC
+            mobileTocContainer.classList.remove('active');
+          }
+        });
+      });
+      
+      // Handle suggested question clicks
+      questionChips.forEach(chip => {
+        chip.addEventListener('click', function() {
+          const question = this.getAttribute('data-question');
+          chatInput.value = question;
+          sendUserMessage();
+          hideSuggestedQuestions(); // Hide suggestions after clicking
+        });
+      });
+      
+      // Parse markdown to HTML with sanitization
+      function parseMarkdown(text) {
+        const rawHtml = marked.parse(text);
+        return DOMPurify.sanitize(rawHtml);
+      }
+      
+      // Send message function
+      function sendUserMessage() {
+        const message = chatInput.value.trim();
+        if (!message) return;
+        
+        // Add user message to chat
+        addMessage(message, 'user');
+        
+        // Clear input
+        chatInput.value = '';
+        
+        // Hide suggested questions after sending a message
+        hideSuggestedQuestions();
+        
+        // Show typing indicator
+        const typingIndicator = document.createElement('div');
+        typingIndicator.className = 'message bot';
+        typingIndicator.id = 'typingIndicator';
+        typingIndicator.textContent = 'Digitando...';
+        chatMessages.appendChild(typingIndicator);
+        scrollToBottom();
+        
+        // Add to conversation history
+        conversationHistory.push({
+          role: 'user',
+          content: message
+        });
+        
+        // Get note content for context
+        const noteContent = document.querySelector('.markdown-content').textContent;
+        
+        // Send to backend
+        fetch('/ask', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            question: message,
+            context: noteContent.substring(0, 2000), // First 2000 chars as context
+            history: conversationHistory
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          // Remove typing indicator
+          const indicator = document.getElementById('typingIndicator');
+          if (indicator) indicator.remove();
+          
+          if (data.error) {
+            addMessage('Desculpe, ocorreu um erro ao processar sua pergunta. Por favor, tente novamente.', 'bot');
+          } else {
+            // Parse markdown in the response
+            addMarkdownMessage(data.answer, 'bot');
+            
+            // Add to conversation history
+            conversationHistory.push({
+              role: 'assistant',
+              content: data.answer
+            });
+            
+            // Keep history manageable
+            if (conversationHistory.length > 10) {
+              conversationHistory = conversationHistory.slice(conversationHistory.length - 10);
+            }
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          const indicator = document.getElementById('typingIndicator');
+          if (indicator) indicator.remove();
+          addMessage('Desculpe, ocorreu um erro de conexão. Por favor, tente novamente.', 'bot');
+        });
+      }
+      
+      // Add plain text message to chat
+      function addMessage(text, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}`;
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        contentDiv.textContent = text;
+        
+        messageDiv.appendChild(contentDiv);
+        chatMessages.appendChild(messageDiv);
+        scrollToBottom();
+      }
+      
+      // Add markdown message to chat
+      function addMarkdownMessage(text, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}`;
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        contentDiv.innerHTML = parseMarkdown(text);
+        
+        messageDiv.appendChild(contentDiv);
+        chatMessages.appendChild(messageDiv);
+        scrollToBottom();
+      }
+      
+      // Scroll chat to bottom
+      function scrollToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+      
+      // Send message on button click
+      sendMessage.addEventListener('click', sendUserMessage);
+      
+      // Send message on Enter key
+      chatInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          sendUserMessage();
+        }
+      });
+      
+      // Focus on input when chat is opened
+      chatbotToggle.addEventListener('click', function() {
+        setTimeout(() => {
+          chatInput.focus();
+        }, 300);
+      });
+      
+      // Share modal functionality
+      if (shareBtn) {
+        shareBtn.addEventListener('click', function() {
+          shareModal.classList.add('active');
+        });
+      }
+      
+      if (closeShareModal) {
+        closeShareModal.addEventListener('click', function() {
+          shareModal.classList.remove('active');
+        });
+        
+        // Close on click outside
+        shareModal.addEventListener('click', function(e) {
+          if (e.target === shareModal) {
+            shareModal.classList.remove('active');
+          }
+        });
+      }
+      
+      // Copy link functionality
+      if (copyLink) {
+        copyLink.addEventListener('click', function() {
+          shareLink.select();
+          document.execCommand('copy');
+          
+          // Show feedback
+          const originalIcon = copyLink.innerHTML;
+          copyLink.innerHTML = '<i class="fas fa-check"></i>';
+          setTimeout(function() {
+            copyLink.innerHTML = originalIcon;
+          }, 2000);
+        });
+      }
+      
+      // Make TOC links scroll smoothly
+      document.querySelectorAll('.toc-container a, .mobile-toc-content a').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+          e.preventDefault();
+          const targetId = this.getAttribute('href').substring(1);
+          const targetElement = document.getElementById(targetId);
+          
+          if (targetElement) {
+            window.scrollTo({
+              top: targetElement.offsetTop - 100,
+              behavior: 'smooth'
+            });
+          }
+        });
+      });
+      
+      // Convert existing messages to markdown format
+      document.querySelectorAll('.message').forEach(message => {
+        if (!message.querySelector('.message-content')) {
+          const text = message.textContent;
+          message.textContent = '';
+          
+          const contentDiv = document.createElement('div');
+          contentDiv.className = 'message-content';
+          contentDiv.innerHTML = parseMarkdown(text);
+          
+          message.appendChild(contentDiv);
+        }
+      });
+      
+      // Debug code to check if elements exist and events are working
+      console.log('Share button:', shareBtn);
+      console.log('Chatbot toggle:', chatbotToggle);
+      console.log('Share modal:', shareModal);
+      console.log('Chatbot container:', chatbotContainer);
+      
+      // Check if static files are loading correctly
+      const vorpImage = document.querySelector('.chatbot-toggle img');
+      if (vorpImage) {
+        vorpImage.onerror = function() {
+          console.error('Failed to load Vorp image');
+          // Fallback to a font icon
+          chatbotToggle.innerHTML = '<i class="fas fa-robot" style="font-size: 1.5rem;"></i>';
+        };
+      }
+      
+      // Ensure z-index for modals is high enough
+      document.querySelector('.share-modal').style.zIndex = '1000';
+      document.querySelector('.chatbot-container').style.zIndex = '1000';
+    });
+  </script>
+{% endblock %}
