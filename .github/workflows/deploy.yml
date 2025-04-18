@@ -24,7 +24,6 @@ jobs:
           port: 22
           source: "."
           target: "/www/wwwroot/caiobook"
-          # não envie venv, logs, .git, etc.
           exclude: |
             .git
             .github
@@ -60,17 +59,22 @@ jobs:
             pip install --upgrade pip
             pip install -r requirements.txt
 
-            # Django: migrações e coleta de estáticos
+            # gera e aplica migrations do app "db"
+            echo "--- Gerando migrations para app 'db' ---"
+            python3 vorp/manage.py makemigrations db --noinput || echo "Nenhuma migração pendente para 'db'"
             echo "--- Executando migrações Django ---"
             python3 vorp/manage.py migrate
+
+            # coleta arquivos estáticos
             echo "--- Coletando arquivos estáticos ---"
             python3 vorp/manage.py collectstatic --noinput
 
-            # reinicia serviço WSGI do Django
-            echo "--- Reiniciando gunicorn-vorp.service ---"
+            # reinicia o serviço Gunicorn (tenta dois nomes possíveis)
+            echo "--- Reiniciando Gunicorn ---"
             sudo systemctl restart gunicorn-vorp.service \
-              && echo "Serviço Gunicorn/Vorp reiniciado com sucesso." \
-              || echo "Falha ao reiniciar serviço Gunicorn/Vorp."
+              || sudo systemctl restart gunicorn.service \
+              && echo "Serviço Gunicorn reiniciado com sucesso." \
+              || echo "Falha ao reiniciar Gunicorn."
 
             echo "=== Deploy finalizado em $(date) ==="
             echo "Logs disponíveis em $LOG_FILE"
