@@ -1,4 +1,4 @@
-{% extends "core/base.html" %}
+<!-- {% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}{{ note.title }} - CAIOBOOK{% endblock %}
@@ -41,7 +41,7 @@
     
     /* Improved hero section with cleaner design and better mobile responsiveness */
     .hero-section {
-      background-color: var(--primary);
+      background-color: var(--primary); /* Keep the blue background */
       border-radius: 0 0 1.5rem 1.5rem;
       padding: 3rem 1rem 4rem;
       margin-bottom: -3rem;
@@ -67,7 +67,7 @@
       font-size: clamp(1.5rem, 5vw, 2.75rem);
       font-weight: 800;
       margin-bottom: 1rem;
-      color: white;
+      color: white; /* Ensure white text */
       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       font-family: 'Poppins', 'Inter', system-ui, sans-serif;
       letter-spacing: -0.025em;
@@ -83,7 +83,7 @@
       flex-wrap: wrap;
       align-items: center;
       gap: 0.75rem;
-      color: rgba(255, 255, 255, 0.95);
+      color: white; /* Ensure white text */
       font-size: 0.875rem;
       justify-content: center;
       width: 100%; 
@@ -139,23 +139,28 @@
       box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
     }
     
-    .btn-primary {
-      background-color: white;
-      color: var(--primary);
-    }
-  
-    .btn-primary:hover {
-      background-color: var(--gray-100);
-    }
+/* Update the primary button style to match the secondary button */
+.btn-primary {
+  background-color: #0284c7; /* Same blue as secondary button */
+  color: white;
+  opacity: 1;
+  filter: none;
+}
+
+.btn-primary:hover {
+  background-color: #0369a1; /* Darker blue on hover */
+}
     
     .btn-secondary {
-      background-color: rgba(255, 255, 255, 0.2);
+      background-color: #0284c7; /* Solid blue color for secondary button */
       color: white;
-      backdrop-filter: blur(4px);
+      opacity: 1;
+      filter: none;
+      backdrop-filter: none;
     }
-    
+  
     .btn-secondary:hover {
-      background-color: rgba(255, 255, 255, 0.3);
+      background-color: #0369a1; /* Darker blue on hover */
     }
     
     .content-grid {
@@ -918,6 +923,7 @@
     
     .share-modal-body {
       padding: 1.5rem;
+      color: #e2e8f0;
     }
     
     .share-link-container {
@@ -934,6 +940,9 @@
       font-size: 0.875rem;
       color: #e2e8f0;
       background-color: rgba(255, 255, 255, 0.05);
+      background-color: var(--gray-800) !important;
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #e2e8f0 !important;
     }
     
     /* Improved copy button */
@@ -1288,15 +1297,13 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Initialize Marked.js with options
       marked.setOptions({
         breaks: true,
         gfm: true,
         headerIds: true,
-        sanitize: false // We'll use DOMPurify for sanitization
+        sanitize: false 
       });
       
-      // Chatbot functionality
       const chatbotToggle = document.getElementById('chatbotToggle');
       const chatbotContainer = document.getElementById('chatbotContainer');
       const chatbotClose = document.getElementById('chatbotClose');
@@ -1308,80 +1315,64 @@
       const suggestedQuestions = document.getElementById('suggestedQuestions');
       const chatbotTitle = document.getElementById('chatbotTitle');
       const chatbotHeaderIcon = document.getElementById('chatbotHeaderIcon');
-      
-      // TOC mobile functionality
+
       const tocBalloon = document.getElementById('tocBalloon');
       const mobileTocContainer = document.getElementById('mobileTocContainer');
       const closeMobileToc = document.getElementById('closeMobileToc');
-      
-      // Share modal functionality
+
       const shareBtn = document.getElementById('shareBtn');
       const shareModal = document.getElementById('shareModal');
       const closeShareModal = document.getElementById('closeShareModal');
       const copyLink = document.getElementById('copyLink');
       const shareLink = document.getElementById('shareLink');
       
-      // Conversation history for the AI
       let conversationHistory = [];
       
-      // Fullscreen state
       let isFullscreen = false;
       
-      // Function to close the chat
       function closeChat() {
         chatbotContainer.classList.remove('active');
-        // If in fullscreen, exit fullscreen first
         if (isFullscreen) {
           toggleFullscreen();
         }
       }
       
-      // Toggle chatbot visibility
       chatbotToggle.addEventListener('click', function() {
         chatbotContainer.classList.add('active');
       });
       
-      // Close chat when clicking the X button
       chatbotClose.addEventListener('click', closeChat);
       
-      // Close chat when clicking on the Vorp icon or title in the header
       chatbotTitle.addEventListener('click', closeChat);
       chatbotHeaderIcon.addEventListener('click', closeChat);
       
-      // Toggle fullscreen functionality with improved animation
       chatbotFullscreen.addEventListener('click', toggleFullscreen);
       
       function toggleFullscreen() {
         if (!isFullscreen) {
-          // Enter fullscreen
-          document.body.style.overflow = 'hidden'; // Prevent scrolling
+          document.body.style.overflow = 'hidden';
           chatbotContainer.style.transition = 'all 0.3s ease';
           chatbotContainer.classList.add('fullscreen');
           chatbotFullscreen.innerHTML = '<i class="fas fa-compress"></i>';
           isFullscreen = true;
         } else {
-          // Exit fullscreen
-          document.body.style.overflow = ''; // Restore scrolling
+          document.body.style.overflow = '';
           chatbotContainer.style.transition = 'all 0.3s ease';
           chatbotContainer.classList.remove('fullscreen');
           chatbotFullscreen.innerHTML = '<i class="fas fa-expand"></i>';
           isFullscreen = false;
         }
-        // Scroll to the latest message
         setTimeout(scrollToBottom, 300);
       }
-      
-      // Hide suggested questions
+
       function hideSuggestedQuestions() {
         suggestedQuestions.classList.add('hidden');
       }
       
-      // Show suggested questions
       function showSuggestedQuestions() {
         suggestedQuestions.classList.remove('hidden');
       }
       
-      // Toggle mobile TOC visibility
       tocBalloon.addEventListener('click', function() {
         mobileTocContainer.classList.add('active');
       });
@@ -1390,7 +1381,6 @@
         mobileTocContainer.classList.remove('active');
       });
       
-      // Mobile TOC link click handler
       document.querySelectorAll('.mobile-toc-content a').forEach(anchor => {
         anchor.addEventListener('click', function(e) {
           e.preventDefault();
@@ -1398,49 +1388,40 @@
           const targetElement = document.getElementById(targetId);
           
           if (targetElement) {
-            // Scroll to the target element
             window.scrollTo({
               top: targetElement.offsetTop - 100,
               behavior: 'smooth'
             });
             
-            // Hide the mobile TOC
             mobileTocContainer.classList.remove('active');
           }
         });
       });
       
-      // Handle suggested question clicks
       questionChips.forEach(chip => {
         chip.addEventListener('click', function() {
           const question = this.getAttribute('data-question');
           chatInput.value = question;
           sendUserMessage();
-          hideSuggestedQuestions(); // Hide suggestions after clicking
+          hideSuggestedQuestions();
         });
       });
       
-      // Parse markdown to HTML with sanitization
       function parseMarkdown(text) {
         const rawHtml = marked.parse(text);
         return DOMPurify.sanitize(rawHtml);
       }
       
-      // Send message function
       function sendUserMessage() {
         const message = chatInput.value.trim();
         if (!message) return;
         
-        // Add user message to chat
         addMessage(message, 'user');
         
-        // Clear input
         chatInput.value = '';
-        
-        // Hide suggested questions after sending a message
+
         hideSuggestedQuestions();
         
-        // Show typing indicator
         const typingIndicator = document.createElement('div');
         typingIndicator.className = 'message bot';
         typingIndicator.id = 'typingIndicator';
@@ -1448,16 +1429,13 @@
         chatMessages.appendChild(typingIndicator);
         scrollToBottom();
         
-        // Add to conversation history
         conversationHistory.push({
           role: 'user',
           content: message
         });
         
-        // Get note content for context
         const noteContent = document.querySelector('.markdown-content').textContent;
         
-        // Send to backend
         fetch('/ask/', {
           method: 'POST',
           headers: {
@@ -1465,7 +1443,7 @@
           },
           body: JSON.stringify({
             question: message,
-            context: noteContent.substring(0, 2000), // First 2000 chars as context
+            context: noteContent.substring(0, 2000),
             history: conversationHistory
           })
         })
@@ -1554,7 +1532,12 @@
       // Share modal functionality
       if (shareBtn) {
         shareBtn.addEventListener('click', function() {
-          shareModal.classList.add('active');
+        let link = shareLink.value.trim();
+        if (!link.match(/^https?:\/\//)) {
+          link = window.location.origin + link;
+        }
+        shareLink.value = link;
+        shareModal.classList.add('active');
         });
       }
       
@@ -1637,4 +1620,4 @@
       document.querySelector('.chatbot-container').style.zIndex = '1000';
     });
   </script>
-{% endblock %}
+{% endblock %} -->
