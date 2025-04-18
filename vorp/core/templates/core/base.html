@@ -177,21 +177,7 @@
   
   <!-- Conteúdo Principal -->
   <main class="flex-grow pt-10">
-    <!-- Mensagens Flash -->
-    {% if messages %}
-      <div class="space-y-3 mb-8">
-        {% for message in messages %}
-          <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
-            {% if message.tags == 'success' %}
-              <i class="fas fa-check-circle text-[0.9em] mt-0.5"></i>
-            {% else %}
-              <i class="fas fa-exclamation-triangle text-[0.9em] mt-0.5"></i>
-            {% endif %}
-            <div>{{ message }}</div>
-          </div>
-        {% endfor %}
-      </div>
-    {% endif %}
+
     
     {% block content %}{% endblock %}
   </main>
