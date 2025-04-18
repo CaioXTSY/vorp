@@ -60,11 +60,18 @@ jobs:
             pip install --upgrade pip
             pip install -r requirements.txt
 
-            # reinicia serviço
-            echo "--- Reiniciando meu_notion.service ---"
-            sudo systemctl restart meu_notion.service \
-              && echo "Serviço reiniciado com sucesso." \
-              || echo "Falha ao reiniciar serviço."
+            # Django: migrações e coleta de estáticos
+            echo "--- Executando migrações Django ---"
+            source venv/bin/activate
+            python3 vorp/manage.py migrate
+            echo "--- Coletando arquivos estáticos ---"
+            python3 vorp/manage.py collectstatic --noinput
+
+            # reinicia serviço WSGI do Django
+            echo "--- Reiniciando gunicorn_django.service ---"
+            sudo systemctl restart gunicorn_django.service \
+              && echo "Serviço Gunicorn/Django reiniciado com sucesso." \
+              || echo "Falha ao reiniciar serviço Gunicorn/Django."
 
             echo "=== Deploy finalizado em $(date) ==="
             echo "Logs disponíveis em $LOG_FILE"
