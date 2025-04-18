@@ -1,12 +1,9 @@
-Flask
-Flask-SQLAlchemy
-Flask-SocketIO
-Flask-WTF
-Markdown
-xhtml2pdf
-openai==0.28
+django>=4.2
 python-dotenv
+openai==0.28
+xhtml2pdf
 reportlab
+Markdown
 Flask-Mail==0.9.1
 Werkzeug==2.3.4
 itsdangerous>=2.1.2
