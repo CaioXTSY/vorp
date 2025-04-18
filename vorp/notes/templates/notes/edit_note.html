@@ -911,58 +911,56 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    const markdownEditor = document.getElementById('markdownEditor');
-    const markdownPreview = document.getElementById('markdownPreview');
-    const titleInput = document.getElementById('titleInput');
-    const modalTitleInput = document.getElementById('modalTitleInput');
-    const titleModal = document.getElementById('titleModal');
-    const helpModal = document.getElementById('helpModal');
-    const linkModal = document.getElementById('linkModal');
-    const mobileTabs = document.querySelectorAll('.mobile-tab');
-    const editorSection = document.querySelector('.editor-section');
-    const previewSection = document.querySelector('.preview-section');
-    const isPublicCheckbox = document.getElementById('is_public');
-    const getLinkBtn = document.getElementById('getLinkBtn');
-    const aiContextMenu = document.getElementById('aiContextMenu');
+    // URLs e tokens dinâmicos do Django
+    const processAiUrl = "{% url 'notes:process_ai' %}";
+    const csrfToken    = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    // Elementos do DOM
+    const markdownEditor    = document.getElementById('markdownEditor');
+    const markdownPreview   = document.getElementById('markdownPreview');
+    const titleInput        = document.getElementById('titleInput');
+    const modalTitleInput   = document.getElementById('modalTitleInput');
+    const titleModal        = document.getElementById('titleModal');
+    const helpModal         = document.getElementById('helpModal');
+    const linkModal         = document.getElementById('linkModal');
+    const mobileTabs        = document.querySelectorAll('.mobile-tab');
+    const editorSection     = document.querySelector('.editor-section');
+    const previewSection    = document.querySelector('.preview-section');
+    const isPublicCheckbox  = document.getElementById('is_public');
+    const getLinkBtn        = document.getElementById('getLinkBtn');
+    const aiContextMenu     = document.getElementById('aiContextMenu');
     const aiProcessingModal = document.getElementById('aiProcessingModal');
     let selectedText = '';
     let selectionStart = 0;
-    let selectionEnd = 0;
-  
-    // Configure marked
-    marked.setOptions({
-      breaks: true,
-      gfm: true,
-    });
-  
-    // Render preview inicialmente
+    let selectionEnd   = 0;
+
+    // Configura marked.js
+    marked.setOptions({ breaks: true, gfm: true });
+
+    // Render inicial do preview
     updatePreview();
-  
-    // Atualiza preview quando o markdown muda
+
     markdownEditor.addEventListener('input', updatePreview);
-  
     function updatePreview() {
       try {
-        const rawHtml = marked.parse(markdownEditor.value || '');
-        markdownPreview.innerHTML = rawHtml;
-      } catch (error) {
-        console.error('Error parsing markdown:', error);
-        markdownPreview.innerHTML = '<p>Error rendering preview</p>';
+        markdownPreview.innerHTML = marked.parse(markdownEditor.value || '');
+      } catch (err) {
+        console.error('Erro ao renderizar preview:', err);
+        markdownPreview.innerHTML = '<p>Erro ao renderizar visualização</p>';
       }
     }
-  
-    // Toggle da exibição do botão de link público
-    isPublicCheckbox.addEventListener('change', function() {
-      getLinkBtn.style.display = this.checked ? 'inline-flex' : 'none';
+
+    // Toggle botão de obter link público
+    isPublicCheckbox.addEventListener('change', () => {
+      getLinkBtn.style.display = isPublicCheckbox.checked ? 'inline-flex' : 'none';
     });
-  
-    // Abas para dispositivos móveis
+
+    // Abas mobile
     mobileTabs.forEach(tab => {
-      tab.addEventListener('click', function() {
-        const tabName = this.getAttribute('data-tab');
+      tab.addEventListener('click', () => {
+        const tabName = tab.getAttribute('data-tab');
         mobileTabs.forEach(t => t.classList.remove('active'));
-        this.classList.add('active');
-  
+        tab.classList.add('active');
         if (tabName === 'editor') {
           editorSection.classList.add('active');
           previewSection.classList.remove('active');
@@ -973,284 +971,190 @@
         }
       });
     });
-  
-    // Ações da toolbar
-    const toolbarButtons = document.querySelectorAll('.toolbar-btn');
-    toolbarButtons.forEach(button => {
-      button.addEventListener('click', function() {
-        const action = this.getAttribute('data-action');
-        insertText(action);
-      });
+
+    // Toolbar markdown
+    document.querySelectorAll('.toolbar-btn').forEach(btn => {
+      btn.addEventListener('click', () => insertMarkdownSyntax(btn.getAttribute('data-action')));
     });
-  
-    function insertText(action) {
-      const textarea = markdownEditor;
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const selectedText = textarea.value.substring(start, end);
-      let before = '';
-      let after = '';
-  
+    function insertMarkdownSyntax(action) {
+      const ta = markdownEditor;
+      const start = ta.selectionStart, end = ta.selectionEnd;
+      const sel = ta.value.slice(start, end);
+      let before = '', after = '';
       switch (action) {
-        case 'bold':
-          before = '**'; after = '**'; break;
-        case 'italic':
-          before = '*'; after = '*'; break;
-        case 'h1':
-          before = '# '; break;
-        case 'h2':
-          before = '## '; break;
-        case 'h3':
-          before = '### '; break;
-        case 'ul':
-          before = '- '; break;
-        case 'ol':
-          before = '1. '; break;
-        case 'link':
-          before = '['; after = '](url)'; break;
-        case 'code':
-          before = '```\n'; after = '\n```'; break;
-        case 'quote':
-          before = '> '; break;
+        case 'bold': before = '**'; after = '**'; break;
+        case 'italic': before = '*'; after = '*'; break;
+        case 'h1': before = '# '; break;
+        case 'h2': before = '## '; break;
+        case 'h3': before = '### '; break;
+        case 'ul': before = '- '; break;
+        case 'ol': before = '1. '; break;
+        case 'link': before = '['; after = '](url)'; break;
+        case 'code': before = '```\n'; after = '\n```'; break;
+        case 'quote': before = '> '; break;
       }
-  
-      const newText = textarea.value.substring(0, start) + before + selectedText + after + textarea.value.substring(end);
-      textarea.value = newText;
-  
+      ta.value = ta.value.slice(0, start) + before + sel + after + ta.value.slice(end);
       setTimeout(() => {
-        textarea.focus();
-        textarea.setSelectionRange(start + before.length, end + before.length);
+        ta.focus();
+        ta.setSelectionRange(start + before.length, start + before.length + sel.length);
         updatePreview();
       }, 0);
     }
-  
-    // Modal de edição de título
-    document.getElementById('editTitleBtn').addEventListener('click', function() {
+
+    // Modais: título
+    document.getElementById('editTitleBtn').addEventListener('click', () => {
       titleModal.classList.add('active');
       modalTitleInput.focus();
       modalTitleInput.select();
     });
-    document.getElementById('closeTitleModal').addEventListener('click', function() {
-      titleModal.classList.remove('active');
-    });
-    document.getElementById('cancelTitleModal').addEventListener('click', function() {
-      titleModal.classList.remove('active');
-    });
-    document.getElementById('saveTitleModal').addEventListener('click', function() {
-      const newTitle = modalTitleInput.value.trim();
-      if (newTitle) {
-        titleInput.value = newTitle;
-        document.querySelector('.editor-title').textContent = newTitle;
+    document.getElementById('closeTitleModal').addEventListener('click', () => titleModal.classList.remove('active'));
+    document.getElementById('cancelTitleModal').addEventListener('click', () => titleModal.classList.remove('active'));
+    document.getElementById('saveTitleModal').addEventListener('click', () => {
+      const nt = modalTitleInput.value.trim();
+      if (nt) {
+        titleInput.value = nt;
+        document.querySelector('.editor-title').textContent = nt;
         titleModal.classList.remove('active');
       }
     });
-  
-    // Modal de ajuda
-    document.getElementById('helpBtn').addEventListener('click', function() {
-      helpModal.classList.add('active');
-    });
-    document.getElementById('closeHelpModal').addEventListener('click', function() {
-      helpModal.classList.remove('active');
-    });
-    document.getElementById('closeHelpBtn').addEventListener('click', function() {
-      helpModal.classList.remove('active');
-    });
-  
-    // Modal de link público
-    document.getElementById('getLinkBtn').addEventListener('click', function() {
+
+    // Modais: ajuda
+    document.getElementById('helpBtn').addEventListener('click', () => helpModal.classList.add('active'));
+    document.getElementById('closeHelpModal').addEventListener('click', () => helpModal.classList.remove('active'));
+    document.getElementById('closeHelpBtn').addEventListener('click', () => helpModal.classList.remove('active'));
+
+    // Modais: link público
+    document.getElementById('getLinkBtn').addEventListener('click', () => {
       linkModal.classList.add('active');
       document.getElementById('publicLinkInput').select();
     });
-    document.getElementById('closeLinkModal').addEventListener('click', function() {
-      linkModal.classList.remove('active');
-    });
-    document.getElementById('closeLinkBtn').addEventListener('click', function() {
-      linkModal.classList.remove('active');
-    });
-    document.getElementById('copyLinkBtn').addEventListener('click', function() {
-      const linkInput = document.getElementById('publicLinkInput');
-      linkInput.select();
+    document.getElementById('closeLinkModal').addEventListener('click', () => linkModal.classList.remove('active'));
+    document.getElementById('closeLinkBtn').addEventListener('click', () => linkModal.classList.remove('active'));
+    document.getElementById('copyLinkBtn').addEventListener('click', () => {
+      const inp = document.getElementById('publicLinkInput');
+      inp.select();
       document.execCommand('copy');
-      const originalText = this.innerHTML;
-      this.innerHTML = '<i class="fas fa-check"></i>';
+      const orig = document.getElementById('copyLinkBtn').innerHTML;
+      document.getElementById('copyLinkBtn').innerHTML = '<i class="fas fa-check"></i>';
       setTimeout(() => {
-        this.innerHTML = originalText;
+        document.getElementById('copyLinkBtn').innerHTML = orig;
       }, 2000);
     });
-  
-    // Fechar modais ao clicar fora deles
-    window.addEventListener('click', function(event) {
-      if (event.target === titleModal) {
-        titleModal.classList.remove('active');
-      }
-      if (event.target === helpModal) {
-        helpModal.classList.remove('active');
-      }
-      if (event.target === linkModal) {
-        linkModal.classList.remove('active');
-      }
+
+    // Fechar modais clicando fora
+    window.addEventListener('click', e => {
+      if (e.target === titleModal) titleModal.classList.remove('active');
+      if (e.target === helpModal)  helpModal.classList.remove('active');
+      if (e.target === linkModal)  linkModal.classList.remove('active');
     });
-  
+
     // Atalhos de teclado
-    document.addEventListener('keydown', function(e) {
-      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    document.addEventListener('keydown', e => {
+      if ((e.ctrlKey||e.metaKey) && e.key==='s') {
         e.preventDefault();
         document.getElementById('noteForm').submit();
       }
-      if (e.key === 'Escape') {
+      if (e.key==='Escape') {
         titleModal.classList.remove('active');
         helpModal.classList.remove('active');
         linkModal.classList.remove('active');
+        aiContextMenu.style.display = 'none';
       }
     });
-  
-    // Auto-redimensiona a textarea em dispositivos móveis
-    function adjustTextareaHeight() {
-      if (window.innerWidth <= 768) {
-        markdownEditor.style.height = 'auto';
-        markdownEditor.style.height = (markdownEditor.scrollHeight) + 'px';
-      } else {
-        markdownEditor.style.height = '';
-      }
-    }
-    if (window.innerWidth <= 768) {
-      adjustTextareaHeight();
-      markdownEditor.addEventListener('input', adjustTextareaHeight);
-    }
-    window.addEventListener('resize', function() {
-      if (window.innerWidth <= 768) {
-        if (!markdownEditor.hasEventListener) {
-          markdownEditor.addEventListener('input', adjustTextareaHeight);
-          markdownEditor.hasEventListener = true;
-        }
-        adjustTextareaHeight();
-      } else {
-        markdownEditor.style.height = '';
-      }
+
+    // Sincroniza scroll editor ↔ preview
+    let isSyncing = false;
+    markdownEditor.addEventListener('scroll', () => {
+      if (isSyncing) return;
+      isSyncing = true;
+      const p = markdownEditor.scrollTop / (markdownEditor.scrollHeight - markdownEditor.clientHeight);
+      markdownPreview.scrollTop = p * (markdownPreview.scrollHeight - markdownPreview.clientHeight);
+      setTimeout(() => isSyncing = false, 50);
     });
-  
-    // Sincroniza a rolagem entre editor e preview
-    const syncScroll = () => {
-      const sourceScrollTop = markdownEditor.scrollTop;
-      const sourceScrollHeight = markdownEditor.scrollHeight - markdownEditor.clientHeight;
-      const scrollPercentage = sourceScrollTop / sourceScrollHeight;
-      const targetScrollHeight = markdownPreview.scrollHeight - markdownPreview.clientHeight;
-      markdownPreview.scrollTop = scrollPercentage * targetScrollHeight;
-    };
-    markdownEditor.addEventListener('scroll', function() {
-      if (!markdownPreview.isScrolling) {
-        markdownEditor.isScrolling = true;
-        syncScroll();
-        setTimeout(() => { markdownEditor.isScrolling = false; }, 100);
-      }
+    markdownPreview.addEventListener('scroll', () => {
+      if (isSyncing) return;
+      isSyncing = true;
+      const p = markdownPreview.scrollTop / (markdownPreview.scrollHeight - markdownPreview.clientHeight);
+      markdownEditor.scrollTop = p * (markdownEditor.scrollHeight - markdownEditor.clientHeight);
+      setTimeout(() => isSyncing = false, 50);
     });
-    markdownPreview.addEventListener('scroll', function() {
-      if (!markdownEditor.isScrolling) {
-        markdownPreview.isScrolling = true;
-        const previewScrollTop = markdownPreview.scrollTop;
-        const previewScrollHeight = markdownPreview.scrollHeight - markdownPreview.clientHeight;
-        const scrollPercentage = previewScrollTop / previewScrollHeight;
-        const editorScrollHeight = markdownEditor.scrollHeight - markdownEditor.clientHeight;
-        markdownEditor.scrollTop = scrollPercentage * editorScrollHeight;
-        setTimeout(() => { markdownPreview.isScrolling = false; }, 100);
-      }
+
+    // Menu de contexto e botão IA
+    markdownEditor.addEventListener('contextmenu', e => {
+      const sel = markdownEditor.value.substring(markdownEditor.selectionStart, markdownEditor.selectionEnd).trim();
+      if (!sel) return;
+      e.preventDefault();
+      selectedText   = sel;
+      selectionStart = markdownEditor.selectionStart;
+      selectionEnd   = markdownEditor.selectionEnd;
+      showAiMenu(e.clientX, e.clientY);
     });
-    markdownEditor.addEventListener('input', function() {
-      setTimeout(() => {
-        if (!markdownPreview.isScrolling && !markdownEditor.isScrolling) {
-          syncScroll();
-        }
-      }, 10);
-    });
-  
-    // Menu de contexto IA: exibe o menu no local do clique direito
-    markdownEditor.addEventListener('contextmenu', function(e) {
-      const selection = markdownEditor.value.substring(markdownEditor.selectionStart, markdownEditor.selectionEnd);
-      if (selection && selection.trim() !== '') {
-        e.preventDefault();
-        selectedText = selection;
+    document.querySelector('.toolbar-btn[data-action="ai-menu"]')
+      .addEventListener('click', function() {
+        const sel = markdownEditor.value.substring(markdownEditor.selectionStart, markdownEditor.selectionEnd).trim();
+        if (!sel) return alert('Selecione algum texto para usar IA');
+        selectedText   = sel;
         selectionStart = markdownEditor.selectionStart;
-        selectionEnd = markdownEditor.selectionEnd;
-        const x = e.clientX + window.scrollX;
-        const y = e.clientY + window.scrollY;
-        aiContextMenu.style.display = 'block';
-        aiContextMenu.style.left = `${x}px`;
-        aiContextMenu.style.top = `${y}px`;
-        const rect = aiContextMenu.getBoundingClientRect();
-        if (rect.right > window.innerWidth) {
-          aiContextMenu.style.left = `${x - rect.width}px`;
-        }
-        if (rect.bottom > window.innerHeight) {
-          aiContextMenu.style.top = `${y - rect.height}px`;
-        }
-      }
-    });
-  
-    // Menu de IA ao clicar na toolbar
-    document.querySelector('.toolbar-btn[data-action="ai-menu"]').addEventListener('click', function() {
-      const selection = markdownEditor.value.substring(markdownEditor.selectionStart, markdownEditor.selectionEnd);
-      if (selection && selection.trim() !== '') {
-        selectedText = selection;
-        selectionStart = markdownEditor.selectionStart;
-        selectionEnd = markdownEditor.selectionEnd;
+        selectionEnd   = markdownEditor.selectionEnd;
         const rect = this.getBoundingClientRect();
-        aiContextMenu.style.display = 'block';
-        aiContextMenu.style.left = `${rect.left + window.scrollX}px`;
-        aiContextMenu.style.top = `${rect.bottom + 5 + window.scrollY}px`;
-      } else {
-        alert('Selecione algum texto para usar as funcionalidades de IA');
-      }
+        showAiMenu(rect.left, rect.bottom + 5);
+      });
+    document.addEventListener('click', e => {
+      if (!aiContextMenu.contains(e.target)) aiContextMenu.style.display = 'none';
     });
-  
-    document.addEventListener('click', function(e) {
-      if (!aiContextMenu.contains(e.target) && e.target !== document.querySelector('.toolbar-btn[data-action="ai-menu"]')) {
-        aiContextMenu.style.display = 'none';
-      }
-    });
-  
     document.querySelectorAll('.ai-menu-item').forEach(item => {
-      item.addEventListener('click', function() {
-        const action = this.getAttribute('data-action');
-        processAiAction(action, selectedText);
+      item.addEventListener('click', () => {
         aiContextMenu.style.display = 'none';
+        processAiAction(item.getAttribute('data-action'), selectedText);
       });
     });
-  
+    function showAiMenu(x, y) {
+      aiContextMenu.style.display = 'block';
+      aiContextMenu.style.left = `${x}px`;
+      aiContextMenu.style.top  = `${y}px`;
+      const r = aiContextMenu.getBoundingClientRect();
+      if (r.right > window.innerWidth)  aiContextMenu.style.left = `${x - r.width}px`;
+      if (r.bottom > window.innerHeight) aiContextMenu.style.top  = `${y - r.height}px`;
+    }
+
+    // Chama o endpoint de IA
     async function processAiAction(action, text) {
       aiProcessingModal.classList.add('active');
       try {
-        const response = await fetch('/process-ai', {
+        const response = await fetch(processAiUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+            'X-CSRFToken': csrfToken
           },
-          body: JSON.stringify({
-            action: action,
-            text: text
-          })
+          body: JSON.stringify({ action, text })
         });
         if (!response.ok) {
-          throw new Error('Erro na resposta da API');
+          const txt = await response.text();
+          console.error('Resposta inválida do servidor:', response.status, txt);
+          throw new Error('Resposta inválida');
         }
         const data = await response.json();
-        if (data.result) {
-          const newText = markdownEditor.value.substring(0, selectionStart) + 
-                          data.result + 
-                          markdownEditor.value.substring(selectionEnd);
-          markdownEditor.value = newText;
-          updatePreview();
-          markdownEditor.focus();
-          markdownEditor.setSelectionRange(selectionStart, selectionStart + data.result.length);
+        if (data.error) {
+          console.error('Erro retornado pela API:', data.error);
+          throw new Error(data.error);
         }
-      } catch (error) {
-        console.error('Erro ao processar ação de IA:', error);
+        // Substitui o trecho selecionado pelo resultado IA
+        const before = markdownEditor.value.slice(0, selectionStart);
+        const after  = markdownEditor.value.slice(selectionEnd);
+        markdownEditor.value = before + data.result + after;
+        updatePreview();
+        markdownEditor.focus();
+        markdownEditor.setSelectionRange(selectionStart, selectionStart + data.result.length);
+      } catch (err) {
+        console.error('Falha ao chamar IA:', err);
         alert('Ocorreu um erro ao processar sua solicitação. Tente novamente.');
       } finally {
         aiProcessingModal.classList.remove('active');
       }
     }
   });
-  </script>
+</script>
+
   
 {% endblock %}
