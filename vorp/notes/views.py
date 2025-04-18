@@ -7,6 +7,14 @@ from io import BytesIO
 import markdown
 from xhtml2pdf import pisa
 from db.notes_models import Note
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+import openai
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.views import View
+from django.http import JsonResponse
+import json
 
 @login_required
 def list_notes(request):
@@ -149,3 +157,119 @@ def export_note(request, note_id):
     response = FileResponse(pdf_buffer, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="{note.title}.pdf"'
     return response
+
+
+@csrf_exempt
+@require_POST
+def ask(request):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        question = data.get('question', '')
+        context = data.get('context', '')
+        conversation_history = data.get('history', [])
+        conversation_history = conversation_history[-10:]
+        messages = [{
+            "role": "system",
+            "content": f"""
+Você é Vorp, um assistente de estudos eficiente, focado e profissional.
+
+CONTEXTO:
+{context}
+
+DIRETRIZES DE RESPOSTA:
+1. Estilo
+- Seja direto e objetivo
+- Máximo 2 parágrafos por resposta
+- Tom profissional e educativo
+- Evite jargões técnicos desnecessários
+
+2. Formatação
+- Use Markdown para estruturar o conteúdo
+- Aplique listas numeradas ou marcadores quando apropriado
+- Utilize negrito para pontos importantes
+- Organize com cabeçalhos e subcabeçalhos
+- Inclua tabelas para dados estruturados
+- Adicione links relevantes quando necessário
+
+3. Metodologia
+- Para perguntas não claras: solicite esclarecimentos
+- Para tópicos complexos: divida em subtópicos
+- Para conceitos técnicos: forneça explicações concisas
+- Para temas polêmicos: mantenha neutralidade
+- Para assuntos fora do escopo: decline educadamente
+
+FORMATO PARA QUESTÕES:
+### Questão
+- **Tema:** [Tema]
+- **Enunciado:** [Pergunta]
+
+### Alternativas (se aplicável)
+A) [Texto]
+B) [Texto]
+C) [Texto]
+D) [Texto]
+E) [Texto]
+
+### Resolução
+- **Resposta correta:** [Alternativa]
+- **Justificativa:** [Explicação]
+- **Dicas:** [Sugestões práticas]
+"""
+        }]
+        for msg in conversation_history:
+            role = msg.get("role", "user").lower()
+            content = msg.get("content", "")
+            if role not in ["system", "user", "assistant"]:
+                role = "user"
+            messages.append({"role": role, "content": content})
+        messages.append({"role": "user", "content": question})
+        response = openai.ChatCompletion.create(
+            model="gpt-4o-mini",
+            messages=messages,
+            temperature=0.4,
+            max_tokens=5000
+        )
+        answer = response.choices[0].message.content
+        return JsonResponse({'answer': answer})
+    except Exception as e:
+        return JsonResponse({'error': 'Erro ao processar a pergunta'}, status=500)
+
+@csrf_exempt
+@require_POST
+def process_ai(request):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        action = data.get('action', '')
+        text = data.get('text', '')
+        if not text or not action:
+            return JsonResponse({'error': 'Parâmetros inválidos'}, status=400)
+        if action == 'summarize':
+            system_prompt = "Você é um assistente especializado em resumir textos. Crie um resumo conciso do texto fornecido, mantendo os pontos principais."
+            user_prompt = f"Resuma o seguinte texto em um parágrafo curto:\n\n{text}"
+        elif action == 'enhance':
+            system_prompt = "Você é um assistente especializado em melhorar a escrita. Melhore o texto fornecido, mantendo o significado original, mas tornando-o mais claro, conciso e profissional."
+            user_prompt = f"Melhore o seguinte texto:\n\n{text}"
+        elif action == 'format-md':
+            system_prompt = "Você é um assistente especializado em formatação Markdown. Converta o texto fornecido em Markdown bem formatado, adicionando cabeçalhos, listas, ênfase e outros elementos apropriados."
+            user_prompt = f"Converta o seguinte texto em Markdown bem formatado:\n\n{text}"
+        elif action == 'explain':
+            system_prompt = "Você é um assistente educacional especializado em explicar conceitos de forma clara e concisa."
+            user_prompt = f"Explique o seguinte conceito de forma simples e educativa:\n\n{text}"
+        elif action == 'translate':
+            system_prompt = "Você é um assistente especializado em tradução. Traduza o texto fornecido para o português, mantendo o significado e o tom originais."
+            user_prompt = f"Traduza o seguinte texto para o português:\n\n{text}"
+        else:
+            return JsonResponse({'error': 'Ação não reconhecida'}, status=400)
+        response = openai.ChatCompletion.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=0.4,
+            max_tokens=2000
+        )
+        result = response.choices[0].message.content
+        return JsonResponse({'result': result})
+    except Exception as e:
+        return JsonResponse({'error': 'Erro ao processar a solicitação'}, status=500)
