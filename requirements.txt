@@ -7,3 +7,5 @@ Markdown
 Flask-Mail==0.9.1
 Werkzeug==2.3.4
 itsdangerous>=2.1.2
+whitenoise
+gunicorn
