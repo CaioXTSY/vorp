@@ -10,11 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Faz checkout do seu código no runner
       - name: Check out repository
         uses: actions/checkout@v3
 
-      # 2) Sincroniza apenas o que interessa para o servidor
       - name: Sync code to server
         uses: appleboy/scp-action@v0.1.4
         with:
@@ -31,7 +29,6 @@ jobs:
             logs
             __pycache__
 
-      # 3) Roda o deploy no servidor
       - name: Run remote deploy commands
         uses: appleboy/ssh-action@v0.1.8
         with:
@@ -69,12 +66,16 @@ jobs:
             echo "--- Coletando arquivos estáticos ---"
             python3 vorp/manage.py collectstatic --noinput
 
-            # reinicia o serviço Gunicorn (tenta dois nomes possíveis)
-            echo "--- Reiniciando Gunicorn ---"
-            sudo systemctl restart gunicorn-vorp.service \
-              || sudo systemctl restart gunicorn.service \
-              && echo "Serviço Gunicorn reiniciado com sucesso." \
-              || echo "Falha ao reiniciar Gunicorn."
+            # detecta e reinicia o serviço Gunicorn
+            echo "--- Reiniciando serviço Gunicorn ---"
+            SERVICE=$(systemctl list-units --type=service | grep -o 'gunicorn[^ ]*\.service' | head -n1)
+            if [ -n "$SERVICE" ]; then
+              sudo systemctl restart "$SERVICE" \
+                && echo "Serviço $SERVICE reiniciado com sucesso." \
+                || echo "Falha ao reiniciar $SERVICE."
+            else
+              echo "Nenhum serviço Gunicorn encontrado em systemd."
+            fi
 
             echo "=== Deploy finalizado em $(date) ==="
             echo "Logs disponíveis em $LOG_FILE"
