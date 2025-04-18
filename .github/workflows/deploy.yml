@@ -66,16 +66,34 @@ jobs:
             echo "--- Coletando arquivos estáticos ---"
             python3 vorp/manage.py collectstatic --noinput
 
-            # detecta e reinicia o serviço Gunicorn
-            echo "--- Reiniciando serviço Gunicorn ---"
-            SERVICE=$(systemctl list-units --type=service | grep -o 'gunicorn[^ ]*\.service' | head -n1)
-            if [ -n "$SERVICE" ]; then
-              sudo systemctl restart "$SERVICE" \
-                && echo "Serviço $SERVICE reiniciado com sucesso." \
-                || echo "Falha ao reiniciar $SERVICE."
-            else
-              echo "Nenhum serviço Gunicorn encontrado em systemd."
+            # configura unit do Gunicorn (se ainda não existir)
+            SERVICE_FILE="/etc/systemd/system/gunicorn-vorp.service"
+            if [ ! -f "$SERVICE_FILE" ]; then
+              echo "--- Criando systemd service para Gunicorn ---"
+              SERVICE_USER=$(whoami)
+              sudo tee "$SERVICE_FILE" > /dev/null << EOF
+            [Unit]
+            Description=Gunicorn daemon for VORP Django project
+            After=network.target
+
+            [Service]
+            User=${SERVICE_USER}
+            Group=${SERVICE_USER}
+            WorkingDirectory=${PROJECT_PATH}/vorp
+            ExecStart=${PROJECT_PATH}/venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:${PROJECT_PATH}/gunicorn.sock vorp.wsgi:application
+
+            [Install]
+            WantedBy=multi-user.target
+            EOF
+              sudo systemctl daemon-reload
+              sudo systemctl enable gunicorn-vorp.service
             fi
+
+            # reinicia o serviço Gunicorn
+            echo "--- Reiniciando gunicorn-vorp.service ---"
+            sudo systemctl restart gunicorn-vorp.service \
+              && echo "Serviço gunicorn-vorp.service reiniciado com sucesso." \
+              || echo "Falha ao reiniciar gunicorn-vorp.service."
 
             echo "=== Deploy finalizado em $(date) ==="
             echo "Logs disponíveis em $LOG_FILE"
