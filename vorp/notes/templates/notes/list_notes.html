@@ -65,6 +65,12 @@
           {{ note.content|safe }}
         </div>
 
+        <div class="mt-2">
+          {% for tag in note.tags.all %}
+            <span class="inline-block bg-cyan-700 text-white text-xs px-2 py-1 rounded mr-2 mb-1">#{{ tag.name }}</span>
+          {% endfor %}
+        </div>
+
         <div class="mt-6 pt-4 border-t border-cyan-500/20">
           <form method="POST" action="{% url 'notes:delete_note' note.id %}" onsubmit="return confirm('Tem certeza que deseja excluir esta nota?');">
             {% csrf_token %}

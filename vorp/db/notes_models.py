@@ -7,6 +7,23 @@ from django.utils.text import slugify
 def generate_share_hash(note_id, secret):
     return hashlib.sha256(f"{note_id}-{secret}".encode('utf-8')).hexdigest()[:10]
 
+
+class Tag(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='tags'
+    )
+    name = models.CharField(max_length=50)
+
+    class Meta:
+        unique_together = ('user', 'name')
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+        
 class Note(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -21,6 +38,7 @@ class Note(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
     views = models.PositiveIntegerField(default=0)
+    tags = models.ManyToManyField(Tag, blank=True, related_name='notes')
 
     def __str__(self):
         return self.title
@@ -49,3 +67,5 @@ class Note(models.Model):
                     
         kwargs.pop('force_insert', None)
         super().save(*args, **kwargs)
+
+

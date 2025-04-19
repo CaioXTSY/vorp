@@ -683,6 +683,13 @@
       {% csrf_token %}
       <input type="hidden" name="title" id="titleInput" value="{{ note.title }}">
       
+      <div class="form-group mb-4">
+        <label for="tagsInput" class="form-label">Tags (separe por vírgula)</label>
+        <input type="text" id="tagsInput" name="tags" class="form-input"
+               value="{{ tags|default_if_none:'' }}">
+        <small class="text-cyan-300">Exemplo: estudo, python, resumo</small>
+      </div>
+      
       <div class="editor-controls">
         <!-- Save button -->
         <button type="submit" class="btn-control btn-primary">

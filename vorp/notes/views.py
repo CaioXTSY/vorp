@@ -6,7 +6,7 @@ from django.urls import reverse
 from io import BytesIO
 import markdown
 from xhtml2pdf import pisa
-from db.notes_models import Note
+from db.notes_models import Note, Tag
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 import openai
@@ -14,6 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.http import JsonResponse
+
 import json
 
 @login_required
@@ -25,6 +26,7 @@ def list_notes(request):
 def new_note(request):
     if request.method == 'POST':
         title = request.POST.get('title', '').strip()
+        tags_str = request.POST.get('tags', '')
         if not title:
             messages.error(request, "O título não pode estar vazio.")
             return redirect('notes:list_notes')
@@ -34,6 +36,13 @@ def new_note(request):
             content="",
             is_public=False
         )
+        # Processa tags
+        tags = [t.strip() for t in tags_str.split(',') if t.strip()]
+        tag_objs = []
+        for tag_name in tags:
+            tag_obj, _ = Tag.objects.get_or_create(user=request.user, name=tag_name)
+            tag_objs.append(tag_obj)
+        note.tags.set(tag_objs)
         messages.success(request, "Nota criada com sucesso!")
         return redirect('notes:list_notes')
     return render(request, 'notes/new_note.html')
@@ -61,10 +70,19 @@ def edit_note(request, note_id):
         note.title = request.POST.get('title', note.title).strip()
         note.content = request.POST.get('content', note.content)
         note.is_public = (request.POST.get('is_public') == 'on')
+        tags_str = request.POST.get('tags', '')
+        tags = [t.strip() for t in tags_str.split(',') if t.strip()]
+        tag_objs = []
+        for tag_name in tags:
+            tag_obj, _ = Tag.objects.get_or_create(user=request.user, name=tag_name)
+            tag_objs.append(tag_obj)
+        note.tags.set(tag_objs)
         note.save()
         messages.success(request, "Nota atualizada com sucesso!")
         return redirect('notes:view_note', note_id=note.id)
-    return render(request, 'notes/edit_note.html', {'note': note})
+    # Para exibir as tags no campo do formulário
+    tags = ', '.join([tag.name for tag in note.tags.all()])
+    return render(request, 'notes/edit_note.html', {'note': note, 'tags': tags})
 
 @login_required
 def delete_note(request, note_id):
