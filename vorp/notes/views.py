@@ -6,7 +6,7 @@ from django.urls import reverse
 from io import BytesIO
 import markdown
 from xhtml2pdf import pisa
-from db.notes_models import Note, Tag
+from db.notes_models import Note, Tag, Comment
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 import openai
@@ -54,13 +54,23 @@ def view_note(request, note_id):
         messages.error(request, "Esta nota é privada.")
         return redirect('accounts:login')
 
+    # Comentário
+    if request.method == 'POST' and 'comment_text' in request.POST:
+        text = request.POST.get('comment_text', '').strip()
+        if text:
+            Comment.objects.create(note=note, user=request.user, text=text)
+            messages.success(request, "Comentário adicionado!")
+            return redirect('notes:view_note', note_id=note.id)
+
     note.views += 1
     note.save(update_fields=['views'])
 
     html_content = markdown.markdown(note.content, extensions=['fenced_code', 'tables', 'toc', 'codehilite'])
+    comments = note.comments.select_related('user').all()
     return render(request, 'notes/view_note.html', {
         'note': note,
         'html_content': html_content,
+        'comments': comments,
     })
 
 @login_required

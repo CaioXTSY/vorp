@@ -69,3 +69,16 @@ class Note(models.Model):
         super().save(*args, **kwargs)
 
 
+class Comment(models.Model):
+    note = models.ForeignKey('Note', on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} em {self.note.title}"
+
+
