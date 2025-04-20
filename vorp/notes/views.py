@@ -10,11 +10,6 @@ from db.notes_models import Note, Tag, Comment
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 import openai
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-from django.views import View
-from django.http import JsonResponse
-
 import json
 
 @login_required
@@ -36,7 +31,6 @@ def new_note(request):
             content="",
             is_public=False
         )
-        # Processa tags
         tags = [t.strip() for t in tags_str.split(',') if t.strip()]
         tag_objs = []
         for tag_name in tags:
@@ -54,7 +48,7 @@ def view_note(request, note_id):
         messages.error(request, "Esta nota é privada.")
         return redirect('accounts:login')
 
-    # Comentário
+    # adiciona comentário
     if request.method == 'POST' and 'comment_text' in request.POST:
         text = request.POST.get('comment_text', '').strip()
         if text:
@@ -62,14 +56,28 @@ def view_note(request, note_id):
             messages.success(request, "Comentário adicionado!")
             return redirect('notes:view_note', note_id=note.id)
 
+    # incrementa visualizações
     note.views += 1
     note.save(update_fields=['views'])
 
-    html_content = markdown.markdown(note.content, extensions=['fenced_code', 'tables', 'toc', 'codehilite'])
+    # configura o parser de Markdown com TOC
+    md = markdown.Markdown(
+        extensions=['fenced_code', 'tables', 'codehilite', 'toc'],
+        extension_configs={
+            'toc': {
+                'permalink': True,
+                'baselevel': 2
+            }
+        }
+    )
+    html_content = md.convert(note.content)
+    toc_html = md.toc
+
     comments = note.comments.select_related('user').all()
     return render(request, 'notes/view_note.html', {
         'note': note,
         'html_content': html_content,
+        'toc': toc_html,
         'comments': comments,
     })
 
@@ -90,7 +98,6 @@ def edit_note(request, note_id):
         note.save()
         messages.success(request, "Nota atualizada com sucesso!")
         return redirect('notes:view_note', note_id=note.id)
-    # Para exibir as tags no campo do formulário
     tags = ', '.join([tag.name for tag in note.tags.all()])
     return render(request, 'notes/edit_note.html', {'note': note, 'tags': tags})
 
@@ -118,10 +125,23 @@ def public_note(request, share_hash):
     note.views += 1
     note.save(update_fields=['views'])
 
-    html_content = markdown.markdown(note.content, extensions=['fenced_code', 'tables', 'toc', 'codehilite'])
+    # parser de Markdown com TOC para público
+    md = markdown.Markdown(
+        extensions=['fenced_code', 'tables', 'codehilite', 'toc'],
+        extension_configs={
+            'toc': {
+                'permalink': True,
+                'baselevel': 2
+            }
+        }
+    )
+    html_content = md.convert(note.content)
+    toc_html = md.toc
+
     return render(request, 'notes/view_note.html', {
         'note': note,
         'html_content': html_content,
+        'toc': toc_html,
     })
 
 def export_note(request, note_id):
@@ -133,12 +153,7 @@ def export_note(request, note_id):
     html_content = markdown.markdown(note.content, extensions=['fenced_code', 'tables', 'codehilite'])
     css = """
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 2cm;
-            font-size: 12pt;
-        }
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 2cm; font-size: 12pt; }
         h1 { font-size: 18pt; }
         h2 { font-size: 16pt; }
         pre {
@@ -160,10 +175,7 @@ def export_note(request, note_id):
             padding: 12px;
             text-align: left;
         }
-        th {
-            background-color: #f8f9fa;
-            font-weight: bold;
-        }
+        th { background-color: #f8f9fa; font-weight: bold; }
     </style>
     """
     full_html = f"""
@@ -186,7 +198,6 @@ def export_note(request, note_id):
     response['Content-Disposition'] = f'attachment; filename="{note.title}.pdf"'
     return response
 
-
 @csrf_exempt
 @require_POST
 def ask(request):
@@ -194,72 +205,68 @@ def ask(request):
         data = json.loads(request.body.decode('utf-8'))
         question = data.get('question', '')
         context = data.get('context', '')
-        conversation_history = data.get('history', [])
-        conversation_history = conversation_history[-10:]
-        messages = [{
+        conversation_history = data.get('history', [])[-10:]
+
+        messages_payload = [{
             "role": "system",
-            "content": f"""
-Você é Vorp, um assistente de estudos eficiente, focado e profissional.
-
-CONTEXTO:
-{context}
-
-DIRETRIZES DE RESPOSTA:
-1. Estilo
-- Seja direto e objetivo
-- Máximo 2 parágrafos por resposta
-- Tom profissional e educativo
-- Evite jargões técnicos desnecessários
-
-2. Formatação
-- Use Markdown para estruturar o conteúdo
-- Aplique listas numeradas ou marcadores quando apropriado
-- Utilize negrito para pontos importantes
-- Organize com cabeçalhos e subcabeçalhos
-- Inclua tabelas para dados estruturados
-- Adicione links relevantes quando necessário
-
-3. Metodologia
-- Para perguntas não claras: solicite esclarecimentos
-- Para tópicos complexos: divida em subtópicos
-- Para conceitos técnicos: forneça explicações concisas
-- Para temas polêmicos: mantenha neutralidade
-- Para assuntos fora do escopo: decline educadamente
-
-FORMATO PARA QUESTÕES:
-### Questão
-- **Tema:** [Tema]
-- **Enunciado:** [Pergunta]
-
-### Alternativas (se aplicável)
-A) [Texto]
-B) [Texto]
-C) [Texto]
-D) [Texto]
-E) [Texto]
-
-### Resolução
-- **Resposta correta:** [Alternativa]
-- **Justificativa:** [Explicação]
-- **Dicas:** [Sugestões práticas]
-"""
+            "content": (
+                "Você é Vorp, um assistente de estudos eficiente, focado e profissional.\n\n"
+                "CONTEXTO:\n"
+                f"{context}\n\n"
+                "DIRETRIZES DE RESPOSTA:\n"
+                "1. Estilo\n"
+                "- Seja direto e objetivo\n"
+                "- Máximo 2 parágrafos por resposta\n"
+                "- Tom profissional e educativo\n"
+                "- Evite jargões técnicos desnecessários\n\n"
+                "2. Formatação\n"
+                "- Use Markdown para estruturar o conteúdo\n"
+                "- Aplique listas numeradas ou marcadores quando apropriado\n"
+                "- Utilize negrito para pontos importantes\n"
+                "- Organize com cabeçalhos e subcabeçalhos\n"
+                "- Inclua tabelas para dados estruturados\n"
+                "- Adicione links relevantes quando necessário\n\n"
+                "3. Metodologia\n"
+                "- Para perguntas não claras: solicite esclarecimentos\n"
+                "- Para tópicos complexos: divida em subtópicos\n"
+                "- Para conceitos técnicos: forneça explicações concisas\n"
+                "- Para temas polêmicos: mantenha neutralidade\n"
+                "- Para assuntos fora do escopo: decline educadamente\n\n"
+                "FORMATO PARA QUESTÕES:\n"
+                "### Questão\n"
+                "- **Tema:** [Tema]\n"
+                "- **Enunciado:** [Pergunta]\n\n"
+                "### Alternativas (se aplicável)\n"
+                "A) [Texto]\n"
+                "B) [Texto]\n"
+                "C) [Texto]\n"
+                "D) [Texto]\n"
+                "E) [Texto]\n\n"
+                "### Resolução\n"
+                "- **Resposta correta:** [Alternativa]\n"
+                "- **Justificativa:** [Explicação]\n"
+                "- **Dicas:** [Sugestões práticas]\n"
+            )
         }]
         for msg in conversation_history:
             role = msg.get("role", "user").lower()
-            content = msg.get("content", "")
             if role not in ["system", "user", "assistant"]:
                 role = "user"
-            messages.append({"role": role, "content": content})
-        messages.append({"role": "user", "content": question})
+            messages_payload.append({
+                "role": role,
+                "content": msg.get("content", "")
+            })
+        messages_payload.append({"role": "user", "content": question})
+
         response = openai.ChatCompletion.create(
             model="gpt-4o-mini",
-            messages=messages,
+            messages=messages_payload,
             temperature=0.4,
             max_tokens=5000
         )
         answer = response.choices[0].message.content
         return JsonResponse({'answer': answer})
-    except Exception as e:
+    except Exception:
         return JsonResponse({'error': 'Erro ao processar a pergunta'}, status=500)
 
 @csrf_exempt
@@ -269,8 +276,9 @@ def process_ai(request):
         data = json.loads(request.body.decode('utf-8'))
         action = data.get('action', '')
         text = data.get('text', '')
-        if not text or not action:
+        if not action or not text:
             return JsonResponse({'error': 'Parâmetros inválidos'}, status=400)
+
         if action == 'summarize':
             system_prompt = "Você é um assistente especializado em resumir textos. Crie um resumo conciso do texto fornecido, mantendo os pontos principais."
             user_prompt = f"Resuma o seguinte texto em um parágrafo curto:\n\n{text}"
@@ -288,6 +296,7 @@ def process_ai(request):
             user_prompt = f"Traduza o seguinte texto para o português:\n\n{text}"
         else:
             return JsonResponse({'error': 'Ação não reconhecida'}, status=400)
+
         response = openai.ChatCompletion.create(
             model="gpt-4o-mini",
             messages=[
@@ -299,5 +308,5 @@ def process_ai(request):
         )
         result = response.choices[0].message.content
         return JsonResponse({'result': result})
-    except Exception as e:
+    except Exception:
         return JsonResponse({'error': 'Erro ao processar a solicitação'}, status=500)
