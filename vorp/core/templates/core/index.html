@@ -4,9 +4,9 @@
 {% block title %}Vorp - Anotações Intuitivas com IA{% endblock %}
 
 {% block head %}
-  {{ block.super }}
-  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.css">
+{{ block.super }}
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.css">
 {% endblock %}
 
 {% block content %}
@@ -14,58 +14,94 @@
 
 <style>
   @keyframes gradient-wave {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    0% {
+      background-position: 0% 50%;
+    }
+
+    50% {
+      background-position: 100% 50%;
+    }
+
+    100% {
+      background-position: 0% 50%;
+    }
   }
+
   .gradient-animate {
     background-size: 400% 400%;
     animation: gradient-wave 12s ease infinite;
   }
-</style>
-<style>
+
+  .feature-card {
+    transition: all 0.3s ease;
+  }
+
   .feature-card:hover {
     transform: translateY(-5px) scale(1.02);
     box-shadow: 0 20px 40px rgba(0, 112, 243, 0.3);
+  }
+
+  .pricing-card {
+    transition: all 0.3s ease;
   }
 
   .pricing-card:hover {
     transform: perspective(1000px) rotateY(10deg);
     transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
   }
+
+  .badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .badge-primary {
+    background: linear-gradient(to right, rgba(34, 211, 238, 0.1), rgba(59, 130, 246, 0.1));
+    color: #06b6d4;
+    border: 1px solid rgba(6, 182, 212, 0.3);
+  }
+
+  .badge-student {
+    background: linear-gradient(to right, rgba(16, 185, 129, 0.1), rgba(6, 182, 212, 0.1));
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
 </style>
 
 <section class="relative bg-gradient-to-br from-gray-900 to-indigo-900 overflow-hidden">
-  <div class="absolute inset-0 opacity-20" style="background-image: url('data:image/svg+xml,%3Csvg width=\'52\' height=\'26\' viewBox=\'0 0 52 26\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%239C92AC\' fill-opacity=\'0.2\'%3E%3Cpath d=\'M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z\' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
-  
+  <div class="absolute inset-0 opacity-20"
+    style="background-image: url('data:image/svg+xml,%3Csvg width=\'52\' height=\'26\' viewBox=\'0 0 52 26\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%239C92AC\' fill-opacity=\'0.2\'%3E%3Cpath d=\'M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z\' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E');">
+  </div>
+
   <div class="w-full px-4 py-28 relative z-10">
     <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16">
       <!-- Text Content -->
       <div class="lg:w-1/2 text-center lg:text-left">
-        <h1 class="text-5xl md:text-6xl font-bold mb-6 leading-tight bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent"
-            data-aos="fade-up"
-            data-aos-duration="800">
+        <h1
+          class="text-5xl md:text-6xl font-bold mb-6 leading-tight bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent"
+          data-aos="fade-up" data-aos-duration="800">
           Transforme suas anotações
           <span class="block mt-3" data-aos="fade-up" data-aos-delay="200">em conhecimento ativo</span>
         </h1>
-        <p class="text-xl text-cyan-100 mb-10 max-w-xl mx-auto lg:mx-0"
-           data-aos="fade-up"
-           data-aos-delay="400">
-          Editor inteligente com IA integrada para organização automática, colaboração em tempo real e insights acionáveis
+        <p class="text-xl text-cyan-100 mb-10 max-w-xl mx-auto lg:mx-0" data-aos="fade-up" data-aos-delay="400">
+          Editor inteligente com IA integrada para organização automática, colaboração em tempo real e insights
+          acionáveis
         </p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
-             data-aos="fade-up"
-             data-aos-delay="600">
-          <a href="{% url 'admin:index' %}" 
-             class="btn-primary inline-flex items-center justify-center gap-2 px-8 py-4 text-lg font-semibold 
+        <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start" data-aos="fade-up" data-aos-delay="600">
+          <a href="{% url 'admin:index' %}"
+            class="btn-primary inline-flex items-center justify-center gap-2 px-8 py-4 text-lg font-semibold 
                     bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 
                     rounded-xl transition-all transform hover:-translate-y-1 shadow-lg hover:shadow-2xl
                     hover:scale-105 duration-300">
             Comece Grátis
             <i class="fas fa-arrow-right text-sm group-hover:translate-x-1 transition-transform"></i>
           </a>
-          <a href="#features" 
-             class="btn-secondary border-2 border-cyan-500/30 hover:border-cyan-400 px-8 py-4 text-lg
+          <a href="#features" class="btn-secondary border-2 border-cyan-500/30 hover:border-cyan-400 px-8 py-4 text-lg
                 bg-white/5 backdrop-blur-sm hover:bg-white/10 rounded-xl transition-all
                 hover:scale-105 duration-300 text-white">
             Ver Demonstração
@@ -74,10 +110,9 @@
       </div>
 
       <!-- Editor Preview -->
-      <div class="lg:w-1/2 mt-16 lg:mt-0 relative"
-           data-aos="fade-left"
-           data-aos-delay="400">
-        <div class="absolute inset-0 bg-gradient-to-tr from-cyan-500/30 to-blue-500/30 blur-3xl opacity-40 animate-pulse"></div>
+      <div class="lg:w-1/2 mt-16 lg:mt-0 relative" data-aos="fade-left" data-aos-delay="400">
+        <div class="absolute inset-0 bg-gradient-to-tr from-cyan-500/30 to-blue-500/30 blur-3xl opacity-40 animate-pulse">
+        </div>
         <div class="relative bg-gray-800/50 backdrop-blur-xl rounded-3xl shadow-2xl border border-cyan-500/20 
                     transform rotate-1 hover:rotate-0 transition-transform duration-300 hover:shadow-2xl hover:shadow-cyan-500/20">
           <div class="p-6 space-y-6">
@@ -97,7 +132,7 @@
 - Clustering
 - Dimensionality Reduction</code></pre>
             </div>
-            
+
             <!-- AI Suggestion -->
             <div class="p-4 bg-gray-700/50 rounded-xl border border-cyan-500/20 hover:border-cyan-400/40 transition-all">
               <div class="flex items-center gap-4">
@@ -121,26 +156,26 @@
 </section>
 
 <!-- Features Grid -->
-<section id="features" class="relative py-24 bg-gradient-to-b from-white to-cyan-50 dark:from-gray-900 dark:to-gray-800">
+<section id="features"
+  class="relative py-24 bg-gradient-to-b from-white to-cyan-50 dark:from-gray-900 dark:to-gray-800">
   <div class="max-w-7xl mx-auto px-4">
     <div class="text-center mb-20">
-      <h2 class="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-gray-800 to-cyan-600 dark:from-cyan-400 dark:to-blue-400 bg-clip-text text-transparent"
-          data-aos="zoom-in-up">
+      <span class="badge badge-primary mb-4" data-aos="fade-up">Recursos</span>
+      <h2
+        class="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-gray-800 to-cyan-600 dark:from-cyan-400 dark:to-blue-400 bg-clip-text text-transparent"
+        data-aos="zoom-in-up">
         Recursos Revolucionários
       </h2>
-      <p class="text-xl text-gray-600 dark:text-cyan-100 max-w-3xl mx-auto"
-         data-aos="fade-up"
-         data-aos-delay="200">
+      <p class="text-xl text-gray-600 dark:text-cyan-100 max-w-3xl mx-auto" data-aos="fade-up" data-aos-delay="200">
         Tecnologia de ponta para potencializar sua produtividade intelectual
       </p>
     </div>
 
     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
       <!-- Feature 1 -->
-      <div class="card group relative bg-white dark:bg-gray-800 p-8 rounded-3xl border border-gray-200 dark:border-gray-700 
-                  hover:border-cyan-500/30 transition-all duration-300 hover:-translate-y-2"
-           data-aos="fade-up"
-           data-aos-delay="200">
+      <div class="feature-card group relative bg-white dark:bg-gray-800 p-8 rounded-3xl border border-gray-200 dark:border-gray-700 
+                                                                  hover:border-cyan-500/30 transition-all duration-300"
+        data-aos="fade-up" data-aos-delay="200">
         <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 opacity-0 
                     group-hover:opacity-100 rounded-3xl transition-opacity"></div>
         <div class="relative z-10">
@@ -148,7 +183,9 @@
                       transform group-hover:rotate-12 transition-transform">
             <i class="fas fa-code text-2xl text-white"></i>
           </div>
-          <h3 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white group-hover:bg-gradient-to-r group-hover:from-cyan-500 group-hover:to-blue-500 group-hover:bg-clip-text group-hover:text-transparent transition-all">Editor Inteligente</h3>
+          <h3
+            class="text-2xl font-bold mb-4 text-gray-800 dark:text-white group-hover:bg-gradient-to-r group-hover:from-cyan-500 group-hover:to-blue-500 group-hover:bg-clip-text group-hover:text-transparent transition-all">
+            Editor Inteligente</h3>
           <p class="text-gray-600 dark:text-cyan-100 mb-6">
             Markdown avançado com suporte a diagramas, fórmulas matemáticas e sintaxe real-time
           </p>
@@ -161,15 +198,18 @@
               <i class="fas fa-check-circle text-sm"></i>
               Templates inteligentes
             </li>
+            <li class="flex items-center gap-3 hover:translate-x-2 transition-transform">
+              <i class="fas fa-check-circle text-sm"></i>
+              Formatação automática
+            </li>
           </ul>
         </div>
       </div>
 
       <!-- Feature 2 -->
-      <div class="card group relative bg-white dark:bg-gray-800 p-8 rounded-3xl border border-gray-200 dark:border-gray-700 
-                  hover:border-cyan-500/30 transition-all duration-300 hover:-translate-y-2"
-           data-aos="fade-up"
-           data-aos-delay="400">
+      <div class="feature-card group relative bg-white dark:bg-gray-800 p-8 rounded-3xl border border-gray-200 dark:border-gray-700 
+                                                                  hover:border-cyan-500/30 transition-all duration-300"
+        data-aos="fade-up" data-aos-delay="400">
         <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 opacity-0 
                     group-hover:opacity-100 rounded-3xl transition-opacity"></div>
         <div class="relative z-10">
@@ -177,7 +217,9 @@
                       transform group-hover:rotate-12 transition-transform">
             <i class="fas fa-brain text-2xl text-white"></i>
           </div>
-          <h3 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white group-hover:bg-gradient-to-r group-hover:from-cyan-500 group-hover:to-blue-500 group-hover:bg-clip-text group-hover:text-transparent transition-all">Assistente por IA</h3>
+          <h3
+            class="text-2xl font-bold mb-4 text-gray-800 dark:text-white group-hover:bg-gradient-to-r group-hover:from-cyan-500 group-hover:to-blue-500 group-hover:bg-clip-text group-hover:text-transparent transition-all">
+            Assistente por IA</h3>
           <p class="text-gray-600 dark:text-cyan-100 mb-6">
             Análise contextual e geração automática de resumos, perguntas e conexões
           </p>
@@ -190,15 +232,18 @@
               <i class="fas fa-check-circle text-sm"></i>
               Sugestões em tempo real
             </li>
+            <li class="flex items-center gap-3 hover:translate-x-2 transition-transform">
+              <i class="fas fa-check-circle text-sm"></i>
+              Detecção de conceitos-chave
+            </li>
           </ul>
         </div>
       </div>
 
       <!-- Feature 3 -->
-      <div class="card group relative bg-white dark:bg-gray-800 p-8 rounded-3xl border border-gray-200 dark:border-gray-700 
-                  hover:border-cyan-500/30 transition-all duration-300 hover:-translate-y-2"
-           data-aos="fade-up"
-           data-aos-delay="600">
+      <div class="feature-card group relative bg-white dark:bg-gray-800 p-8 rounded-3xl border border-gray-200 dark:border-gray-700 
+                                                                  hover:border-cyan-500/30 transition-all duration-300"
+        data-aos="fade-up" data-aos-delay="600">
         <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 opacity-0 
                     group-hover:opacity-100 rounded-3xl transition-opacity"></div>
         <div class="relative z-10">
@@ -206,7 +251,9 @@
                       transform group-hover:rotate-12 transition-transform">
             <i class="fas fa-share-nodes text-2xl text-white"></i>
           </div>
-          <h3 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white group-hover:bg-gradient-to-r group-hover:from-cyan-500 group-hover:to-blue-500 group-hover:bg-clip-text group-hover:text-transparent transition-all">Colaboração Avançada</h3>
+          <h3
+            class="text-2xl font-bold mb-4 text-gray-800 dark:text-white group-hover:bg-gradient-to-r group-hover:from-cyan-500 group-hover:to-blue-500 group-hover:bg-clip-text group-hover:text-transparent transition-all">
+            Colaboração Avançada</h3>
           <p class="text-gray-600 dark:text-cyan-100 mb-6">
             Compartilhamento seguro com controle de versão e comentários contextualizados
           </p>
@@ -219,6 +266,10 @@
               <i class="fas fa-check-circle text-sm"></i>
               Histórico de mudanças
             </li>
+            <li class="flex items-center gap-3 hover:translate-x-2 transition-transform">
+              <i class="fas fa-check-circle text-sm"></i>
+              Permissões granulares
+            </li>
           </ul>
         </div>
       </div>
@@ -228,11 +279,25 @@
 
 <!-- AI Assistant Section -->
 <section class="relative py-24 bg-gradient-to-br from-gray-900 to-cyan-900 overflow-hidden">
+  <div class="absolute -left-40 -top-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl"></div>
+  <div class="absolute -right-40 -bottom-40 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+
   <div class="max-w-7xl mx-auto px-4">
+    <div class="text-center mb-16">
+      <span class="badge badge-primary mb-4" data-aos="fade-up">Inteligência Artificial</span>
+      <h2
+        class="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent"
+        data-aos="zoom-in-up">
+        Potencialize seu Conhecimento
+      </h2>
+      <p class="text-xl text-cyan-100 max-w-3xl mx-auto" data-aos="fade-up" data-aos-delay="200">
+        Nossa IA contextual entende seu conteúdo e oferece insights valiosos
+      </p>
+    </div>
+
     <div class="flex flex-col lg:flex-row items-center gap-16">
       <!-- Chat Interface -->
       <div class="lg:w-1/2 relative" data-aos="fade-right" data-aos-delay="200">
-        <div class="absolute -left-20 -top-20 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse"></div>
         <div class="relative bg-gray-800/50 backdrop-blur-xl rounded-3xl border border-cyan-500/20 p-8 shadow-2xl
                     hover:shadow-cyan-500/20 transition-all">
           <div class="space-y-6">
@@ -248,17 +313,17 @@
                 <p class="text-cyan-100">Como posso melhorar esta explicação sobre redes neurais?</p>
               </div>
             </div>
-            
+
             <!-- AI Response -->
             <div class="flex gap-4">
               <div class="shrink-0">
                 <div class="h-12 w-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-full 
                             flex items-center justify-center overflow-hidden hover:rotate-12 transition-transform">
-<div>
-  <img src="https://static.wikia.nocookie.net/335ccee3-62b7-49b6-86d9-076081705e78/scale-to-width/755" alt="Vorp AI"
-    class="w-full h-full object-cover">
-</div>
-
+                  <div>
+                    <img src="https://static.wikia.nocookie.net/335ccee3-62b7-49b6-86d9-076081705e78/scale-to-width/755" alt="Vorp AI"
+                      class="w-full h-full object-cover">
+                  </div>
+                </div>
               </div>
               <div class="bg-gray-700/50 p-4 rounded-xl hover:bg-gray-700/70 transition-all">
                 <p class="text-cyan-100 mb-3">Sugiro adicionar:</p>
@@ -269,13 +334,35 @@
                 </ul>
               </div>
             </div>
+<!-- Additional AI Response -->
+<div class="flex gap-4">
+  <div class="shrink-0">
+    <div class="h-12 w-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-full 
+                            flex items-center justify-center overflow-hidden hover:rotate-12 transition-transform">
+      <div>
+        <img src="https://static.wikia.nocookie.net/335ccee3-62b7-49b6-86d9-076081705e78/scale-to-width/755"
+          alt="Vorp AI" class="w-full h-full object-cover">
+      </div>
+    </div>
+  </div>
+  <div class="bg-gray-700/50 p-4 rounded-xl hover:bg-gray-700/70 transition-all">
+    <p class="text-cyan-100 mb-3">Aqui está um exemplo de código para você:</p>
+    <pre class="bg-gray-800/70 p-3 rounded-lg text-cyan-300 text-sm overflow-x-auto"><code>import tensorflow as tf
+
+model = tf.keras.Sequential([
+  tf.keras.layers.Dense(128, activation='relu'),
+  tf.keras.layers.Dense(10, activation='softmax')
+])</code></pre>
+  </div>
+</div>
           </div>
         </div>
       </div>
 
       <!-- Text Content -->
-      <div class="lg:w-1/2" data-aos="fade-left" data-aos-delay="400">
-        <h2 class="text-4xl md:text-5xl font-bold mb-8 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+      <div class="lg:w-1/2 mt-16 lg:mt-0" data-aos="fade-left" data-aos-delay="400">
+        <h2
+          class="text-3xl md:text-4xl font-bold mb-8 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
           Inteligência Artificial
           <span class="block mt-3">Contextual</span>
         </h2>
@@ -290,10 +377,11 @@
             </div>
             <div>
               <h3 class="text-xl font-semibold text-white mb-2">Análise em Tempo Real</h3>
-              <p class="text-cyan-200">Verificação automática de consistência e sugestões de melhoria contínua</p>
+              <p class="text-cyan-200">Verificação automática de consistência e sugestões de melhoria contínua enquanto
+                você escreve</p>
             </div>
           </div>
-          
+
           <div class="flex items-start gap-6 p-4 bg-white/5 backdrop-blur-sm rounded-xl border border-cyan-500/20
                      hover:border-cyan-400/40 hover:-translate-y-1 transition-all">
             <div class="shrink-0 mt-1">
@@ -304,7 +392,25 @@
             </div>
             <div>
               <h3 class="text-xl font-semibold text-white mb-2">Aprendizado Adaptativo</h3>
-              <p class="text-cyan-200">O assistente evolui com seu estilo de escrita e áreas de interesse</p>
+              <p class="text-cyan-200">O assistente evolui com seu estilo de escrita e áreas de interesse para oferecer
+                sugestões cada vez mais relevantes</p>
+              </div>
+              </div>
+              
+              <div
+                class="flex items-start gap-6 p-4 bg-white/5 backdrop-blur-sm rounded-xl border border-cyan-500/20
+                                                                                                                                     hover:border-cyan-400/40 hover:-translate-y-1 transition-all">
+                <div class="shrink-0 mt-1">
+                  <div
+                    class="w-8 h-8 bg-cyan-500/20 rounded-lg flex items-center justify-center
+                                                                                                                                         group-hover:bg-cyan-500/40 transition-all">
+                    <i class="fas fa-lightbulb text-cyan-400"></i>
+                  </div>
+                </div>
+                <div>
+                  <h3 class="text-xl font-semibold text-white mb-2">Insights Acionáveis</h3>
+                  <p class="text-cyan-200">Transforme suas anotações em conhecimento prático com sugestões de aplicação e
+                    conexões entre conceitos</p>
             </div>
           </div>
         </div>
@@ -314,111 +420,300 @@
 </section>
 
 <!-- Pricing Section -->
-<section class="relative py-24 bg-white dark:bg-gray-900">
-  <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-    <div class="card group relative bg-white dark:bg-gray-800 p-8 rounded-3xl border-2 border-gray-200/80 dark:border-gray-700 
-                hover:border-cyan-400/40 transition-all duration-300 hover:shadow-xl hover:-translate-y-2"
-         data-aos="zoom-in" data-aos-delay="200">
-      <div class="text-center">
-        <h3 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Iniciante</h3>
-        <div class="text-5xl font-bold mb-6">
-          <span class="bg-gradient-to-r from-gray-400 to-cyan-400 bg-clip-text text-transparent">Grátis</span>
-        </div>
-        <ul class="space-y-4 mb-8 text-gray-600 dark:text-cyan-100">
-          <li class="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 p-3 rounded-lg transition-all">
-            <i class="fas fa-check-circle text-cyan-500 transform transition-transform group-hover:scale-110"></i>
-            500 créditos/mês
-          </li>
-          <li class="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 p-3 rounded-lg transition-all">
-            <i class="fas fa-check-circle text-cyan-500 transform transition-transform group-hover:scale-110"></i>
-            Editor básico
-          </li>
-        </ul>
-        <a href="#" class="btn w-full py-4 px-8 bg-gradient-to-r from-cyan-400 to-blue-400 text-white rounded-xl
-                        font-bold hover:from-cyan-500 hover:to-blue-500 transition-all shadow-lg hover:shadow-cyan-300/30
-                        flex items-center justify-center gap-2 hover:gap-3">
-          Começar Agora
-          <i class="fas fa-arrow-right text-sm transition-all transform group-hover:translate-x-1"></i>
-        </a>
-      </div>
+<section id="pricing" class="relative py-24 bg-white dark:bg-gray-900">
+  <div class="max-w-7xl mx-auto px-4">
+    <div class="text-center mb-16">
+      <span class="badge badge-primary mb-4" data-aos="fade-up">Planos</span>
+      <h2
+        class="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-gray-800 to-cyan-600 dark:from-cyan-400 dark:to-blue-400 bg-clip-text text-transparent"
+        data-aos="zoom-in-up">
+        Escolha o Plano Ideal
+      </h2>
+      <p class="text-xl text-gray-600 dark:text-cyan-100 max-w-3xl mx-auto" data-aos="fade-up" data-aos-delay="200">
+        Opções flexíveis para atender às suas necessidades
+      </p>
     </div>
-  
-    <!-- Pro Tier -->
-    <div class="card group relative bg-gradient-to-br from-cyan-500 to-blue-600 p-8 rounded-3xl 
-                transform hover:-translate-y-3 transition-all duration-300 shadow-2xl hover:shadow-cyan-400/40"
-         data-aos="zoom-in" data-aos-delay="400">
-      <div class="absolute inset-0 bg-white/5 backdrop-blur-sm rounded-3xl"></div>
-      <div class="relative z-10 text-center text-white">
-        <div class="flex justify-center mb-4">
-          <span class="bg-white/20 px-4 py-1 rounded-full text-sm font-semibold tracking-wide animate-pulse">
-            Mais Popular
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+      <!-- Free Tier -->
+      <div class="pricing-card group relative bg-white dark:bg-gray-800 p-8 rounded-3xl border-2 border-gray-200/80 dark:border-gray-700 
+                hover:border-cyan-400/40 transition-all duration-300 hover:shadow-xl" data-aos="zoom-in"
+        data-aos-delay="200">
+        <div class="text-center">
+          <h3 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Iniciante</h3>
+          <div class="text-5xl font-bold mb-6">
+            <span class="bg-gradient-to-r from-gray-400 to-cyan-400 bg-clip-text text-transparent">Grátis</span>
+          </div>
+          <ul class="space-y-4 mb-8 text-gray-600 dark:text-cyan-100">
+            <li
+              class="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 p-3 rounded-lg transition-all">
+              <i class="fas fa-check-circle text-cyan-500 transform transition-transform group-hover:scale-110"></i>
+              500 créditos/mês
+            </li>
+            <li
+              class="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 p-3 rounded-lg transition-all">
+              <i class="fas fa-check-circle text-cyan-500 transform transition-transform group-hover:scale-110"></i>
+              Editor básico
+            </li>
+          <i class="fas fa-check-circle text-cyan-500 transform transition-transform group-hover:scale-110"></i>
+          Recarga de Créditos com Anúncios
+          </li>
+          <li
+            class="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 p-3 rounded-lg transition-all text-gray-400">
+            <i class="fas fa-times-circle text-gray-400"></i>
+            Sem IA avançada
+          </li>
+              </ul>
+          <a href="#"
+            class="btn w-full py-4 px-8 bg-gradient-to-r from-gray-400 to-cyan-400 text-white rounded-xl
+                                                                                                        font-bold hover:from-gray-500 hover:to-cyan-500 transition-all shadow-lg hover:shadow-cyan-300/30
+                        flex items-center justify-center gap-2 hover:gap-3">
+            Começar Agora
+            <i class="fas fa-arrow-right text-sm transition-all transform group-hover:translate-x-1"></i>
+            </a>
+            </div>
+            </div>
+
+      <!-- Student Tier (New) -->
+      <div
+        class="pricing-card group relative bg-white dark:bg-gray-800 p-8 rounded-3xl border-2 border-gray-200/80 dark:border-gray-700 
+                                                                hover:border-green-400/40 transition-all duration-300 hover:shadow-xl"
+        data-aos="zoom-in" data-aos-delay="300">
+        <div class="absolute top-0 right-0 -mt-2 -mr-2">
+          <span class="badge badge-student">
+            Estudantes
           </span>
         </div>
-        <h3 class="text-2xl font-bold mb-4">Profissional</h3>
-        <div class="text-5xl font-bold mb-6">
-          <span>R$29</span>
-          <span class="text-xl font-medium">/mês</span>
+        <div class="text-center">
+          <h3 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Estudante</h3>
+          <div class="text-5xl font-bold mb-6">
+            <span class="bg-gradient-to-r from-green-400 to-cyan-400 bg-clip-text text-transparent">R$19</span>
+            <span class="text-xl font-medium text-gray-500">/mês</span>
+          </div>
+          <p class="text-sm text-gray-500 mb-4">Com email institucional</p>
+          <ul class="space-y-4 mb-8 text-gray-600 dark:text-cyan-100">
+            <li class="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 p-3 rounded-lg transition-all">
+              <i class="fas fa-check-circle text-green-500 transform transition-transform group-hover:scale-110"></i>
+              3,000 créditos/mês
+            </li>
+            <li class="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 p-3 rounded-lg transition-all">
+              <i class="fas fa-check-circle text-green-500 transform transition-transform group-hover:scale-110"></i>
+              IA Básica
+            </li>
+            <li class="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 p-3 rounded-lg transition-all">
+              <i class="fas fa-check-circle text-green-500 transform transition-transform group-hover:scale-110"></i>
+              Suporte por email
+            </li>
+          </ul>
+          <a href="#" class="btn w-full py-4 px-8 bg-gradient-to-r from-green-400 to-cyan-400 text-white rounded-xl
+                                                                        font-bold hover:from-green-500 hover:to-cyan-500 transition-all shadow-lg hover:shadow-green-300/30
+                                                                        flex items-center justify-center gap-2 hover:gap-3">
+            Verificar Elegibilidade
+            <i class="fas fa-graduation-cap text-sm transition-all transform group-hover:translate-x-1"></i>
+          </a>
         </div>
-        <ul class="space-y-4 mb-8">
-          <li class="flex items-center gap-3 hover:bg-white/10 p-3 rounded-lg transition-all">
-            <i class="fas fa-check-circle text-cyan-300"></i>
-            5,000 créditos/mês
-          </li>
-          <li class="flex items-center gap-3 hover:bg-white/10 p-3 rounded-lg transition-all">
-            <i class="fas fa-check-circle text-cyan-300"></i>
-            IA Avançada
-          </li>
-        </ul>
-        <a href="#" class="btn w-full py-4 px-8 bg-white text-cyan-600 rounded-xl font-bold
+      </div>
+
+      <!-- Pro Tier -->
+      <div class="pricing-card group relative bg-gradient-to-br from-cyan-500 to-blue-600 p-8 rounded-3xl 
+                transform hover:-translate-y-3 transition-all duration-300 shadow-2xl hover:shadow-cyan-400/40"
+        data-aos="zoom-in" data-aos-delay="400">
+        <div class="absolute inset-0 bg-white/5 backdrop-blur-sm rounded-3xl"></div>
+        <div class="relative z-10 text-center text-white">
+          <div class="flex justify-center mb-4">
+            <span class="bg-white/20 px-4 py-1 rounded-full text-sm font-semibold tracking-wide animate-pulse">
+              Mais Popular
+            </span>
+          </div>
+          <h3 class="text-2xl font-bold mb-4">Profissional</h3>
+          <div class="text-5xl font-bold mb-6">
+            <span>R$29</span>
+            <span class="text-xl font-medium">/mês</span>
+          </div>
+          <ul class="space-y-4 mb-8">
+            <li class="flex items-center gap-3 hover:bg-white/10 p-3 rounded-lg transition-all">
+              <i class="fas fa-check-circle text-cyan-300"></i>
+              5,000 créditos/mês
+            </li>
+            <li class="flex items-center gap-3 hover:bg-white/10 p-3 rounded-lg transition-all">
+              <i class="fas fa-check-circle text-cyan-300"></i>
+              IA Avançada
+            </li>
+            <li class="flex items-center gap-3 hover:bg-white/10 p-3 rounded-lg transition-all">
+              <i class="fas fa-check-circle text-cyan-300"></i>
+              Suporte prioritário
+            </li>
+          </ul>
+          <a href="#" class="btn w-full py-4 px-8 bg-white text-cyan-600 rounded-xl font-bold
                         hover:bg-gray-100 hover:text-cyan-700 transition-all shadow-lg
                         flex items-center justify-center gap-2 hover:gap-3">
-          Assinar Agora
-          <i class="fas fa-rocket text-sm transition-all transform group-hover:translate-y-1"></i>
-        </a>
-      </div>
-    </div>
-  
-    <!-- Enterprise Tier -->
-    <div class="card group relative bg-white dark:bg-gray-800 p-8 rounded-3xl border-2 border-gray-200/80 dark:border-gray-700 
-                hover:border-cyan-400/40 transition-all duration-300 hover:shadow-xl hover:-translate-y-2"
-         data-aos="zoom-in" data-aos-delay="600">
-      <div class="text-center">
-        <h3 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Empresas</h3>
-        <div class="text-5xl font-bold mb-6">
-          <span class="bg-gradient-to-r from-gray-400 to-cyan-400 bg-clip-text text-transparent">Custom</span>
-        </div>
-        <ul class="space-y-4 mb-8 text-gray-600 dark:text-cyan-100">
-          <li class="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 p-3 rounded-lg transition-all">
-            <i class="fas fa-check-circle text-cyan-500 transform transition-transform group-hover:scale-110"></i>
-            Gestão centralizada
-          </li>
-          <li class="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 p-3 rounded-lg transition-all">
-            <i class="fas fa-check-circle text-cyan-500 transform transition-transform group-hover:scale-110"></i>
-            SSO e SAML
-          </li>
-        </ul>
-        <a href="#" class="btn w-full py-4 px-8 bg-gradient-to-r from-gray-500 to-cyan-500 text-white rounded-xl
+            Assinar Agora
+            <i class="fas fa-rocket text-sm transition-all transform group-hover:translate-y-1"></i>
+            </a>
+            </div>
+            </div>
+            
+            <!-- Enterprise Tier -->
+      <div
+        class="pricing-card group relative bg-white dark:bg-gray-800 p-8 rounded-3xl border-2 border-gray-200/80 dark:border-gray-700 
+                                                                hover:border-cyan-400/40 transition-all duration-300 hover:shadow-xl"
+        data-aos="zoom-in" data-aos-delay="600">
+        <div class="text-center">
+          <h3 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Empresas</h3>
+          <div class="text-5xl font-bold mb-6">
+            <span class="bg-gradient-to-r from-gray-400 to-cyan-400 bg-clip-text text-transparent">Custom</span>
+          </div>
+          <ul class="space-y-4 mb-8 text-gray-600 dark:text-cyan-100">
+            <li class="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 p-3 rounded-lg transition-all">
+              <i class="fas fa-check-circle text-cyan-500 transform transition-transform group-hover:scale-110"></i>
+              Gestão centralizada
+            </li>
+            <li class="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 p-3 rounded-lg transition-all">
+              <i class="fas fa-check-circle text-cyan-500 transform transition-transform group-hover:scale-110"></i>
+              SSO e SAML
+            </li>
+            <li class="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 p-3 rounded-lg transition-all">
+              <i class="fas fa-check-circle text-cyan-500 transform transition-transform group-hover:scale-110"></i>
+              API dedicada
+            </li>
+            <li class="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 p-3 rounded-lg transition-all">
+              <i class="fas fa-check-circle text-cyan-500 transform transition-transform group-hover:scale-110"></i>
+              Suporte VIP
+            </li>
+          </ul>
+          <a href="#" class="btn w-full py-4 px-8 bg-gradient-to-r from-gray-500 to-cyan-500 text-white rounded-xl
                         font-bold hover:from-gray-600 hover:to-cyan-600 transition-all shadow-lg hover:shadow-cyan-300/30
                         flex items-center justify-center gap-2 hover:gap-3">
-          Contato
-          <i class="fas fa-phone-alt text-sm transition-all transform group-hover:rotate-12"></i>
-        </a>
-      </div>
-    </div>
-  </div>
+            Contato
+            <i class="fas fa-phone-alt text-sm transition-all transform group-hover:rotate-12"></i>
+            </a>
+            </div>
+            </div>
+            </div>
+            </div>
+            </section>
+            
+            <!-- Testimonials Section -->
+            <section class="relative py-24 bg-gradient-to-b from-cyan-50 to-white dark:from-gray-800 dark:to-gray-900">
+              <div class="max-w-7xl mx-auto px-4">
+                <div class="text-center mb-16">
+                  <span class="badge badge-primary mb-4" data-aos="fade-up">Depoimentos</span>
+                  <h2
+                    class="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-gray-800 to-cyan-600 dark:from-cyan-400 dark:to-blue-400 bg-clip-text text-transparent"
+                    data-aos="zoom-in-up">
+                    O Que Nossos Usuários Dizem
+                  </h2>
+                  <p class="text-xl text-gray-600 dark:text-cyan-100 max-w-3xl mx-auto" data-aos="fade-up" data-aos-delay="200">
+                    Descubra como o Vorp está transformando a forma como as pessoas organizam suas ideias
+                  </p>
+                </div>
+            
+                <div class="grid md:grid-cols-3 gap-8">
+                  <!-- Testimonial 1 -->
+                  <div
+                    class="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-2 border border-gray-100 dark:border-gray-700"
+                    data-aos="fade-up" data-aos-delay="200">
+                    <div class="flex items-center gap-4 mb-6">
+                      <div
+                        class="h-14 w-14 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center text-white text-xl font-bold">
+                        MP
+                      </div>
+                      <div>
+                        <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Marcos Paulo</h4>
+                        <p class="text-cyan-600 dark:text-cyan-400">Pesquisador</p>
+                      </div>
+                    </div>
+                    <p class="text-gray-600 dark:text-cyan-100 mb-4">
+                      "O Vorp revolucionou minha forma de organizar pesquisas acadêmicas. A IA realmente entende o contexto e faz
+                      conexões que eu não teria percebido."
+                    </p>
+                    <div class="flex text-yellow-400">
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                    </div>
+                  </div>
+            
+                  <!-- Testimonial 2 -->
+                  <div
+                    class="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-2 border border-gray-100 dark:border-gray-700"
+                    data-aos="fade-up" data-aos-delay="400">
+                    <div class="flex items-center gap-4 mb-6">
+                      <div
+                        class="h-14 w-14 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center text-white text-xl font-bold">
+                        CS
+                      </div>
+                      <div>
+                        <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Noemy Torres</h4>
+                        <p class="text-cyan-600 dark:text-cyan-400">Estudante</p>
+                      </div>
+                    </div>
+                    <p class="text-gray-600 dark:text-cyan-100 mb-4">
+                      "Como estudante, o plano com desconto é perfeito para mim. Uso o Vorp para todas as minhas anotações de aula e
+                      os resumos gerados pela IA são incríveis!"
+                    </p>
+                    <div class="flex text-yellow-400">
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star-half-alt"></i>
+                    </div>
+                  </div>
+            
+                  <!-- Testimonial 3 -->
+                  <div
+                    class="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-2 border border-gray-100 dark:border-gray-700"
+                    data-aos="fade-up" data-aos-delay="600">
+                    <div class="flex items-center gap-4 mb-6">
+                      <div
+                        class="h-14 w-14 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center text-white text-xl font-bold">
+                        RT
+                      </div>
+                      <div>
+                        <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Riquelme Magalhães</h4>
+                        <p class="text-cyan-600 dark:text-cyan-400">Desenvolvedor</p>
+                      </div>
+                    </div>
+                    <p class="text-gray-600 dark:text-cyan-100 mb-4">
+                      "A colaboração em tempo real e o controle de versão são perfeitos para nossa equipe. Documentamos todo nosso
+                      código com o Vorp."
+                    </p>
+                    <div class="flex text-yellow-400">
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                      <i class="fas fa-star"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
 </section>
 
 <section class="cta py-24 bg-gradient-to-br from-cyan-500 to-blue-500 text-white">
   <div class="max-w-7xl mx-auto px-4 text-center">
-    <h2 class="text-4xl md:text-5xl font-bold mb-6">Pronto para transformar suas anotações?</h2>
-    <p class="text-xl mb-10">Comece grátis agora e descubra o poder do Vorp no seu dia a dia.</p>
-    <a href="{% url 'admin:index' %}" 
-      class="inline-block px-8 py-4 text-lg font-semibold bg-white text-blue-600 rounded-xl
-           hover:bg-blue-50 transition-all transform hover:-translate-y-1 hover:shadow-xl
-           hover:scale-105 duration-300">
-      Comece Grátis
-      <i class="fas fa-arrow-right ml-2"></i>
-    </a>
+    <h2 class="text-4xl md:text-5xl font-bold mb-6" data-aos="fade-up">Pronto para transformar suas anotações?</h2>
+    <p class="text-xl mb-10 max-w-3xl mx-auto" data-aos="fade-up" data-aos-delay="200">
+      Comece grátis agora e descubra o poder do Vorp no seu dia a dia. Escolha o plano que melhor se adapta às suas
+      necessidades.
+    </p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center" data-aos="fade-up" data-aos-delay="400">
+      <a href="{% url 'admin:index' %}" class="inline-block px-8 py-4 text-lg font-semibold bg-white text-blue-600 rounded-xl
+                                             hover:bg-blue-50 transition-all transform hover:-translate-y-1 hover:shadow-xl
+                                             hover:scale-105 duration-300">
+        Comece Grátis
+        <i class="fas fa-arrow-right ml-2"></i>
+      </a>
+      <a href="#pricing" class="inline-block px-8 py-4 text-lg font-semibold border-2 border-white/70 rounded-xl
+                                                             hover:bg-white/10 transition-all transform hover:-translate-y-1 hover:shadow-xl
+                                                             hover:scale-105 duration-300">
+        Ver Planos
+        <i class="fas fa-tag ml-2"></i>
+      </a>
+      </div>
   </div>
 </section>
 
@@ -432,15 +727,33 @@
     easing: 'ease-in-out-quad',
     offset: 120
   });
+
+  // Smooth scroll for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      e.preventDefault();
+      document.querySelector(this.getAttribute('href')).scrollIntoView({
+        behavior: 'smooth'
+      });
+    });
+  });
 </script>
 {% endblock %}
 
 {% block styles %}
 <style>
   @keyframes gradient-xy {
-    0% {background-position: 0% 50%;}
-    50% {background-position: 100% 50%;}
-    100% {background-position: 0% 50%;}
+    0% {
+      background-position: 0% 50%;
+    }
+
+    50% {
+      background-position: 100% 50%;
+    }
+
+    100% {
+      background-position: 0% 50%;
+    }
   }
 
   .animate-gradient-xy {
@@ -487,14 +800,3 @@
 </style>
 {% endblock %}
 {% endblock %}
-
-<script>
-  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-      e.preventDefault();
-      document.querySelector(this.getAttribute('href')).scrollIntoView({
-        behavior: 'smooth'
-      });
-    });
-  });
-</script>
