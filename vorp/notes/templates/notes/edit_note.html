@@ -7,33 +7,45 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
 <!-- Adicione aqui todos os estilos customizados -->
 <style>
+  /* Base styles */
+  body {
+    background-color: #0f1118;
+    color: #e2e8f0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  }
+
   /* Page background */
   .page-container {
-    background-color: #181c2c;
+    background-color: #0f1118;
     min-height: 100vh;
-    padding: 2rem 1rem;
+    padding: 1.5rem 1rem;
+    transition: all 0.3s ease;
   }
-  
+
   /* Main container styles */
   .editor-container {
-    background: linear-gradient(to bottom right, #1e2235, #232842);
+    background: linear-gradient(to bottom right, #171a2a, #1e2235);
     border-radius: 1rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
     overflow: hidden;
     max-width: 1200px;
     margin: 0 auto;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(59, 130, 246, 0.1);
   }
-  
+
   /* Header and controls */
   .editor-header {
     background: linear-gradient(to right, #0891b2, #2563eb);
-    padding: 1rem;
+    padding: 1.25rem 1.5rem;
     color: white;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
   }
-  
+
   .editor-title {
     font-size: 1.25rem;
     font-weight: 600;
@@ -41,30 +53,36 @@
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 70%;
+    letter-spacing: 0.01em;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   }
-  
+
   /* Control bar */
   .editor-controls {
-    background: rgba(14, 165, 233, 0.1);
-    padding: 1rem;
-    border-bottom: 1px solid rgba(14, 165, 233, 0.2);
+    background: rgba(14, 165, 233, 0.08);
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(14, 165, 233, 0.15);
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
     align-items: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(8px);
   }
-  
+
   @media (max-width: 640px) {
     .editor-controls {
       justify-content: center;
+      padding: 0.75rem;
     }
+
     .toggle-container {
       width: 100%;
       justify-content: center;
       margin-top: 0.5rem;
     }
   }
-  
+
   /* Buttons */
   .btn-control {
     display: inline-flex;
@@ -75,55 +93,70 @@
     font-weight: 500;
     transition: all 0.2s;
     font-size: 0.875rem;
+    border: none;
+    cursor: pointer;
   }
-  
+
   .btn-primary {
     background: linear-gradient(to right, #0891b2, #2563eb);
     color: white;
     box-shadow: 0 2px 5px rgba(14, 165, 233, 0.3);
   }
-  
+
   .btn-primary:hover {
-    box-shadow: 0 4px 8px rgba(14, 165, 233, 0.4);
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
     transform: translateY(-1px);
+    filter: brightness(1.1);
   }
-  
+
+  .btn-primary:active {
+    transform: translateY(0);
+    filter: brightness(0.95);
+  }
+
   .btn-secondary {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
     color: white;
-    border: 1px solid rgba(14, 165, 233, 0.3);
+    border: 1px solid rgba(14, 165, 233, 0.2);
   }
-  
+
   .btn-secondary:hover {
-    background: rgba(14, 165, 233, 0.2);
+    background: rgba(14, 165, 233, 0.15);
     transform: translateY(-1px);
+    border-color: rgba(14, 165, 233, 0.3);
   }
-  
+
+  .btn-secondary:active {
+    transform: translateY(0);
+    background: rgba(14, 165, 233, 0.2);
+  }
+
   /* Toggle switch */
   .toggle-container {
     display: flex;
     align-items: center;
     gap: 0.5rem;
   }
-  
+
   .toggle-label {
     font-size: 0.875rem;
     color: white;
+    opacity: 0.9;
   }
-  
+
   .toggle-switch {
     position: relative;
     display: inline-block;
     width: 3rem;
     height: 1.5rem;
   }
-  
+
   .toggle-switch input {
     opacity: 0;
     width: 0;
     height: 0;
   }
-  
+
   .toggle-slider {
     position: absolute;
     cursor: pointer;
@@ -131,11 +164,11 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #334155;
+    background-color: rgba(59, 130, 246, 0.2);
     transition: .4s;
     border-radius: 1.5rem;
   }
-  
+
   .toggle-slider:before {
     position: absolute;
     content: "";
@@ -146,43 +179,49 @@
     background-color: white;
     transition: .4s;
     border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   }
-  
-  input:checked + .toggle-slider {
+
+  input:checked+.toggle-slider {
     background: linear-gradient(to right, #0891b2, #2563eb);
   }
-  
-  input:checked + .toggle-slider:before {
+
+  input:checked+.toggle-slider:before {
     transform: translateX(1.5rem);
   }
-  
+
   /* Editor layout */
   .editor-layout {
     display: flex;
-    height: 600px;
+    height: 650px;
+    transition: height 0.3s ease;
+    background: #131629;
   }
-  
+
   @media (max-width: 768px) {
     .editor-layout {
       flex-direction: column;
       height: auto;
     }
-    .editor-section, .preview-section {
+
+    .editor-section,
+    .preview-section {
       width: 100% !important;
       height: 350px !important;
     }
+
     .mobile-tabs {
       display: flex !important;
     }
   }
-  
+
   /* Mobile tabs */
   .mobile-tabs {
     display: none;
-    border-bottom: 1px solid rgba(14, 165, 233, 0.2);
-    background: rgba(14, 165, 233, 0.1);
+    border-bottom: 1px solid rgba(14, 165, 233, 0.15);
+    background: rgba(14, 165, 233, 0.08);
   }
-  
+
   .mobile-tab {
     flex: 1;
     text-align: center;
@@ -190,47 +229,65 @@
     color: white;
     font-weight: 500;
     cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
   }
-  
+
   .mobile-tab.active {
-    background: rgba(14, 165, 233, 0.2);
-    border-bottom: 2px solid #0ea5e9;
+    background: rgba(14, 165, 233, 0.15);
   }
-  
+
+  .mobile-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(to right, #0891b2, #2563eb);
+  }
+
   /* Editor section */
   .editor-section {
     width: 50%;
-    border-right: 1px solid rgba(14, 165, 233, 0.2);
+    border-right: 1px solid rgba(14, 165, 233, 0.15);
     display: flex;
     flex-direction: column;
+    transition: all 0.3s ease;
   }
-  
+
   /* Preview section */
   .preview-section {
     width: 50%;
     display: flex;
     flex-direction: column;
+    transition: all 0.3s ease;
   }
-  
+
   @media (max-width: 768px) {
-    .editor-section, .preview-section {
+
+    .editor-section,
+    .preview-section {
       display: none;
     }
-    .editor-section.active, .preview-section.active {
+
+    .editor-section.active,
+    .preview-section.active {
       display: flex;
     }
   }
-  
+
   .editor-toolbar {
     background: rgba(14, 165, 233, 0.05);
     padding: 0.5rem;
     display: flex;
     flex-wrap: wrap;
     gap: 0.25rem;
-    border-bottom: 1px solid rgba(14, 165, 233, 0.2);
+    border-bottom: 1px solid rgba(14, 165, 233, 0.15);
     overflow-x: auto;
+    transition: all 0.3s ease;
   }
-  
+
   .toolbar-btn {
     min-width: 2rem;
     height: 2rem;
@@ -242,41 +299,79 @@
     background: rgba(14, 165, 233, 0.1);
     transition: all 0.2s;
     flex-shrink: 0;
+    border: none;
+    cursor: pointer;
   }
-  
+
   .toolbar-btn:hover {
     background: rgba(14, 165, 233, 0.2);
     transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   }
-  
+
+  .toolbar-btn:active {
+    transform: translateY(0);
+    background: rgba(14, 165, 233, 0.25);
+  }
+
   .editor-textarea {
     flex: 1;
-    padding: 1rem;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 0.875rem;
+    padding: 1.5rem;
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.95rem;
+    line-height: 1.7;
     resize: none;
     border: none;
     outline: none;
-    background: #1a1f32;
+    background: #131629;
     color: #e2e8f0;
+    transition: all 0.3s ease;
+    caret-color: #38bdf8;
   }
-  
+
   .preview-header {
     padding: 0.75rem 1rem;
     background: rgba(14, 165, 233, 0.05);
-    border-bottom: 1px solid rgba(14, 165, 233, 0.2);
+    border-bottom: 1px solid rgba(14, 165, 233, 0.15);
     font-weight: 600;
     color: white;
+    transition: all 0.3s ease;
+    letter-spacing: 0.01em;
   }
-  
+
   .preview-content {
     flex: 1;
-    padding: 1rem;
+    padding: 1.5rem;
     overflow: auto;
-    background: #1a1f32;
+    background: #131629;
     color: #e2e8f0;
+    transition: all 0.3s ease;
+    line-height: 1.7;
   }
-  
+
+  /* Scrollbar styling */
+  .editor-textarea::-webkit-scrollbar,
+  .preview-content::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .editor-textarea::-webkit-scrollbar-track,
+  .preview-content::-webkit-scrollbar-track {
+    background: rgba(14, 165, 233, 0.05);
+  }
+
+  .editor-textarea::-webkit-scrollbar-thumb,
+  .preview-content::-webkit-scrollbar-thumb {
+    background: rgba(14, 165, 233, 0.2);
+    border-radius: 4px;
+  }
+
+  .editor-textarea::-webkit-scrollbar-thumb:hover,
+  .preview-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(14, 165, 233, 0.3);
+  }
+
   /* Modal styles */
   .modal-backdrop {
     position: fixed;
@@ -285,7 +380,7 @@
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -294,14 +389,14 @@
     pointer-events: none;
     transition: opacity 0.3s;
   }
-  
+
   .modal-backdrop.active {
     opacity: 1;
     pointer-events: auto;
   }
-  
+
   .modal-container {
-    background: #232842;
+    background: linear-gradient(to bottom right, #1e2235, #232842);
     border-radius: 1rem;
     width: 90%;
     max-width: 500px;
@@ -309,26 +404,29 @@
     transform: translateY(20px);
     transition: transform 0.3s;
     border: 1px solid rgba(14, 165, 233, 0.2);
+    overflow: hidden;
   }
-  
+
   .modal-backdrop.active .modal-container {
     transform: translateY(0);
   }
-  
+
   .modal-header {
-    padding: 1rem;
+    padding: 1rem 1.5rem;
     border-bottom: 1px solid rgba(14, 165, 233, 0.2);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    background: linear-gradient(to right, rgba(8, 145, 178, 0.2), rgba(37, 99, 235, 0.2));
   }
-  
+
   .modal-title {
     font-weight: 600;
     font-size: 1.25rem;
     color: white;
+    letter-spacing: 0.01em;
   }
-  
+
   .modal-close {
     width: 2rem;
     height: 2rem;
@@ -342,205 +440,224 @@
     border: none;
     cursor: pointer;
   }
-  
+
   .modal-close:hover {
     background: rgba(14, 165, 233, 0.2);
     transform: rotate(90deg);
   }
-  
+
   .modal-body {
-    padding: 1rem;
+    padding: 1.5rem;
     color: #e2e8f0;
   }
-  
+
   .modal-footer {
-    padding: 1rem;
+    padding: 1rem 1.5rem;
     border-top: 1px solid rgba(14, 165, 233, 0.2);
     display: flex;
     justify-content: flex-end;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    background: rgba(14, 165, 233, 0.05);
   }
-  
+
   /* Form elements */
   .form-group {
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
   }
-  
+
   .form-label {
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 500;
     color: white;
+    letter-spacing: 0.01em;
   }
-  
+
   .form-input {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.75rem 1rem;
     border-radius: 0.5rem;
     border: 1px solid rgba(14, 165, 233, 0.3);
-    background: #1a1f32;
+    background: rgba(19, 22, 41, 0.8);
     color: #e2e8f0;
     transition: all 0.2s;
+    font-size: 0.95rem;
   }
-  
+
   .form-input:focus {
     border-color: #0ea5e9;
     box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
     outline: none;
   }
-  
+
   /* Markdown content styles */
   .markdown-content h1 {
     font-size: 1.875rem;
     font-weight: 700;
     margin-bottom: 1rem;
     color: white;
+    border-bottom: 1px solid rgba(14, 165, 233, 0.2);
+    padding-bottom: 0.5rem;
+    letter-spacing: -0.01em;
   }
-  
+
   .markdown-content h2 {
     font-size: 1.5rem;
     font-weight: 700;
     margin-bottom: 0.75rem;
+    margin-top: 1.5rem;
     color: white;
+    letter-spacing: -0.01em;
   }
-  
+
   .markdown-content h3 {
     font-size: 1.25rem;
     font-weight: 700;
     margin-bottom: 0.5rem;
+    margin-top: 1.25rem;
     color: white;
+    letter-spacing: -0.01em;
   }
-  
+
   .markdown-content p {
     margin-bottom: 1rem;
     color: #cbd5e1;
+    line-height: 1.7;
   }
-  
+
   .markdown-content ul {
     list-style-type: disc;
-    padding-left: 1.25rem;
+    padding-left: 1.5rem;
     margin-bottom: 1rem;
     color: #cbd5e1;
   }
-  
+
   .markdown-content ol {
     list-style-type: decimal;
-    padding-left: 1.25rem;
+    padding-left: 1.5rem;
     margin-bottom: 1rem;
     color: #cbd5e1;
   }
-  
+
   .markdown-content blockquote {
     border-left: 4px solid #0ea5e9;
     padding-left: 1rem;
     font-style: italic;
     margin-bottom: 1rem;
     color: #94a3b8;
-    background-color: rgba(14, 165, 233, 0.1);
-    padding: 0.5rem 1rem;
+    background-color: rgba(14, 165, 233, 0.08);
+    padding: 0.75rem 1rem;
     border-radius: 0 0.5rem 0.5rem 0;
   }
-  
+
   .markdown-content pre {
-    background-color: #131629;
+    background-color: rgba(19, 22, 41, 0.8);
     padding: 1rem;
     border-radius: 0.5rem;
     margin-bottom: 1rem;
     overflow-x: auto;
     border: 1px solid rgba(14, 165, 233, 0.1);
   }
-  
+
   .markdown-content code {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 0.875rem;
-    background-color: #131629;
+    background-color: rgba(19, 22, 41, 0.8);
     padding: 0.125rem 0.25rem;
     border-radius: 0.25rem;
-    color: white;
+    color: #38bdf8;
   }
-  
+
   .markdown-content pre code {
     background-color: transparent;
     padding: 0;
+    color: #e2e8f0;
   }
-  
+
   .markdown-content a {
     color: #38bdf8;
     text-decoration: none;
     transition: all 0.2s;
     border-bottom: 1px dashed rgba(14, 165, 233, 0.3);
   }
-  
+
   .markdown-content a:hover {
     color: #7dd3fc;
     border-bottom: 1px solid rgba(14, 165, 233, 0.6);
   }
-  
+
   .markdown-content img {
     max-width: 100%;
     height: auto;
-    margin-bottom: 1rem;
+    margin: 1.5rem 0;
     border-radius: 0.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(14, 165, 233, 0.1);
   }
-  
+
   .markdown-content table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
     border-radius: 0.5rem;
     overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
-  
+
   .markdown-content th,
   .markdown-content td {
     border: 1px solid #334155;
     padding: 0.75rem;
     color: #cbd5e1;
   }
-  
+
   .markdown-content th {
     background: rgba(14, 165, 233, 0.1);
     color: white;
     font-weight: 600;
   }
-  
+
+  .markdown-content tr:nth-child(even) {
+    background: rgba(14, 165, 233, 0.03);
+  }
+
   /* Help content */
   .help-section {
     margin-bottom: 1.5rem;
   }
-  
+
   .help-title {
     font-size: 1.125rem;
     font-weight: 600;
     margin-bottom: 0.75rem;
     color: white;
+    letter-spacing: 0.01em;
   }
-  
+
   .help-list {
     list-style-type: none;
     padding: 0;
     margin: 0;
   }
-  
+
   .help-list li {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
     display: flex;
     align-items: flex-start;
   }
-  
+
   .help-list li strong {
     display: inline-block;
     min-width: 120px;
     color: white;
-    background: rgba(14, 165, 233, 0.1);
+    background: rgba(14, 165, 233, 0.08);
     padding: 0.25rem 0.5rem;
     border-radius: 0.25rem;
-    margin-right: 0.5rem;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    margin-right: 0.75rem;
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    border: 1px solid rgba(14, 165, 233, 0.15);
   }
-  
+
   /* Link button */
   .link-button {
     display: inline-flex;
@@ -548,35 +665,35 @@
     gap: 0.5rem;
     padding: 0.5rem 1rem;
     border-radius: 0.5rem;
-    background: rgba(14, 165, 233, 0.1);
+    background: rgba(14, 165, 233, 0.08);
     color: white;
-    border: 1px solid rgba(14, 165, 233, 0.3);
+    border: 1px solid rgba(14, 165, 233, 0.2);
     transition: all 0.2s;
     cursor: pointer;
   }
-  
+
   .link-button:hover {
-    background: rgba(14, 165, 233, 0.2);
+    background: rgba(14, 165, 233, 0.15);
     transform: translateY(-1px);
   }
-  
+
   /* Link modal */
   .link-input-group {
     display: flex;
     gap: 0.5rem;
   }
-  
+
   .link-input {
     flex: 1;
-    padding: 0.75rem;
+    padding: 0.75rem 1rem;
     border-radius: 0.5rem;
     border: 1px solid rgba(14, 165, 233, 0.3);
-    background: #1a1f32;
+    background: rgba(19, 22, 41, 0.8);
     color: #e2e8f0;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 0.875rem;
   }
-  
+
   .copy-button {
     padding: 0.5rem 1rem;
     border-radius: 0.5rem;
@@ -586,44 +703,59 @@
     cursor: pointer;
     transition: all 0.2s;
   }
-  
+
   .copy-button:hover {
     box-shadow: 0 4px 8px rgba(14, 165, 233, 0.4);
     transform: translateY(-1px);
   }
-  
+
   /* Fix for input fields in modals */
-  #modalTitleInput, #publicLinkInput {
-    background-color: #1a1f32;
+  #modalTitleInput,
+  #publicLinkInput {
+    background-color: rgba(19, 22, 41, 0.8);
     color: #e2e8f0;
     border: 1px solid rgba(14, 165, 233, 0.3);
   }
-  
+
   /* Menu de contexto IA */
   .ai-context-menu {
     position: absolute;
     display: none;
-    background: #232842;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(to bottom right, #1e2235, #232842);
+    border-radius: 0.75rem;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(14, 165, 233, 0.2);
     z-index: 100;
-    min-width: 200px;
+    min-width: 220px;
     overflow: hidden;
+    animation: fadeIn 0.2s ease-out;
   }
-  
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   .ai-menu-header {
     padding: 0.75rem 1rem;
     background: linear-gradient(to right, #0891b2, #2563eb);
     color: white;
     font-weight: 600;
     font-size: 0.875rem;
+    letter-spacing: 0.01em;
   }
-  
+
   .ai-menu-item {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
     padding: 0.75rem 1rem;
     width: 100%;
     text-align: left;
@@ -633,77 +765,109 @@
     cursor: pointer;
     transition: all 0.2s;
     font-size: 0.875rem;
+    border-left: 2px solid transparent;
   }
-  
+
   .ai-menu-item:hover {
-    background: rgba(14, 165, 233, 0.2);
+    background: rgba(14, 165, 233, 0.15);
+    border-left: 2px solid #38bdf8;
   }
-  
+
   .ai-menu-item i {
     width: 1rem;
     text-align: center;
+    color: #38bdf8;
   }
-  
+
   /* Processamento IA */
   .ai-processing {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
-    padding: 1.5rem;
+    gap: 1.5rem;
+    padding: 2rem;
   }
-  
+
   .ai-spinner {
-    font-size: 2rem;
-    color: #0ea5e9;
+    font-size: 2.5rem;
+    color: #38bdf8;
+    filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));
+    animation: pulse 1.5s infinite ease-in-out;
   }
-  
+
+  @keyframes pulse {
+    0% {
+      opacity: 0.6;
+      transform: scale(0.95);
+    }
+
+    50% {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+
+    100% {
+      opacity: 0.6;
+      transform: scale(0.95);
+    }
+  }
+
   .ai-processing-text {
     color: white;
-    font-size: 1rem;
+    font-size: 1.125rem;
+    text-align: center;
+    max-width: 80%;
   }
-  
-  /* Tags input styling - Atualizado para ter fundo escuro */
+
+  /* Tags input styling */
   .tags-input-container {
-    background: #1a1f32; /* Fundo escuro */
+    background: rgba(19, 22, 41, 0.8);
     border: 1px solid rgba(14, 165, 233, 0.3);
     border-radius: 0.5rem;
-    padding: 0.5rem;
+    padding: 0.5rem 0.75rem;
     transition: all 0.2s;
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
     align-items: center;
   }
-  
+
   .tags-input-container:focus-within {
     border-color: #0ea5e9;
     box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
   }
-  
+
   .tags-display {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
   }
-  
+
   .tag-item {
     display: inline-flex;
     align-items: center;
-    background-color: #0ea5e9 !important; /* Azul sólido */
+    background: linear-gradient(to right, #0891b2, #2563eb) !important;
     color: white;
-    padding: 0.25rem 0.5rem;
-    border-radius: 1rem; /* Mais arredondado */
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
     font-size: 0.875rem;
     gap: 0.25rem;
     animation: tagAppear 0.3s ease-out;
+    box-shadow: 0 2px 4px rgba(14, 165, 233, 0.3);
   }
-  
+
   @keyframes tagAppear {
-    from { transform: scale(0.8); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
+    from {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
   }
-  
+
   .tag-remove {
     cursor: pointer;
     width: 1.25rem;
@@ -716,89 +880,316 @@
     transition: all 0.2s;
     font-weight: bold;
     color: white;
+    background: rgba(255, 255, 255, 0.1);
   }
-  
+
   .tag-remove:hover {
     background: rgba(255, 255, 255, 0.2);
     transform: scale(1.1);
   }
-  
+
   .tags-input {
-    background: transparent; /* Fundo transparente para o input */
+    background: transparent;
     border: none;
     outline: none;
-    color: #e2e8f0; /* Texto claro */
+    color: #e2e8f0;
     flex: 1;
     min-width: 120px;
     font-size: 0.875rem;
+    padding: 0.25rem;
   }
-  
+
   /* Texto de ajuda para tags */
   .text-cyan-300 {
     color: #67e8f9;
   }
-  
+
   .mt-2 {
     margin-top: 0.5rem;
   }
-  
+
   .block {
     display: block;
   }
-  
+
   .mr-1 {
     margin-right: 0.25rem;
   }
-  
+
   /* Estilo para o placeholder do input */
   .tags-input::placeholder {
-    color: #94a3b8; /* Cor mais clara para o placeholder */
+    color: #94a3b8;
+    opacity: 0.7;
+  }
+
+  /* ZEN MODE STYLES */
+  .zen-mode-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    background: rgba(14, 165, 233, 0.08);
+    color: white;
+    border: 1px solid rgba(14, 165, 233, 0.2);
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  .zen-mode-btn:hover {
+    background: rgba(14, 165, 233, 0.15);
+    transform: translateY(-1px);
+    border-color: rgba(14, 165, 233, 0.3);
+  }
+
+  .zen-mode-btn.active {
+    background: linear-gradient(to right, #0891b2, #2563eb);
+    color: white;
+    box-shadow: 0 2px 5px rgba(14, 165, 233, 0.3);
+  }
+
+  /* Zen mode active styles */
+  body.zen-mode {
+    overflow: hidden;
+  }
+
+  body.zen-mode .page-container {
+    padding: 0;
+  }
+
+  body.zen-mode .editor-container {
+    max-width: 100%;
+    height: 100vh;
+    border-radius: 0;
+    box-shadow: none;
+    border: none;
+  }
+
+  body.zen-mode .editor-header,
+  body.zen-mode .editor-controls,
+  body.zen-mode .mobile-tabs,
+  body.zen-mode .form-group,
+  body.zen-mode .editor-toolbar {
+    transform: translateY(-100%);
+    opacity: 0;
+    height: 0;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  body.zen-mode .editor-layout {
+    height: 100vh;
+  }
+
+  body.zen-mode .editor-textarea,
+  body.zen-mode .preview-content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    padding: 2rem;
+  }
+
+  body.zen-mode .preview-header {
+    opacity: 0;
+    height: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  /* Zen mode exit button */
+  .zen-exit-btn {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 100;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: rgba(14, 165, 233, 0.2);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+  }
+
+  body.zen-mode .zen-exit-btn {
+    opacity: 0.7;
+    transform: scale(1);
+    pointer-events: auto;
+  }
+
+  body.zen-mode .zen-exit-btn:hover {
+    opacity: 1;
+    background: rgba(14, 165, 233, 0.4);
+    transform: scale(1.1);
+  }
+
+  /* Zen mode transition */
+  .zen-transition {
+    transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+
+  /* Zen mode focus styles */
+  body.zen-mode .editor-section,
+  body.zen-mode .preview-section {
+    border: none;
+  }
+
+  /* Zen mode responsive styles */
+  @media (max-width: 768px) {
+
+    body.zen-mode .editor-section.active,
+    body.zen-mode .preview-section.active {
+      height: 100vh !important;
+    }
+  }
+
+  /* Zen mode split view toggle */
+  .zen-view-toggle {
+    position: fixed;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%) scale(0.8);
+    z-index: 100;
+    display: flex;
+    background: rgba(14, 165, 233, 0.2);
+    border-radius: 2rem;
+    padding: 0.25rem;
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  body.zen-mode .zen-view-toggle {
+    opacity: 0.7;
+    transform: translateX(-50%) scale(1);
+    pointer-events: auto;
+  }
+
+  body.zen-mode .zen-view-toggle:hover {
+    opacity: 1;
+  }
+
+  .zen-view-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    border-radius: 1.5rem;
+    font-size: 0.75rem;
+    transition: all 0.2s;
+  }
+
+  .zen-view-btn.active {
+    background: rgba(14, 165, 233, 0.4);
+  }
+
+  .zen-view-btn:hover:not(.active) {
+    background: rgba(14, 165, 233, 0.2);
+  }
+
+  /* Zen mode keyboard shortcut tooltip */
+  .zen-shortcut-tooltip {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    background: rgba(14, 165, 233, 0.2);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  body.zen-mode .zen-shortcut-tooltip {
+    opacity: 0.7;
+  }
+
+  /* Glow effects for active elements */
+  .btn-primary:focus,
+  .form-input:focus,
+  .editor-textarea:focus {
+    box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2), 0 0 15px rgba(56, 189, 248, 0.3);
+  }
+
+  /* Subtle animations */
+  @keyframes subtle-glow {
+    0% {
+      box-shadow: 0 0 5px rgba(56, 189, 248, 0.3);
+    }
+
+    50% {
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
+    }
+
+    100% {
+      box-shadow: 0 0 5px rgba(56, 189, 248, 0.3);
+    }
+  }
+
+  .editor-header {
+    animation: subtle-glow 5s infinite;
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="page-container">
+<div class="page-container zen-transition">
   <!-- Main editor container -->
-  <div class="editor-container">
+  <div class="editor-container zen-transition">
     <!-- Editor header with title -->
-    <div class="editor-header">
+    <div class="editor-header zen-transition">
       <div class="editor-title">{{ note.title }}</div>
       <button type="button" id="editTitleBtn" class="btn-control btn-secondary">
         <i class="fas fa-edit"></i>
         <span>Editar Título</span>
       </button>
     </div>
-    
+
     <!-- Controls bar -->
     <form method="POST" action="{% url 'notes:edit_note' note.id %}" id="noteForm">
       {% csrf_token %}
       <input type="hidden" name="title" id="titleInput" value="{{ note.title }}">
-      
+
       <!-- Tags input section with visual tag display -->
-      <div class="form-group" style="padding: 1rem;">
+      <div class="form-group zen-transition">
         <label for="tagsInput" class="form-label">Tags</label>
         <div class="tags-input-container">
           <div id="tagsDisplay" class="tags-display"></div>
-            <input type="text" id="tagsInput" class="tags-input" placeholder="Digite tags e pressione Enter" style="background: transparent; color: #e2e8f0;">
+          <input type="text" id="tagsInput" class="tags-input" placeholder="Digite tags e pressione Enter"
+            style="background: transparent; color: #e2e8f0;">
           <input type="hidden" name="tags" id="tagsHiddenInput" value="{{ tags|default_if_none:'' }}">
         </div>
         <small class="text-cyan-300 mt-2 block"><i class="fas fa-info-circle mr-1"></i>Separe as tags com Enter</small>
       </div>
-      
-      <div class="editor-controls">
+
+      <div class="editor-controls zen-transition">
         <!-- Save button -->
         <button type="submit" class="btn-control btn-primary">
           <i class="fas fa-save"></i>
           <span>Salvar</span>
         </button>
-        
+
         <!-- Cancel button -->
         <a href="{% url 'notes:view_note' note.id %}" class="btn-control btn-secondary">
           <i class="fas fa-times"></i>
           <span>Cancelar</span>
         </a>
-        
+
         <!-- Public toggle -->
         <div class="toggle-container">
           <span class="toggle-label">Tornar Público</span>
@@ -807,31 +1198,37 @@
             <span class="toggle-slider"></span>
           </label>
         </div>
-        
+
         <!-- Get Link button (only visible when public) -->
         <button type="button" id="getLinkBtn" class="btn-control btn-secondary" {% if not note.is_public %}style="display: none;"{% endif %}>
           <i class="fas fa-link"></i>
           <span>Obter Link</span>
         </button>
-        
+
+        <!-- Zen Mode button -->
+        <button type="button" id="zenModeBtn" class="zen-mode-btn">
+          <i class="fas fa-expand"></i>
+          <span>Modo Zen</span>
+        </button>
+
         <!-- Help button -->
         <button type="button" id="helpBtn" class="btn-control btn-secondary ml-auto">
           <i class="fas fa-question-circle"></i>
           <span>Ajuda</span>
         </button>
       </div>
-      
+
       <!-- Mobile tabs -->
-      <div class="mobile-tabs">
+      <div class="mobile-tabs zen-transition">
         <div class="mobile-tab active" data-tab="editor">Editor</div>
         <div class="mobile-tab" data-tab="preview">Visualização</div>
       </div>
-      
+
       <!-- Editor layout -->
-      <div class="editor-layout">
+      <div class="editor-layout zen-transition">
         <!-- Editor section -->
-        <div class="editor-section active">
-          <div class="editor-toolbar">
+        <div class="editor-section active zen-transition">
+          <div class="editor-toolbar zen-transition">
             <button type="button" class="toolbar-btn" data-action="bold" title="Negrito">
               <i class="fas fa-bold"></i>
             </button>
@@ -867,19 +1264,20 @@
               <i class="fas fa-robot"></i>
             </button>
           </div>
-          <textarea id="markdownEditor" name="content" class="editor-textarea" placeholder="Digite seu markdown aqui...">{{ note.content }}</textarea>
+          <textarea id="markdownEditor" name="content" class="editor-textarea zen-transition"
+            placeholder="Digite seu markdown aqui...">{{ note.content }}</textarea>
         </div>
-        
+
         <!-- Preview section -->
-        <div class="preview-section">
-          <div class="preview-header">
+        <div class="preview-section zen-transition">
+          <div class="preview-header zen-transition">
             Visualização
           </div>
-          <div id="markdownPreview" class="preview-content markdown-content"></div>
+          <div id="markdownPreview" class="preview-content markdown-content zen-transition"></div>
         </div>
       </div>
     </form>
-    
+
     <!-- Menu de contexto IA -->
     <div id="aiContextMenu" class="ai-context-menu">
       <div class="ai-menu-header">Assistente IA</div>
@@ -900,7 +1298,24 @@
       </button>
     </div>
   </div>
+
+  <!-- Zen Mode Exit Button -->
+  <button type="button" id="zenExitBtn" class="zen-exit-btn">
+    <i class="fas fa-compress-alt"></i>
+  </button>
   
+  <!-- Zen Mode View Toggle -->
+  <div class="zen-view-toggle">
+    <button type="button" class="zen-view-btn active" data-view="split">Dividido</button>
+    <button type="button" class="zen-view-btn" data-view="editor">Editor</button>
+    <button type="button" class="zen-view-btn" data-view="preview">Visualização</button>
+  </div>
+  
+  <!-- Zen Mode Keyboard Shortcut Tooltip -->
+  <div class="zen-shortcut-tooltip">
+    Pressione ESC para sair do Modo Zen
+  </div>
+
   <!-- Edit Title Modal -->
   <div id="titleModal" class="modal-backdrop">
     <div class="modal-container">
@@ -926,7 +1341,7 @@
       </div>
     </div>
   </div>
-  
+
   <!-- Help Modal -->
   <div id="helpModal" class="modal-backdrop">
     <div class="modal-container">
@@ -957,6 +1372,7 @@
             <li><strong>Barra de ferramentas</strong> Use para formatar rapidamente</li>
             <li><strong>Visualização</strong> Veja suas alterações em tempo real</li>
             <li><strong>Ctrl+S</strong> Atalho para salvar</li>
+            <li><strong>Modo Zen</strong> Pressione F11 ou clique no botão para tela cheia</li>
           </ul>
         </div>
       </div>
@@ -967,7 +1383,7 @@
       </div>
     </div>
   </div>
-  
+
   <!-- Link Modal -->
   <div id="linkModal" class="modal-backdrop">
     <div class="modal-container">
@@ -980,7 +1396,8 @@
       <div class="modal-body">
         <p class="mb-4">Compartilhe esta nota usando o link abaixo:</p>
         <div class="link-input-group">
-          <input type="text" id="publicLinkInput" class="link-input" readonly value="{% url 'notes:public_note' note.share_hash %}">
+          <input type="text" id="publicLinkInput" class="link-input" readonly
+            value="{% url 'notes:public_note' note.share_hash %}">
           <button type="button" id="copyLinkBtn" class="copy-button">
             <i class="fas fa-copy"></i>
           </button>
@@ -993,7 +1410,7 @@
       </div>
     </div>
   </div>
-  
+
   <!-- Modal de processamento IA -->
   <div id="aiProcessingModal" class="modal-backdrop">
     <div class="modal-container">
@@ -1013,42 +1430,47 @@
 </div>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
     // URLs e tokens dinâmicos do Django
     const processAiUrl = "{% url 'notes:process_ai' %}";
-    const csrfToken    = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
     // Elementos do DOM
-    const markdownEditor    = document.getElementById('markdownEditor');
-    const markdownPreview   = document.getElementById('markdownPreview');
-    const titleInput        = document.getElementById('titleInput');
-    const modalTitleInput   = document.getElementById('modalTitleInput');
-    const titleModal        = document.getElementById('titleModal');
-    const helpModal         = document.getElementById('helpModal');
-    const linkModal         = document.getElementById('linkModal');
-    const mobileTabs        = document.querySelectorAll('.mobile-tab');
-    const editorSection     = document.querySelector('.editor-section');
-    const previewSection    = document.querySelector('.preview-section');
-    const isPublicCheckbox  = document.getElementById('is_public');
-    const getLinkBtn        = document.getElementById('getLinkBtn');
-    const aiContextMenu     = document.getElementById('aiContextMenu');
+        const markdownEditor = document.getElementById('markdownEditor');
+        const markdownPreview = document.getElementById('markdownPreview');
+        const titleInput = document.getElementById('titleInput');
+        const modalTitleInput = document.getElementById('modalTitleInput');
+        const titleModal = document.getElementById('titleModal');
+        const helpModal = document.getElementById('helpModal');
+        const linkModal = document.getElementById('linkModal');
+        const mobileTabs = document.querySelectorAll('.mobile-tab');
+        const editorSection = document.querySelector('.editor-section');
+        const previewSection = document.querySelector('.preview-section');
+        const isPublicCheckbox = document.getElementById('is_public');
+        const getLinkBtn = document.getElementById('getLinkBtn');
+        const aiContextMenu = document.getElementById('aiContextMenu');
     const aiProcessingModal = document.getElementById('aiProcessingModal');
-    const tagsInput         = document.getElementById('tagsInput');
-    const tagsDisplay       = document.getElementById('tagsDisplay');
-    const tagsHiddenInput   = document.getElementById('tagsHiddenInput');
+        const tagsInput = document.getElementById('tagsInput');
+        const tagsDisplay = document.getElementById('tagsDisplay');
+        const tagsHiddenInput = document.getElementById('tagsHiddenInput');
+        const zenModeBtn = document.getElementById('zenModeBtn');
+        const zenExitBtn = document.getElementById('zenExitBtn');
+        const zenViewToggle = document.querySelector('.zen-view-toggle');
+        const zenViewBtns = document.querySelectorAll('.zen-view-btn');
     let selectedText = '';
     let selectionStart = 0;
-    let selectionEnd   = 0;
+        let selectionEnd = 0;
     let tags = [];
-    
+        let isZenMode = false;
+
     // Inicializa tags do valor existente
     if (tagsHiddenInput.value) {
       tags = tagsHiddenInput.value.split(',').map(tag => tag.trim()).filter(tag => tag);
       renderTags();
     }
-    
+
     // Adiciona tag quando Enter é pressionado
-    tagsInput.addEventListener('keydown', function(e) {
+        tagsInput.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' || e.key === ',') {
         e.preventDefault();
         const tag = this.value.trim();
@@ -1060,9 +1482,9 @@
         this.value = '';
       }
     });
-    
+
     // Remove tag quando clicada
-    tagsDisplay.addEventListener('click', function(e) {
+        tagsDisplay.addEventListener('click', function (e) {
       if (e.target.classList.contains('tag-remove') || e.target.parentElement.classList.contains('tag-remove')) {
         const tagElement = e.target.closest('.tag-item');
         const index = Array.from(tagsDisplay.children).indexOf(tagElement);
@@ -1073,7 +1495,7 @@
         }
       }
     });
-    
+
     // Renderiza tags no elemento de exibição
     function renderTags() {
       tagsDisplay.innerHTML = '';
@@ -1087,14 +1509,14 @@
         tagsDisplay.appendChild(tagElement);
       });
     }
-    
+
     // Atualiza o input oculto com tags separadas por vírgula
     function updateHiddenInput() {
       tagsHiddenInput.value = tags.join(',');
     }
-    
+
     // Foca o input quando clica no container
-    document.querySelector('.tags-input-container').addEventListener('click', function(e) {
+        document.querySelector('.tags-input-container').addEventListener('click', function (e) {
       if (e.target === this || e.target === tagsDisplay) {
         tagsInput.focus();
       }
@@ -1210,21 +1632,29 @@
     // Fechar modais clicando fora
     window.addEventListener('click', e => {
       if (e.target === titleModal) titleModal.classList.remove('active');
-      if (e.target === helpModal)  helpModal.classList.remove('active');
-      if (e.target === linkModal)  linkModal.classList.remove('active');
+      if (e.target === helpModal) helpModal.classList.remove('active');
+      if (e.target === linkModal) linkModal.classList.remove('active');
     });
 
     // Atalhos de teclado
     document.addEventListener('keydown', e => {
-      if ((e.ctrlKey||e.metaKey) && e.key==='s') {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
         document.getElementById('noteForm').submit();
       }
-      if (e.key==='Escape') {
-        titleModal.classList.remove('active');
-        helpModal.classList.remove('active');
-        linkModal.classList.remove('active');
-        aiContextMenu.style.display = 'none';
+      if (e.key === 'Escape') {
+        if (isZenMode) {
+          toggleZenMode();
+        } else {
+          titleModal.classList.remove('active');
+          helpModal.classList.remove('active');
+          linkModal.classList.remove('active');
+          aiContextMenu.style.display = 'none';
+        }
+      }
+      if (e.key === 'F11') {
+        e.preventDefault();
+        toggleZenMode();
       }
     });
 
@@ -1250,18 +1680,18 @@
       const sel = markdownEditor.value.substring(markdownEditor.selectionStart, markdownEditor.selectionEnd).trim();
       if (!sel) return;
       e.preventDefault();
-      selectedText   = sel;
+      selectedText = sel;
       selectionStart = markdownEditor.selectionStart;
-      selectionEnd   = markdownEditor.selectionEnd;
+      selectionEnd = markdownEditor.selectionEnd;
       showAiMenu(e.clientX, e.clientY);
     });
     document.querySelector('.toolbar-btn[data-action="ai-menu"]')
-      .addEventListener('click', function() {
+      .addEventListener('click', function () {
         const sel = markdownEditor.value.substring(markdownEditor.selectionStart, markdownEditor.selectionEnd).trim();
         if (!sel) return alert('Selecione algum texto para usar IA');
-        selectedText   = sel;
+        selectedText = sel;
         selectionStart = markdownEditor.selectionStart;
-        selectionEnd   = markdownEditor.selectionEnd;
+        selectionEnd = markdownEditor.selectionEnd;
         const rect = this.getBoundingClientRect();
         showAiMenu(rect.left, rect.bottom + 5);
       });
@@ -1277,10 +1707,10 @@
     function showAiMenu(x, y) {
       aiContextMenu.style.display = 'block';
       aiContextMenu.style.left = `${x}px`;
-      aiContextMenu.style.top  = `${y}px`;
+      aiContextMenu.style.top = `${y}px`;
       const r = aiContextMenu.getBoundingClientRect();
-      if (r.right > window.innerWidth)  aiContextMenu.style.left = `${x - r.width}px`;
-      if (r.bottom > window.innerHeight) aiContextMenu.style.top  = `${y - r.height}px`;
+      if (r.right > window.innerWidth) aiContextMenu.style.left = `${x - r.width}px`;
+      if (r.bottom > window.innerHeight) aiContextMenu.style.top = `${y - r.height}px`;
     }
 
     // Chama o endpoint de IA
@@ -1307,7 +1737,7 @@
         }
         // Substitui o trecho selecionado pelo resultado IA
         const before = markdownEditor.value.slice(0, selectionStart);
-        const after  = markdownEditor.value.slice(selectionEnd);
+        const after = markdownEditor.value.slice(selectionEnd);
         markdownEditor.value = before + data.result + after;
         updatePreview();
         markdownEditor.focus();
@@ -1319,6 +1749,172 @@
         aiProcessingModal.classList.remove('active');
       }
     }
+
+        // Zen Mode Toggle
+        zenModeBtn.addEventListener('click', toggleZenMode);
+        zenExitBtn.addEventListener('click', toggleZenMode);
+
+        function toggleZenMode() {
+          isZenMode = !isZenMode;
+          document.body.classList.toggle('zen-mode', isZenMode);
+          zenModeBtn.classList.toggle('active', isZenMode);
+
+          // Atualiza o texto do botão
+          if (isZenMode) {
+            zenModeBtn.innerHTML = '<i class="fas fa-compress-alt"></i><span>Sair do Zen</span>';
+            // Esconde o cursor do mouse após 3 segundos de inatividade
+            startCursorTimeout();
+          } else {
+            zenModeBtn.innerHTML = '<i class="fas fa-expand"></i><span>Modo Zen</span>';
+            // Remove o timeout do cursor
+            if (cursorTimeout) {
+              clearTimeout(cursorTimeout);
+              cursorTimeout = null;
+            }
+            document.body.style.cursor = '';
+          }
+
+          // Atualiza o preview
+          updatePreview();
+        }
+
+        // Zen View Toggle
+        zenViewBtns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const view = btn.getAttribute('data-view');
+            zenViewBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Ajusta a visualização
+            if (view === 'split') {
+              editorSection.style.width = '50%';
+              previewSection.style.width = '50%';
+              editorSection.style.display = 'flex';
+              previewSection.style.display = 'flex';
+            } else if (view === 'editor') {
+              editorSection.style.width = '100%';
+              previewSection.style.width = '0';
+              editorSection.style.display = 'flex';
+              previewSection.style.display = 'none';
+            } else if (view === 'preview') {
+              editorSection.style.width = '0';
+              previewSection.style.width = '100%';
+              editorSection.style.display = 'none';
+              previewSection.style.display = 'flex';
+              updatePreview();
+            }
+          });
+        });
+
+        // Esconder o cursor após inatividade no modo Zen
+        let cursorTimeout = null;
+        let lastMouseMove = Date.now();
+
+        function startCursorTimeout() {
+          if (cursorTimeout) {
+            clearTimeout(cursorTimeout);
+          }
+
+          document.body.style.cursor = '';
+
+          cursorTimeout = setTimeout(() => {
+            if (isZenMode && (Date.now() - lastMouseMove > 3000)) {
+              document.body.style.cursor = 'none';
+            }
+          }, 3000);
+        }
+
+        // Reinicia o timeout quando o mouse se move
+        document.addEventListener('mousemove', () => {
+          lastMouseMove = Date.now();
+          if (isZenMode) {
+            startCursorTimeout();
+          }
+        });
+
+        // Detecta cliques no editor para mostrar o cursor
+        markdownEditor.addEventListener('click', () => {
+          if (isZenMode) {
+            document.body.style.cursor = '';
+            startCursorTimeout();
+          }
+        });
+
+        // Detecta cliques no preview para mostrar o cursor
+        markdownPreview.addEventListener('click', () => {
+          if (isZenMode) {
+            document.body.style.cursor = '';
+            startCursorTimeout();
+          }
+        });
+
+        // Mostra o cursor quando o usuário digita
+        markdownEditor.addEventListener('keydown', () => {
+          if (isZenMode) {
+            document.body.style.cursor = '';
+            startCursorTimeout();
+          }
+        });
+
+        // Salvar automaticamente ao sair do modo Zen
+        zenExitBtn.addEventListener('click', () => {
+          // Opcionalmente, pode-se adicionar um auto-save aqui
+          // document.getElementById('noteForm').submit();
+        });
+
+        // Adiciona suporte para fullscreen API
+        function requestFullscreen() {
+          const docEl = document.documentElement;
+
+          if (docEl.requestFullscreen) {
+            docEl.requestFullscreen();
+          } else if (docEl.mozRequestFullScreen) { // Firefox
+            docEl.mozRequestFullScreen();
+          } else if (docEl.webkitRequestFullscreen) { // Chrome, Safari
+            docEl.webkitRequestFullscreen();
+          } else if (docEl.msRequestFullscreen) { // IE/Edge
+            docEl.msRequestFullscreen();
+          }
+        }
+
+        function exitFullscreen() {
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
+          } else if (document.mozCancelFullScreen) { // Firefox
+            document.mozCancelFullScreen();
+          } else if (document.webkitExitFullscreen) { // Chrome, Safari
+            document.webkitExitFullscreen();
+          } else if (document.msExitFullscreen) { // IE/Edge
+            document.msExitFullscreen();
+          }
+        }
+
+        // Integra o modo Zen com a API Fullscreen
+        zenModeBtn.addEventListener('click', () => {
+          if (!isZenMode) {
+            requestFullscreen();
+          } else {
+            exitFullscreen();
+          }
+        });
+
+        // Detecta mudanças no estado de fullscreen
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+        function handleFullscreenChange() {
+          const isFullscreen = document.fullscreenElement ||
+            document.webkitFullscreenElement ||
+            document.mozFullScreenElement ||
+            document.msFullscreenElement;
+
+          if (!isFullscreen && isZenMode) {
+            // Se saiu do fullscreen mas ainda está em modo Zen
+            toggleZenMode();
+          }
+        }
   });
 </script>
 
