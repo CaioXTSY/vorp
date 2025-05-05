@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vorp: Missão, Visão e Valores</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --primary: #00d4ff;
+            --primary-dark: #00a8cc;
+            --secondary: #7b2ff7;
+            --secondary-dark: #6422d1;
+            --accent: #ff3e7f;
+            --accent-dark: #e01e63;
+            --text: #f8fafc;
+            --text-dark: #cbd5e1;
+            --background: #0f172a;
+            --background-light: #1e293b;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        .logo-img {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            height: auto;
+}
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: var(--text);
+            background-color: var(--background);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .slides-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            perspective: 1000px;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateY(0);
+            z-index: 1;
+        }
+
+        .slide-content {
+            max-width: 1200px;
+            width: 100%;
+            padding: 3rem;
+            border-radius: 1.5rem;
+            background-color: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            overflow: hidden;
+            position: relative;
+            z-index: 2;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .slide-content::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(123, 47, 247, 0.1) 0%, rgba(0, 212, 255, 0.1) 50%, transparent 70%);
+            z-index: -1;
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            line-height: 1.2;
+            letter-spacing: -1px;
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+        }
+
+        p {
+            font-size: 1.4rem;
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+            color: var(--text-dark);
+        }
+
+        .subtitle {
+            font-size: 1.8rem;
+            margin-bottom: 2.5rem;
+            color: var(--text-dark);
+            font-weight: 300;
+        }
+
+        .team {
+            font-size: 1.3rem;
+            margin-top: 3rem;
+            color: var(--text-dark);
+            font-weight: 300;
+        }
+
+        .logo {
+            font-size: 6rem;
+            margin-bottom: 2.5rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .columns {
+            display: flex;
+            gap: 3rem;
+            margin: 2.5rem 0;
+            text-align: left;
+        }
+
+        .column {
+            flex: 1;
+            position: relative;
+            padding: 2rem;
+            border-radius: 1rem;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .column:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+            background-color: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary);
+        }
+
+        .list {
+            list-style-type: none;
+            margin-bottom: 2.5rem;
+            text-align: left;
+        }
+
+        .list li {
+            margin-bottom: 1.5rem;
+            padding-left: 2.5rem;
+            position: relative;
+            font-size: 1.3rem;
+            color: var(--text-dark);
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+
+        .list li::before {
+            content: "\f00c";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            transition: transform 0.3s ease;
+        }
+
+        .list li:hover {
+            transform: translateX(10px);
+            color: var (--text);
+        }
+
+        .list li:hover::before {
+            transform: scale(1.2);
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 2.5rem;
+            right: 2.5rem;
+            display: flex;
+            gap: 1.5rem;
+            z-index: 10;
+        }
+
+        .nav-btn {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 4rem;
+            height: 4rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            font-size: 1.2rem;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .progress-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            z-index: 10;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, var(--primary), var(--secondary), var(--accent));
+            transition: width 0.5s ease;
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+
+        .slide-number {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            font-size: 1rem;
+            color: var(--text-dark);
+            z-index: 10;
+            background-color: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(5px);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .quote {
+            font-size: 2rem;
+            font-style: italic;
+            line-height: 1.5;
+            margin: 3rem 0;
+            padding: 2rem;
+            border-radius: 1rem;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(123, 47, 247, 0.1));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .quote::before, .quote::after {
+            content: '"';
+            font-size: 4rem;
+            position: absolute;
+            color: var(--primary);
+            opacity: 0.3;
+        }
+
+        .quote::before {
+            top: 0;
+            left: 10px;
+        }
+
+        .quote::after {
+            bottom: -20px;
+            right: 10px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.7rem 1.5rem;
+            border-radius: 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            background: linear-gradient(to right, rgba(0, 212, 255, 0.2), rgba(123, 47, 247, 0.2));
+            color: var(--primary);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            animation: fadeInDown 1s;
+        }
+
+        /* Background patterns */
+        .bg-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        .bg-pattern-1 {
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(0, 212, 255, 0.2) 0%, transparent 10%),
+                radial-gradient(circle at 75% 75%, rgba(123, 47, 247, 0.2) 0%, transparent 10%),
+                radial-gradient(circle at 50% 50%, rgba(255, 62, 127, 0.2) 0%, transparent 10%);
+            background-size: 100px 100px;
+            animation: patternMove 20s linear infinite;
+        }
+
+        .bg-pattern-2 {
+            background: 
+                linear-gradient(45deg, rgba(0, 212, 255, 0.1) 25%, transparent 25%) 0 0,
+                linear-gradient(135deg, rgba(0, 212, 255, 0.1) 25%, transparent 25%) 0 0,
+                linear-gradient(45deg, transparent 75%, rgba(0, 212, 255, 0.1) 75%) 0 0,
+                linear-gradient(135deg, transparent 75%, rgba(0, 212, 255, 0.1) 75%) 0 0;
+            background-size: 50px 50px;
+            animation: patternMove 15s linear infinite reverse;
+        }
+
+        .bg-pattern-3 {
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(123, 47, 247, 0.2) 0%, transparent 20%),
+                radial-gradient(circle at 90% 90%, rgba(255, 62, 127, 0.2) 0%, transparent 20%);
+            background-size: 200px 200px;
+            animation: patternMove 30s linear infinite;
+        }
+
+        @keyframes patternMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 100px 100px; }
+        }
+
+        /* Animated elements */
+        .animated-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
+        }
+
+        .feature-icon {
+            width: 5rem;
+            height: 5rem;
+            border-radius: 50%;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 2rem;
+            font-size: 2rem;
+            color: white;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-icon:hover {
+            transform: rotate(15deg) scale(1.1);
+        }
+
+        /* Slide backgrounds */
+        .slide-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.2;
+        }
+
+        .gradient-bg-1 {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+        }
+
+        .gradient-bg-1::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(0, 212, 255, 0.4) 0%, transparent 30%),
+                radial-gradient(circle at 80% 80%, rgba(123, 47, 247, 0.4) 0%, transparent 30%);
+        }
+
+        .gradient-bg-2 {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+        }
+
+        .gradient-bg-2::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 80% 20%, rgba(255, 62, 127, 0.4) 0%, transparent 30%),
+                radial-gradient(circle at 20% 80%, rgba(0, 212, 255, 0.4) 0%, transparent 30%);
+        }
+
+        .gradient-bg-3 {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+        }
+
+        .gradient-bg-3::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 50% 20%, rgba(123, 47, 247, 0.4) 0%, transparent 30%),
+                radial-gradient(circle at 50% 80%, rgba(0, 212, 255, 0.4) 0%, transparent 30%);
+        }
+
+        /* Floating elements */
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* Glowing effect */
+        .glow {
+            text-shadow: 0 0 10px var(--primary), 0 0 20px var(--primary), 0 0 30px var(--primary);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px var(--primary), 0 0 20px var(--primary); }
+            to { text-shadow: 0 0 15px var(--primary), 0 0 30px var(--primary), 0 0 40px var(--primary); }
+        }
+
+        /* Particle effect */
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.5;
+            animation-name: particleAnimation;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+
+        @keyframes particleAnimation {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-1000px) translateX(100px); opacity: 0; }
+        }
+
+        /* Responsive styles */
+        @media (max-width: 1200px) {
+            h1 { font-size: 3.5rem; }
+            h2 { font-size: 2.5rem; }
+            h3 { font-size: 1.8rem; }
+            .logo { font-size: 5rem; }
+            .quote { font-size: 1.8rem; }
+        }
+
+        @media (max-width: 992px) {
+            .slide-content { padding: 2rem; }
+            .columns { flex-direction: column; gap: 2rem; }
+            .column { padding: 1.5rem; }
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            h2 { font-size: 2rem; }
+            h3 { font-size: 1.5rem; }
+            p, .list li { font-size: 1.1rem; }
+            .subtitle { font-size: 1.3rem; }
+            .logo { font-size: 4rem; }
+            .quote { font-size: 1.5rem; padding: 1.5rem; }
+            .badge { font-size: 0.9rem; }
+            .nav-btn { width: 3.5rem; height: 3.5rem; }
+        }
+
+        @media (max-width: 576px) {
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.7rem; }
+            h3 { font-size: 1.3rem; }
+            p, .list li { font-size: 1rem; }
+            .subtitle { font-size: 1.1rem; }
+            .logo { font-size: 3rem; }
+            .quote { font-size: 1.2rem; padding: 1rem; }
+            .slide-content { padding: 1.5rem; }
+            .nav-btn { width: 3rem; height: 3rem; }
+        }
+
+        /* Slide transitions */
+        .slide-transition-fade {
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .slide-transition-zoom {
+            transition: opacity 0.8s ease, transform 0.8s ease;
+            transform: scale(0.8) translateY(50px);
+        }
+
+        .slide-transition-zoom.active {
+            transform: scale(1) translateY(0);
+        }
+
+        .slide-transition-flip {
+            transition: opacity 0.8s ease, transform 0.8s ease;
+            transform: rotateY(90deg);
+        }
+
+        .slide-transition-flip.active {
+            transform: rotateY(0deg);
+        }
+
+        .slide-transition-slide {
+            transition: opacity 0.8s ease, transform 0.8s ease;
+            transform: translateX(100%);
+        }
+
+        .slide-transition-slide.active {
+            transform: translateX(0);
+        }
+
+        /* Content animations */
+        .animate__animated {
+            animation-duration: 1s;
+            animation-fill-mode: both;
+        }
+
+        .animate__delay-1 {
+            animation-delay: 0.2s;
+        }
+
+        .animate__delay-2 {
+            animation-delay: 0.4s;
+        }
+
+        .animate__delay-3 {
+            animation-delay: 0.6s;
+        }
+
+        .animate__delay-4 {
+            animation-delay: 0.8s;
+        }
+
+        .animate__delay-5 {
+            animation-delay: 1s;
+        }
+
+        /* Custom cursor */
+        .custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            pointer-events: none;
+            mix-blend-mode: difference;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s, background-color 0.3s;
+        }
+
+        .custom-cursor-follower {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+            pointer-events: none;
+            z-index: 9998;
+            transform: translate(-50%, -50%);
+            transition: 0.1s;
+        }
+    </style>
+</head>
+<body>
+    <div class="custom-cursor"></div>
+    <div class="custom-cursor-follower"></div>
+
+    <div class="particles" id="particles"></div>
+
+    <div class="slides-container">
+        <!-- Slide 1: Capa -->
+        <div class="slide gradient-bg-1 active slide-transition-fade" id="slide1">
+            <div class="bg-pattern bg-pattern-1"></div>
+            <div class="slide-content">
+                <span class="logo floating">
+                    <img src="{% static 'core/logo.png' %}" alt="Logo Vorp" class="logo-img" style="width: 6rem; height: 6rem;">
+                </span>
+                <h1 class="animate__animated animate__fadeInUp">Vorp: Missão, Visão e Valores</h1>
+                <p class="subtitle animate__animated animate__fadeInUp animate__delay-1">Conectando pessoas, ideias e tecnologia</p>
+                <p class="team animate__animated animate__fadeInUp animate__delay-2">Equipe: Caio, Gustavo, Noemy e Riquelme</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: Sobre o Vorp -->
+        <div class="slide gradient-bg-2 slide-transition-zoom" id="slide2">
+            <div class="bg-pattern bg-pattern-2"></div>
+            <div class="slide-content">
+                <span class="badge">Sobre</span>
+                <h2 class="animate__animated animate__fadeInDown">O que é o Vorp?</h2>
+                <div class="feature-icon animate__animated animate__zoomIn">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <ul class="list">
+                    <li class="animate__animated animate__fadeInRight animate__delay-1">Plataforma de gestão inteligente de conhecimento</li>
+                    <li class="animate__animated animate__fadeInRight animate__delay-2">Espaço único para registrar, organizar e consultar anotações</li>
+                    <li class="animate__animated animate__fadeInRight animate__delay-3">Editor intuitivo + IA para resumos automáticos</li>
+                    <li class="animate__animated animate__fadeInRight animate__delay-4">Solução para o problema da dispersão de informações</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 3: Problema e Solução -->
+        <div class="slide gradient-bg-3 slide-transition-flip" id="slide3">
+            <div class="bg-pattern bg-pattern-3"></div>
+            <div class="slide-content">
+                <span class="badge">Desafio e Resposta</span>
+                <h2 class="animate__animated animate__fadeInDown">Problema e Solução</h2>
+                <div class="columns">
+                    <div class="column animate__animated animate__fadeInLeft">
+                        <div class="animated-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                        <h3>Problema:</h3>
+                        <ul class="list">
+                            <li>Informações dispersas</li>
+                            <li>Múltiplos arquivos</li>
+                            <li>Dificuldade de revisão</li>
+                            <li>Tempo perdido</li>
+                        </ul>
+                    </div>
+                    <div class="column animate__animated animate__fadeInRight">
+                        <div class="animated-icon"><i class="fas fa-check-circle"></i></div>
+                        <h3>Solução Vorp:</h3>
+                        <ul class="list">
+                            <li>Centralização inteligente</li>
+                            <li>Organização automática</li>
+                            <li>Resumos por IA</li>
+                            <li>Colaboração eficiente</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Público-Alvo -->
+        <div class="slide gradient-bg-1 slide-transition-slide" id="slide4">
+            <div class="bg-pattern bg-pattern-1"></div>
+            <div class="slide-content">
+                <span class="badge">Usuários</span>
+                <h2 class="animate__animated animate__fadeInDown">Para quem criamos o Vorp?</h2>
+                <div class="feature-icon animate__animated animate__zoomIn">
+                    <i class="fas fa-users"></i>
+                </div>
+                <ul class="list">
+                    <li class="animate__animated animate__fadeInUp animate__delay-1">Estudantes de graduação e pós-graduação</li>
+                    <li class="animate__animated animate__fadeInUp animate__delay-2">Pesquisadores</li>
+                    <li class="animate__animated animate__fadeInUp animate__delay-3">Profissionais que dependem de anotações detalhadas</li>
+                    <li class="animate__animated animate__fadeInUp animate__delay-4">Equipes que precisam compartilhar conhecimento</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 5: Nossa Missão -->
+        <div class="slide gradient-bg-2 slide-transition-fade" id="slide5">
+            <div class="bg-pattern bg-pattern-2"></div>
+            <div class="slide-content">
+                <span class="badge">Propósito</span>
+                <h2 class="animate__animated animate__fadeInDown">Missão</h2>
+                <div class="feature-icon animate__animated animate__zoomIn">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <div class="quote animate__animated animate__fadeIn animate__delay-1">
+                    "Impulsionar a evolução do conhecimento humano, conectando pessoas, ideias e tecnologia em um ecossistema inteligente."
+                </div>
+                <ul class="list">
+                    <li class="animate__animated animate__fadeInUp animate__delay-2">Criar um ambiente digital onde o conhecimento é capturado, organizado e transformado</li>
+                    <li class="animate__animated animate__fadeInUp animate__delay-3">Oferecer ferramentas que vão além das anotações tradicionais</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 6: Nossa Visão -->
+        <div class="slide gradient-bg-3 slide-transition-zoom" id="slide6">
+            <div class="bg-pattern bg-pattern-3"></div>
+            <div class="slide-content">
+                <span class="badge">Futuro</span>
+                <h2 class="animate__animated animate__fadeInDown">Visão</h2>
+                <div class="feature-icon animate__animated animate__zoomIn">
+                    <i class="fas fa-eye"></i>
+                </div>
+                <div class="quote animate__animated animate__fadeIn animate__delay-1">
+                    "Ser o ecossistema de referência para gestão, integração e expansão do conhecimento em escala global."
+                </div>
+                <ul class="list">
+                    <li class="animate__animated animate__fadeInUp animate__delay-2">Transcender o conceito tradicional de anotações</li>
+                    <li class="animate__animated animate__fadeInUp animate__delay-3">Tornar-se um hub central para informações, criatividade e produtividade</li>
+                    <li class="animate__animated animate__fadeInUp animate__delay-4">Conectar pessoas, dados e IA para criar novas possibilidades</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 7: Nossos Valores (Parte 1) -->
+        <div class="slide gradient-bg-1 slide-transition-flip" id="slide7">
+            <div class="bg-pattern bg-pattern-1"></div>
+            <div class="slide-content">
+                <span class="badge">Princípios</span>
+                <h2 class="animate__animated animate__fadeInDown">Valores Fundamentais</h2>
+                <div class="columns">
+                    <div class="column animate__animated animate__fadeInLeft">
+                        <div class="animated-icon"><i class="fas fa-glasses"></i></div>
+                        <h3>Transparência</h3>
+                        <p>Comunicação clara de processos, decisões e limitações</p>
+                    </div>
+                    <div class="column animate__animated animate__fadeInRight">
+                        <div class="animated-icon"><i class="fas fa-balance-scale"></i></div>
+                        <h3>Integridade</h3>
+                        <p>Respeito a princípios éticos em todas as ações</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Nossos Valores (Parte 2) -->
+        <div class="slide gradient-bg-2 slide-transition-slide" id="slide8">
+            <div class="bg-pattern bg-pattern-2"></div>
+            <div class="slide-content">
+                <span class="badge">Princípios</span>
+                <h2 class="animate__animated animate__fadeInDown">Valores Fundamentais</h2>
+                <div class="columns">
+                    <div class="column animate__animated animate__fadeInLeft">
+                        <div class="animated-icon"><i class="fas fa-heart"></i></div>
+                        <h3>Comprometimento com o usuário</h3>
+                        <p>Necessidades do usuário no centro do desenvolvimento</p>
+                    </div>
+                    <div class="column animate__animated animate__fadeInRight">
+                        <div class="animated-icon"><i class="fas fa-lightbulb"></i></div>
+                        <h3>Inovação</h3>
+                        <p>Incentivo contínuo a novas ideias e tecnologias</p>
+                    </div>
+                </div>
+                <div class="column animate__animated animate__fadeInUp animate__delay-3" style="margin-top: 2rem;">
+                    <div class="animated-icon"><i class="fas fa-shield-alt"></i></div>
+                    <h3>Privacidade e Proteção de Dados</h3>
+                    <p>Segurança rigorosa e conformidade com a LGPD</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Slide Final -->
+        <div class="slide gradient-bg-3 slide-transition-fade" id="slide9">
+            <div class="bg-pattern bg-pattern-3"></div>
+            <div class="slide-content">
+                <span class="logo floating glow">
+                    <img src="{% static 'core/logo.png' %}" alt="Logo Vorp" class="logo-img" style="width: 6rem; height: 6rem;">
+                </span>
+                <h1 class="animate__animated animate__fadeInUp">Obrigado!</h1>
+                <p class="subtitle animate__animated animate__fadeInUp animate__delay-1">Vorp: Transformando anotações em conhecimento ativo</p>
+                <p class="team animate__animated animate__fadeInUp animate__delay-2">Equipe: Caio, Gustavo, Noemy e Riquelme</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn prev-btn"><i class="fas fa-chevron-left"></i></button>
+        <button class="nav-btn next-btn"><i class="fas fa-chevron-right"></i></button>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-bar"></div>
+    </div>
+    <div class="slide-number">Slide 1 de 9</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const slides = document.querySelectorAll('.slide');
+            const prevBtn = document.querySelector('.prev-btn');
+            const nextBtn = document.querySelector('.next-btn');
+            const progressBar = document.querySelector('.progress-bar');
+            const slideNumber = document.querySelector('.slide-number');
+            const cursor = document.querySelector('.custom-cursor');
+            const cursorFollower = document.querySelector('.custom-cursor-follower');
+            let currentSlide = 0;
+            const totalSlides = slides.length;
+
+            // Create particles
+            const particlesContainer = document.getElementById('particles');
+            const particleColors = ['#00d4ff', '#7b2ff7', '#ff3e7f'];
+            
+            for (let i = 0; i < 50; i++) {
+                createParticle();
+            }
+            
+            function createParticle() {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Random properties
+                const size = Math.random() * 5 + 2;
+                const color = particleColors[Math.floor(Math.random() * particleColors.length)];
+                const left = Math.random() * 100;
+                const duration = Math.random() * 20 + 10;
+                const delay = Math.random() * 5;
+                
+                // Apply styles
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.backgroundColor = color;
+                particle.style.left = `${left}%`;
+                particle.style.top = '100%';
+                particle.style.animationDuration = `${duration}s`;
+                particle.style.animationDelay = `${delay}s`;
+                
+                particlesContainer.appendChild(particle);
+                
+                // Remove and recreate particle after animation ends
+                setTimeout(() => {
+                    particle.remove();
+                    createParticle();
+                }, (duration + delay) * 1000);
+            }
+
+            // Custom cursor
+            document.addEventListener('mousemove', function(e) {
+                cursor.style.left = e.clientX + 'px';
+                cursor.style.top = e.clientY + 'px';
+                
+                setTimeout(() => {
+                    cursorFollower.style.left = e.clientX + 'px';
+                    cursorFollower.style.top = e.clientY + 'px';
+                }, 100);
+            });
+
+            document.addEventListener('mousedown', function() {
+                cursor.style.width = '15px';
+                cursor.style.height = '15px';
+                cursor.style.backgroundColor = 'var(--accent)';
+            });
+
+            document.addEventListener('mouseup', function() {
+                cursor.style.width = '20px';
+                cursor.style.height = '20px';
+                cursor.style.backgroundColor = 'var(--primary)';
+            });
+
+            // Update progress bar and slide number
+            function updateProgress() {
+                const progress = ((currentSlide + 1) / totalSlides) * 100;
+                progressBar.style.width = `${progress}%`;
+                slideNumber.textContent = `Slide ${currentSlide + 1} de ${totalSlides}`;
+                
+                // Reset animations for current slide
+                const currentSlideElement = slides[currentSlide];
+                const animatedElements = currentSlideElement.querySelectorAll('.animate__animated');
+                
+                animatedElements.forEach(element => {
+                    const animationClass = Array.from(element.classList).find(cls => cls.startsWith('animate__') && cls !== 'animate__animated' && !cls.startsWith('animate__delay'));
+                    
+                    if (animationClass) {
+                        element.classList.remove(animationClass);
+                        void element.offsetWidth; // Trigger reflow
+                        element.classList.add(animationClass);
+                    }
+                });
+            }
+
+            // Show current slide
+            function showSlide() {
+                slides.forEach((slide, index) => {
+                    slide.classList.remove('active');
+                    if (index === currentSlide) {
+                        slide.classList.add('active');
+                    }
+                });
+                updateProgress();
+            }
+
+            // Next slide
+            function nextSlide() {
+                if (currentSlide < totalSlides - 1) {
+                    currentSlide++;
+                    showSlide();
+                }
+            }
+
+            // Previous slide
+            function prevSlide() {
+                if (currentSlide > 0) {
+                    currentSlide--;
+                    showSlide();
+                }
+            }
+
+            // Event listeners
+            nextBtn.addEventListener('click', nextSlide);
+            prevBtn.addEventListener('click', prevSlide);
+
+            // Click anywhere to advance
+            document.addEventListener('click', function(e) {
+                // Ignore clicks on navigation buttons
+                if (e.target.closest('.navigation')) return;
+                nextSlide();
+            });
+
+            // Keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowRight' || e.key === ' ') {
+                    nextSlide();
+                } else if (e.key === 'ArrowLeft') {
+                    prevSlide();
+                }
+            });
+
+            // Swipe navigation for touch devices
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            document.addEventListener('touchstart', function(e) {
+                touchStartX = e.changedTouches[0].screenX;
+            });
+            
+            document.addEventListener('touchend', function(e) {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            });
+            
+            function handleSwipe() {
+                const swipeThreshold = 50;
+                if (touchEndX < touchStartX - swipeThreshold) {
+                    nextSlide(); // Swipe left
+                }
+                if (touchEndX > touchStartX + swipeThreshold) {
+                    prevSlide(); // Swipe right
+                }
+            }
+
+            // Initialize
+            updateProgress();
+        });
+    </script>
+</body>
+</html>
