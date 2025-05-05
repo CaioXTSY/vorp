@@ -631,38 +631,9 @@
         .animate__delay-5 {
             animation-delay: 1s;
         }
-
-        /* Custom cursor */
-        .custom-cursor {
-            position: fixed;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background-color: var(--primary);
-            pointer-events: none;
-            mix-blend-mode: difference;
-            z-index: 9999;
-            transform: translate(-50%, -50%);
-            transition: width 0.3s, height 0.3s, background-color 0.3s;
-        }
-
-        .custom-cursor-follower {
-            position: fixed;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 2px solid var(--primary);
-            pointer-events: none;
-            z-index: 9998;
-            transform: translate(-50%, -50%);
-            transition: 0.1s;
-        }
     </style>
 </head>
 <body>
-    <div class="custom-cursor"></div>
-    <div class="custom-cursor-follower"></div>
-
     <div class="particles" id="particles"></div>
 
     <div class="slides-container">
@@ -863,8 +834,6 @@
             const nextBtn = document.querySelector('.next-btn');
             const progressBar = document.querySelector('.progress-bar');
             const slideNumber = document.querySelector('.slide-number');
-            const cursor = document.querySelector('.custom-cursor');
-            const cursorFollower = document.querySelector('.custom-cursor-follower');
             let currentSlide = 0;
             const totalSlides = slides.length;
 
