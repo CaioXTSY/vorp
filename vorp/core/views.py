@@ -5,3 +5,6 @@ def index(request):
 
 def mvv(request):
     return render(request, 'core/mvv.html')
+
+def pitch(request):
+    return render(request, 'core/pitch.html')

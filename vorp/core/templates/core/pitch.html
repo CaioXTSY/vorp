@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vorp - Apresentação</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-light: #818cf8;
+      --primary-dark: #4f46e5;
+      --secondary: #a855f7;
+      --accent: #ec4899;
+      --dark-bg: #0f172a;
+      --darker-bg: #080a0f;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: rgba(148, 163, 184, 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--darker-bg);
+      color: var(--text);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* Animated Background */
+    .animated-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .bg-gradient {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, var(--darker-bg), var(--dark-bg));
+    }
+
+    .particles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .particle {
+      position: absolute;
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      border-radius: 50%;
+      opacity: 0.3;
+      animation: float 15s infinite ease-in-out;
+    }
+
+    .particle:nth-child(1) {
+      width: 300px;
+      height: 300px;
+      top: -150px;
+      left: -150px;
+      animation-delay: 0s;
+      filter: blur(70px);
+    }
+
+    .particle:nth-child(2) {
+      width: 400px;
+      height: 400px;
+      top: 70%;
+      right: -200px;
+      animation-delay: -5s;
+      filter: blur(90px);
+    }
+
+    .particle:nth-child(3) {
+      width: 250px;
+      height: 250px;
+      bottom: -100px;
+      left: 30%;
+      animation-delay: -2s;
+      filter: blur(60px);
+    }
+
+    .particle:nth-child(4) {
+      width: 200px;
+      height: 200px;
+      top: 20%;
+      right: 20%;
+      animation-delay: -7s;
+      filter: blur(50px);
+    }
+
+    .grid-pattern {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.5;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0) translateX(0);
+      }
+      25% {
+        transform: translateY(-50px) translateX(50px);
+      }
+      50% {
+        transform: translateY(0) translateX(100px);
+      }
+      75% {
+        transform: translateY(50px) translateX(50px);
+      }
+    }
+
+    .slides-container {
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .slides {
+      display: flex;
+      height: 100%;
+      transition: transform 0.7s cubic-bezier(0.65, 0, 0.35, 1);
+    }
+
+    .slide {
+      min-width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide-content {
+      max-width: 1400px;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      padding: 2rem 0;
+    }
+
+    .slide.active .slide-content {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .slide-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .slide-number {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+      opacity: 0.7;
+    }
+
+    .slide-logo {
+      font-size: 1.25rem;
+      font-weight: 800;
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .slide-main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 4rem;
+    }
+
+    .slide-left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .slide-right {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    .slide-title {
+      font-size: 3rem;
+      font-weight: 800;
+      background: linear-gradient(to right, var(--primary), var(--secondary), var(--accent));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+
+    .slide-subtitle {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      font-weight: 400;
+      margin-bottom: 2rem;
+    }
+
+    .slide-description {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+
+    .feature-list {
+      list-style: none;
+    }
+
+    .feature-list li {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+      color: var(--text-muted);
+    }
+
+    .feature-list li i {
+      color: var(--primary);
+      margin-right: 1rem;
+      font-size: 1.25rem;
+    }
+
+    .highlight {
+      color: var(--primary-light);
+      font-weight: 600;
+    }
+
+    .stat-highlight {
+      font-size: 3rem;
+      font-weight: 800;
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 0.5rem;
+      line-height: 1;
+    }
+
+    /* Image Showcase Styles */
+    .device-mockup {
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+      height: auto;
+      perspective: 1000px;
+      transform-style: preserve-3d;
+    }
+
+    .device-frame {
+      width: 100%;
+      height: auto;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      transform: rotateY(-10deg) rotateX(5deg);
+      transition: transform 0.5s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background-color: var(--dark-bg);
+    }
+
+    .device-frame:hover {
+      transform: rotateY(-5deg) rotateX(2deg) scale(1.02);
+    }
+
+    .device-screen {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 12px;
+    }
+
+    .device-reflection {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent 80%);
+      border-radius: 20px;
+      pointer-events: none;
+    }
+
+    .device-glow {
+      position: absolute;
+      top: -20px;
+      left: -20px;
+      right: -20px;
+      bottom: -20px;
+      background: radial-gradient(circle at 30% 30%, var(--primary-dark), transparent 70%);
+      opacity: 0.3;
+      filter: blur(30px);
+      z-index: -1;
+      animation: pulse 4s infinite alternate;
+    }
+
+    @keyframes pulse {
+      0% {
+        opacity: 0.2;
+      }
+      100% {
+        opacity: 0.4;
+      }
+    }
+
+    .floating-elements {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+
+    .floating-element {
+      position: absolute;
+      border-radius: 12px;
+      background-color: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 1rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      animation: float-element 6s infinite ease-in-out;
+    }
+
+    .floating-element:nth-child(1) {
+      top: 10%;
+      right: -30px;
+      width: 180px;
+      animation-delay: 0s;
+    }
+
+    .floating-element:nth-child(2) {
+      bottom: 15%;
+      left: -20px;
+      width: 160px;
+      animation-delay: -2s;
+    }
+
+    .floating-element:nth-child(3) {
+      top: 60%;
+      right: -20px;
+      width: 140px;
+      animation-delay: -4s;
+    }
+
+    .floating-element-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .floating-element-text {
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+
+    @keyframes float-element {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-15px);
+      }
+    }
+
+    /* Feature Grid */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      width: 100%;
+    }
+
+    .feature-card {
+      background-color: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: left;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3),
+                  0 10px 10px -5px rgba(0, 0, 0, 0.2);
+    }
+
+    .feature-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .feature-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .feature-description {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    /* Before/After */
+    .before-after {
+      display: flex;
+      width: 100%;
+      gap: 2rem;
+    }
+
+    .before-after-item {
+      flex: 1;
+      background-color: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      position: relative;
+    }
+
+    .before-after-label {
+      position: absolute;
+      top: -12px;
+      left: 2rem;
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      color: white;
+      padding: 0.25rem 1rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .before-after-content {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .before-content {
+      color: var(--text-muted);
+    }
+
+    .after-content {
+      color: var(--primary-light);
+    }
+
+    /* Pricing Cards */
+    .pricing-container {
+      display: flex;
+      gap: 1.5rem;
+      width: 100%;
+    }
+
+    .pricing-card {
+      flex: 1;
+      background-color: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .pricing-card.featured {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(168, 85, 247, 0.3));
+      transform: scale(1.05);
+      z-index: 1;
+    }
+
+    .pricing-card:hover:not(.featured) {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3),
+                  0 10px 10px -5px rgba(0, 0, 0, 0.2);
+    }
+
+    .pricing-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .pricing-price {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+
+    .pricing-price span {
+      font-size: 0.9rem;
+      font-weight: 400;
+      color: var(--text-muted);
+    }
+
+    .pricing-features {
+      list-style: none;
+      margin-bottom: 1.5rem;
+      text-align: left;
+    }
+
+    .pricing-features li {
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .pricing-features li::before {
+      content: "✓";
+      color: var(--primary);
+      margin-right: 0.5rem;
+      font-weight: bold;
+    }
+
+    /* Security Grid */
+    .security-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      width: 100%;
+    }
+
+    .security-card {
+      background-color: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .security-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3),
+                  0 10px 10px -5px rgba(0, 0, 0, 0.2);
+    }
+
+    .security-icon {
+      font-size: 2rem;
+      color: var(--primary);
+    }
+
+    .security-content h3 {
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+    }
+
+    .security-content p {
+      margin-bottom: 0;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    /* Funnel */
+    .funnel-container {
+      width: 100%;
+      max-width: 600px;
+      height: 250px;
+      position: relative;
+      margin: 0 auto;
+    }
+
+    .funnel {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .funnel-section {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(to bottom, rgba(99, 102, 241, 0.7), rgba(168, 85, 247, 0.7));
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-weight: 600;
+      transition: all 0.5s ease;
+    }
+
+    .funnel-section:nth-child(1) {
+      top: 0;
+      width: 100%;
+      height: 60px;
+    }
+
+    .funnel-section:nth-child(2) {
+      top: 80px;
+      width: 80%;
+      height: 50px;
+    }
+
+    .funnel-section:nth-child(3) {
+      top: 150px;
+      width: 60%;
+      height: 50px;
+    }
+
+    .funnel-section:nth-child(4) {
+      top: 220px;
+      width: 40%;
+      height: 40px;
+    }
+
+    .funnel-arrow {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 15px solid transparent;
+      border-right: 15px solid transparent;
+      border-top: 15px solid rgba(168, 85, 247, 0.7);
+    }
+
+    .funnel-arrow:nth-child(5) {
+      top: 60px;
+    }
+
+    .funnel-arrow:nth-child(6) {
+      top: 130px;
+    }
+
+    .funnel-arrow:nth-child(7) {
+      top: 200px;
+    }
+
+    /* Credits */
+    .credits-container {
+      width: 100%;
+      background-color: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      position: relative;
+    }
+
+    .credits-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .credits-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .credits-balance {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .credits-progress {
+      width: 100%;
+      height: 8px;
+      background-color: rgba(30, 41, 59, 0.5);
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+
+    .credits-progress-bar {
+      height: 100%;
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      border-radius: 4px;
+      width: 65%;
+    }
+
+    .credits-stats {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+
+    .credits-stat {
+      text-align: center;
+    }
+
+    .credits-stat-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.25rem;
+    }
+
+    .credits-stat-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Navigation */
+    .navigation {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 1rem;
+      z-index: 10;
+    }
+
+    .nav-button {
+      background-color: rgba(30, 41, 59, 0.7);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-button:hover {
+      background-color: rgba(99, 102, 241, 0.2);
+      transform: translateY(-3px);
+    }
+
+    .nav-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .progress-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      height: 4px;
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      transition: width 0.7s cubic-bezier(0.65, 0, 0.35, 1);
+      z-index: 10;
+    }
+
+    .slide-indicator {
+      position: fixed;
+      bottom: 1rem;
+      right: 2rem;
+      background-color: rgba(30, 41, 59, 0.7);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      backdrop-filter: blur(10px);
+      z-index: 10;
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .slide-title {
+        font-size: 2.5rem;
+      }
+      
+      .slide-main {
+        gap: 2rem;
+      }
+    }
+
+    @media (max-width: 992px) {
+      .slide-main {
+        flex-direction: column;
+        gap: 2rem;
+      }
+      
+      .slide-left, .slide-right {
+        width: 100%;
+      }
+      
+      .feature-grid, .security-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .pricing-container, .before-after {
+        flex-direction: column;
+      }
+      
+      .pricing-card.featured {
+        transform: scale(1);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Animated Background -->
+  <div class="animated-bg">
+    <div class="bg-gradient"></div>
+    <div class="particles">
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+    </div>
+    <div class="grid-pattern"></div>
+  </div>
+
+  <div class="slides-container">
+    <div class="slides">
+      <!-- Slide 1: Abertura impactante -->
+      <div class="slide" id="slide-1">
+        <div class="slide-content">
+          <div class="slide-header">
+            <div class="slide-number">01</div>
+            <div class="slide-logo">Vorp</div>
+          </div>
+          <div class="slide-main">
+            <div class="slide-left">
+              <h1 class="slide-title">Potencializando suas notas com IA</h1>
+              <p class="slide-subtitle">Transforme informações em conhecimento acionável</p>
+              <p class="slide-description">A plataforma que revoluciona a forma como você organiza e extrai valor das suas anotações, usando inteligência artificial para potencializar sua produtividade.</p>
+              <div class="feature-list">
+                <li><i class="fas fa-check-circle"></i> Editor inteligente com IA integrada</li>
+                <li><i class="fas fa-check-circle"></i> Organização automática de conteúdo</li>
+                <li><i class="fas fa-check-circle"></i> Transformação de notas brutas em conhecimento estruturado</li>
+              </div>
+            </div>
+            <div class="slide-right">
+              <div class="device-mockup">
+                <div class="device-glow"></div>
+                <div class="device-frame">
+                  <img src="slide1_editor_ia.jpg" alt="Editor Vorp com menu de IA" class="device-screen">
+                </div>
+                <div class="device-reflection"></div>
+                <div class="floating-elements">
+                  <div class="floating-element">
+                    <div class="floating-element-icon"><i class="fas fa-magic"></i></div>
+                    <div class="floating-element-text">Transformação automática</div>
+                  </div>
+                  <div class="floating-element">
+                    <div class="floating-element-icon"><i class="fas fa-lightbulb"></i></div>
+                    <div class="floating-element-text">Sugestões inteligentes</div>
+                  </div>
+                  <div class="floating-element">
+                    <div class="floating-element-icon"><i class="fas fa-link"></i></div>
+                    <div class="floating-element-text">Conexões contextuais</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 2: Problema & Oportunidade -->
+      <div class="slide" id="slide-2">
+        <div class="slide-content">
+          <div class="slide-header">
+            <div class="slide-number">02</div>
+            <div class="slide-logo">Vorp</div>
+          </div>
+          <div class="slide-main">
+            <div class="slide-left">
+              <h1 class="slide-title">Problema & Oportunidade</h1>
+              <p class="slide-subtitle">A fragmentação de informações é um desafio constante</p>
+              <div class="stat-highlight">58%</div>
+              <p class="slide-description">dos profissionais gastam mais de 5 horas por semana apenas buscando informações em suas próprias anotações.</p>
+              <div class="feature-list">
+                <li><i class="fas fa-times-circle" style="color: #ef4444;"></i> Notas espalhadas em múltiplos aplicativos</li>
+                <li><i class="fas fa-times-circle" style="color: #ef4444;"></i> Formatos inconsistentes e desorganizados</li>
+                <li><i class="fas fa-times-circle" style="color: #ef4444;"></i> Dificuldade para encontrar informações</li>
+                <li><i class="fas fa-check-circle"></i> <span class="highlight">Oportunidade:</span> Centralizar e potencializar com IA</li>
+              </div>
+            </div>
+            <div class="slide-right">
+              <div class="device-mockup">
+                <div class="device-glow"></div>
+                <div class="device-frame">
+                  <img src="slide2_problema.jpg" alt="Múltiplas janelas com notas desorganizadas" class="device-screen">
+                </div>
+                <div class="device-reflection"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 3: Solução Vorp -->
+      <div class="slide" id="slide-3">
+        <div class="slide-content">
+          <div class="slide-header">
+            <div class="slide-number">03</div>
+            <div class="slide-logo">Vorp</div>
+          </div>
+          <div class="slide-main">
+            <div class="slide-left">
+              <h1 class="slide-title">Solução <span class="highlight">Vorp</span></h1>
+              <p class="slide-subtitle">Plataforma SaaS B2C com modelo freemium</p>
+              <p class="slide-description">Um único hub para todas as suas anotações, com organização automática e categorização inteligente.</p>
+              <div class="feature-list">
+                <li><i class="fas fa-brain"></i> IA que entende o contexto das suas notas</li>
+                <li><i class="fas fa-sitemap"></i> Estrutura flexível e personalizável</li>
+                <li><i class="fas fa-search"></i> Busca semântica avançada</li>
+                <li><i class="fas fa-link"></i> Conexões automáticas entre conceitos relacionados</li>
+              </div>
+            </div>
+            <div class="slide-right">
+              <div class="device-mockup">
+                <div class="device-glow"></div>
+                <div class="device-frame">
+                  <img src="slide3_dashboard.jpg" alt="Dashboard principal do Vorp" class="device-screen">
+                </div>
+                <div class="device-reflection"></div>
+                <div class="floating-elements">
+                  <div class="floating-element">
+                    <div class="floating-element-icon"><i class="fas fa-folder"></i></div>
+                    <div class="floating-element-text">Organização inteligente</div>
+                  </div>
+                  <div class="floating-element">
+                    <div class="floating-element-icon"><i class="fas fa-tag"></i></div>
+                    <div class="floating-element-text">Tags automáticas</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 4: Core Features -->
+      <div class="slide" id="slide-4">
+        <div class="slide-content">
+          <div class="slide-header">
+            <div class="slide-number">04</div>
+            <div class="slide-logo">Vorp</div>
+          </div>
+          <div class="slide-main">
+            <div class="slide-left">
+              <h1 class="slide-title">Recursos Principais</h1>
+              <p class="slide-subtitle">Ferramentas poderosas para transformar suas anotações</p>
+              <div class="feature-grid">
+                <div class="feature-card">
+                  <div class="feature-icon"><i class="fas fa-edit"></i></div>
+                  <h3 class="feature-title">Editor Markdown</h3>
+                  <p class="feature-description">
+                    Editor completo com preview em tempo real e formatação avançada.
+                  </p>
+                </div>
+                <div class="feature-card">
+                  <div class="feature-icon"><i class="fas fa-robot"></i></div>
+                  <h3 class="feature-title">Assistente IA</h3>
+                  <p class="feature-description">
+                    Transforme textos brutos em conteúdo estruturado e otimizado.
+                  </p>
+                </div>
+                <div class="feature-card">
+                  <div class="feature-icon"><i class="fas fa-comments"></i></div>
+                  <h3 class="feature-title">Chatbot Integrado</h3>
+                  <p class="feature-description">
+                    Faça perguntas sobre suas notas e obtenha respostas contextuais.
+                  </p>
+                </div>
+                <div class="feature-card">
+                  <div class="feature-icon"><i class="fas fa-file-pdf"></i></div>
+                  <h3 class="feature-title">Upload de PDF</h3>
+                  <p class="feature-description">
+                    Conversão automática de PDFs para notas editáveis e pesquisáveis.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="slide-right">
+              <div class="device-mockup">
+                <div class="device-glow"></div>
+                <div class="device-frame">
+                  <img src="slide4_features.jpg" alt="Interface mostrando os recursos principais" class="device-screen">
+                </div>
+                <div class="device-reflection"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 5: Demo Visual -->
+      <div class="slide" id="slide-5">
+        <div class="slide-content">
+          <div class="slide-header">
+            <div class="slide-number">05</div>
+            <div class="slide-logo">Vorp</div>
+          </div>
+          <div class="slide-main">
+            <div class="slide-left">
+              <h1 class="slide-title">Demonstração Visual</h1>
+              <p class="slide-subtitle">Veja o poder da transformação com IA</p>
+              <div class="before-after">
+                <div class="before-after-item">
+                  <div class="before-after-label">Antes</div>
+                  <div class="before-after-content before-content">
+reuniao com equipe marketing
+discutimos campanha q4
+pontos principais:
+- orcamento 50k
+- foco em redes sociais
+- prazo lancamento 15/nov
+- responsaveis: ana (criacao), carlos (midia)
+preciso fazer follow up semana q vem
+                  </div>
+                </div>
+                <div class="before-after-item">
+                  <div class="before-after-label">Depois</div>
+                  <div class="before-after-content after-content">
+# Reunião com Equipe de Marketing: Campanha Q4
+
+## Pontos Principais
+- **Orçamento**: R$ 50.000
+- **Foco**: Redes Sociais
+- **Prazo de Lançamento**: 15 de Novembro
+- **Responsáveis**:
+  - Ana (Criação)
+  - Carlos (Mídia)
+
+## Próximos Passos
+- [ ] Fazer follow-up na próxima semana
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="slide-right">
+              <div class="device-mockup">
+                <div class="device-glow"></div>
+                <div class="device-frame">
+                  <img src="slide5_zen_mode.jpg" alt="Modo Zen do Vorp" class="device-screen">
+                </div>
+                <div class="device-reflection"></div>
+                <div class="floating-elements">
+                  <div class="floating-element">
+                    <div class="floating-element-icon"><i class="fas fa-moon"></i></div>
+                    <div class="floating-element-text">Modo Zen</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 6: Modelo de Negócio -->
+      <div class="slide" id="slide-6">
+        <div class="slide-content">
+          <div class="slide-header">
+            <div class="slide-number">06</div>
+            <div class="slide-logo">Vorp</div>
+          </div>
+          <div class="slide-main">
+            <div class="slide-left">
+              <h1 class="slide-title">Modelo de Negócio</h1>
+              <p class="slide-subtitle">Estratégia freemium para maximizar alcance e conversão</p>
+              <p class="slide-description">Nossa abordagem foca em oferecer valor imediato com o plano gratuito, enquanto incentivamos a conversão através de recursos premium.</p>
+              <div class="feature-list">
+                <li><i class="fas fa-users"></i> Ampla base de usuários gratuitos</li>
+                <li><i class="fas fa-chart-line"></i> Conversão progressiva para planos pagos</li>
+                <li><i class="fas fa-heart"></i> Fidelização através de valor contínuo</li>
+              </div>
+            </div>
+            <div class="slide-right">
+              <div class="funnel-container">
+                <div class="funnel">
+                  <div class="funnel-section">Usuários Gratuitos</div>
+                  <div class="funnel-section">Uso de Recursos Premium</div>
+                  <div class="funnel-section">Conversão para Pagante</div>
+                  <div class="funnel-section">Retenção e Upgrade</div>
+                  <div class="funnel-arrow"></div>
+                  <div class="funnel-arrow"></div>
+                  <div class="funnel-arrow"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 7: Sistema de Créditos -->
+      <div class="slide" id="slide-7">
+        <div class="slide-content">
+          <div class="slide-header">
+            <div class="slide-number">07</div>
+            <div class="slide-logo">Vorp</div>
+          </div>
+          <div class="slide-main">
+            <div class="slide-left">
+              <h1 class="slide-title">Sistema de Créditos</h1>
+              <p class="slide-subtitle">Modelo de monetização flexível e transparente</p>
+              <p class="slide-description">Os créditos são a moeda interna do Vorp, utilizados para acessar recursos premium como transformações avançadas de IA, análises profundas e exportações especiais.</p>
+              <div class="feature-list">
+                <li><i class="fas fa-sync"></i> Renovação mensal automática</li>
+                <li><i class="fas fa-gift"></i> Bônus por indicações</li>
+                <li><i class="fas fa-coins"></i> Compra de créditos adicionais</li>
+              </div>
+            </div>
+            <div class="slide-right">
+              <div class="device-mockup">
+                <div class="device-glow"></div>
+                <div class="device-frame">
+                  <div class="credits-container">
+                    <div class="credits-header">
+                      <div class="credits-title">Seus Créditos</div>
+                      <div class="credits-balance">650</div>
+                    </div>
+                    <div class="credits-progress">
+                      <div class="credits-progress-bar"></div>
+                    </div>
+                    <div class="credits-stats">
+                      <div class="credits-stat">
+                        <div class="credits-stat-value">450</div>
+                        <div class="credits-stat-label">Utilizados</div>
+                      </div>
+                      <div class="credits-stat">
+                        <div class="credits-stat-value">650</div>
+                        <div class="credits-stat-label">Disponíveis</div>
+                      </div>
+                      <div class="credits-stat">
+                        <div class="credits-stat-value">1100</div>
+                        <div class="credits-stat-label">Total</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="device-reflection"></div>
+                <div class="floating-elements">
+                  <div class="floating-element">
+                    <div class="floating-element-icon"><i class="fas fa-plus-circle"></i></div>
+                    <div class="floating-element-text">Adicionar créditos</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 8: Planos e Preços -->
+      <div class="slide" id="slide-8">
+        <div class="slide-content">
+          <div class="slide-header">
+            <div class="slide-number">08</div>
+            <div class="slide-logo">Vorp</div>
+          </div>
+          <div class="slide-main">
+            <div class="slide-left">
+              <h1 class="slide-title">Planos e Preços</h1>
+              <p class="slide-subtitle">Opções flexíveis para diferentes necessidades</p>
+              <div class="pricing-container">
+                <div class="pricing-card">
+                  <h3 class="pricing-title">Gratuito</h3>
+                  <div class="pricing-price">R$ 0 <span>/mês</span></div>
+                  <ul class="pricing-features">
+                    <li>50 créditos mensais</li>
+                    <li>Editor Markdown básico</li>
+                    <li>Armazenamento de 100MB</li>
+                  </ul>
+                </div>
+                <div class="pricing-card featured">
+                  <h3 class="pricing-title">Profissional</h3>
+                  <div class="pricing-price">R$ 39 <span>/mês</span></div>
+                  <ul class="pricing-features">
+                    <li>500 créditos mensais</li>
+                    <li>Todos os recursos</li>
+                    <li>Armazenamento de 10GB</li>
+                    <li>Assistente IA avançado</li>
+                  </ul>
+                </div>
+                <div class="pricing-card">
+                  <h3 class="pricing-title">Empresarial</h3>
+                  <div class="pricing-price">R$ 99 <span>/mês</span></div>
+                  <ul class="pricing-features">
+                    <li>1500 créditos mensais</li>
+                    <li>API de integração</li>
+                    <li>Suporte prioritário</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="slide-right">
+              <div class="device-mockup">
+                <div class="device-glow"></div>
+                <div class="device-frame">
+                  <img src="slide8_pricing.jpg" alt="Visualização dos planos e preços" class="device-screen">
+                </div>
+                <div class="device-reflection"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 9: Segurança e Conformidade -->
+      <div class="slide" id="slide-9">
+        <div class="slide-content">
+          <div class="slide-header">
+            <div class="slide-number">09</div>
+            <div class="slide-logo">Vorp</div>
+          </div>
+          <div class="slide-main">
+            <div class="slide-left">
+              <h1 class="slide-title">Segurança e Conformidade</h1>
+              <p class="slide-subtitle">Seus dados protegidos com os mais altos padrões</p>
+              <div class="security-grid">
+                <div class="security-card">
+                  <div class="security-icon"><i class="fas fa-lock"></i></div>
+                  <div class="security-content">
+                    <h3>Criptografia End-to-End</h3>
+                    <p>Todas as suas notas são criptografadas em trânsito e em repouso.</p>
+                  </div>
+                </div>
+                <div class="security-card">
+                  <div class="security-icon"><i class="fas fa-shield-alt"></i></div>
+                  <div class="security-content">
+                    <h3>Conformidade LGPD</h3>
+                    <p>Plataforma totalmente aderente à Lei Geral de Proteção de Dados.</p>
+                  </div>
+                </div>
+                <div class="security-card">
+                  <div class="security-icon"><i class="fas fa-key"></i></div>
+                  <div class="security-content">
+                    <h3>Autenticação 2FA</h3>
+                    <p>Camada adicional de segurança com autenticação de dois fatores.</p>
+                  </div>
+                </div>
+                <div class="security-card">
+                  <div class="security-icon"><i class="fas fa-database"></i></div>
+                  <div class="security-content">
+                    <h3>Backups Automáticos</h3>
+                    <p>Seus dados são automaticamente salvos e versionados.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="slide-right">
+              <div class="device-mockup">
+                <div class="device-glow"></div>
+                <div class="device-frame">
+                  <img src="slide9_security.jpg" alt="Visualização dos recursos de segurança" class="device-screen">
+                </div>
+                <div class="device-reflection"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 10: Conclusão -->
+      <div class="slide" id="slide-10">
+        <div class="slide-content">
+          <div class="slide-header">
+            <div class="slide-number">10</div>
+            <div class="slide-logo">Vorp</div>
+          </div>
+          <div class="slide-main">
+            <div class="slide-left">
+              <h1 class="slide-title">Transforme suas notas em conhecimento acionável</h1>
+              <p class="slide-subtitle">Potencialize sua produtividade com inteligência artificial</p>
+              <div class="feature-list">
+                <li><i class="fas fa-rocket"></i> Aumento imediato de produtividade</li>
+                <li><i class="fas fa-lightbulb"></i> Insights valiosos do seu próprio conteúdo</li>
+                <li><i class="fas fa-clock"></i> Economia de tempo em organização e busca</li>
+              </div>
+              <p style="margin-top: 2rem; font-size: 1.25rem; font-weight: 600;">
+                contato@vorp.ai<br>
+                www.vorp.ai
+              </p>
+            </div>
+            <div class="slide-right">
+              <div class="device-mockup">
+                <div class="device-glow"></div>
+                <div class="device-frame">
+                  <img src="slide10_conclusion.jpg" alt="Logo Vorp ampliado" class="device-screen">
+                </div>
+                <div class="device-reflection"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="navigation">
+    <button class="nav-button" id="prev-button">←</button>
+    <button class="nav-button" id="next-button">→</button>
+  </div>
+
+  <div class="progress-bar" id="progress-bar"></div>
+  <div class="slide-indicator" id="slide-indicator">1/10</div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const slides = document.querySelectorAll('.slide');
+      const slidesContainer = document.querySelector('.slides');
+      const prevButton = document.getElementById('prev-button');
+      const nextButton = document.getElementById('next-button');
+      const progressBar = document.getElementById('progress-bar');
+      const slideIndicator = document.getElementById('slide-indicator');
+      
+      let currentSlide = 0;
+      const totalSlides = slides.length;
+      
+      // Initialize
+      updateSlides();
+      
+      // Add event listeners
+      prevButton.addEventListener('click', prevSlide);
+      nextButton.addEventListener('click', nextSlide);
+      
+      // Keyboard navigation
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowRight') {
+          nextSlide();
+        } else if (e.key === 'ArrowLeft') {
+          prevSlide();
+        }
+      });
+      
+      // Swipe navigation for touch devices
+      let touchStartX = 0;
+      let touchEndX = 0;
+      
+      document.addEventListener('touchstart', function(e) {
+        touchStartX = e.changedTouches[0].screenX;
+      });
+      
+      document.addEventListener('touchend', function(e) {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+      });
+      
+      function handleSwipe() {
+        const swipeThreshold = 50;
+        if (touchEndX < touchStartX - swipeThreshold) {
+          nextSlide();
+        } else if (touchEndX > touchStartX + swipeThreshold) {
+          prevSlide();
+        }
+      }
+      
+      function prevSlide() {
+        if (currentSlide > 0) {
+          currentSlide--;
+          updateSlides();
+        }
+      }
+      
+      function nextSlide() {
+        if (currentSlide < totalSlides - 1) {
+          currentSlide++;
+          updateSlides();
+        }
+      }
+      
+      function updateSlides() {
+        // Update slides position
+        slidesContainer.style.transform = `translateX(-${currentSlide * 100}%)`;
+        
+        // Update active class
+        slides.forEach((slide, index) => {
+          if (index === currentSlide) {
+            slide.classList.add('active');
+          } else {
+            slide.classList.remove('active');
+          }
+        });
+        
+        // Update buttons state
+        prevButton.disabled = currentSlide === 0;
+        nextButton.disabled = currentSlide === totalSlides - 1;
+        
+        // Update progress bar
+        const progress = ((currentSlide + 1) / totalSlides) * 100;
+        progressBar.style.width = `${progress}%`;
+        
+        // Update slide indicator
+        slideIndicator.textContent = `${currentSlide + 1}/${totalSlides}`;
+      }
+      
+      // Parallax effect for floating elements
+      document.addEventListener('mousemove', function(e) {
+        const floatingElements = document.querySelectorAll('.floating-elements');
+        
+        floatingElements.forEach(container => {
+          const elements = container.querySelectorAll('.floating-element');
+          const rect = container.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+          
+          const moveX = (e.clientX - centerX) / 30;
+          const moveY = (e.clientY - centerY) / 30;
+          
+          elements.forEach((element, index) => {
+            const factor = (index + 1) * 0.8;
+            element.style.transform = `translate(${moveX * factor}px, ${moveY * factor}px)`;
+          });
+        });
+      });
+      
+      // Auto-activate first slide
+      setTimeout(() => {
+        slides[0].classList.add('active');
+      }, 100);
+    });
+  </script>
+</body>
+</html>
