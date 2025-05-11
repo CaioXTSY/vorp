@@ -15,7 +15,19 @@ import json
 @login_required
 def list_notes(request):
     notes = Note.objects.filter(user=request.user).order_by('-updated_at')
-    return render(request, 'notes/list_notes.html', {'notes': notes})
+    
+    # Get all unique tags with counts for this user
+    from django.db.models import Count
+    all_tags = Tag.objects.filter(
+        notes__user=request.user  # Changed from note__user to notes__user
+    ).annotate(
+        count=Count('notes')      # Changed from Count('note') to Count('notes')
+    ).order_by('-count', 'name')
+    
+    return render(request, 'notes/list_notes.html', {
+        'notes': notes,
+        'all_tags': all_tags
+    })
 
 @login_required
 def new_note(request):

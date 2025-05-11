@@ -7,6 +7,29 @@
   .group:hover .group-hover\:opacity-100 {
     opacity: 1 !important;
   }
+  .note-card-transition {
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+  }
+  
+  .note-card-hidden {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  
+  .filter-pill-enter {
+    animation: filterPillEnter 0.3s forwards;
+  }
+  
+  @keyframes filterPillEnter {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <section class="relative bg-gradient-to-br from-gray-900 to-indigo-900 min-h-screen">
@@ -15,7 +38,7 @@
 
   <div class="relative z-10 max-w-7xl mx-auto px-4 py-28">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row items-center justify-between mb-20 gap-8" data-aos="fade-up">
+    <div class="flex flex-col md:flex-row items-center justify-between mb-10 gap-8" data-aos="fade-up">
       <div class="space-y-4">
         <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
           Minhas Notas
@@ -31,6 +54,54 @@
         Nova Nota
         <div class="absolute inset-0 border-2 border-cyan-500/20 rounded-xl group-hover:border-cyan-400/30 transition-all"></div>
       </button>
+    </div>
+
+    <!-- Search and filters section -->
+    <div class="mb-10" data-aos="fade-up">
+      <div class="flex flex-col lg:flex-row gap-4">
+        <!-- Search bar -->
+        <div class="relative flex-grow">
+          <input type="text" id="searchInput"
+            class="w-full bg-gray-800/70 border border-cyan-500/30 rounded-xl px-4 py-3 text-white placeholder-cyan-300/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+            placeholder="Buscar nas notas...">
+          <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-cyan-400 hover:text-cyan-300">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+    
+        <!-- Tags dropdown -->
+        <div class="relative" id="tagFilterContainer">
+          <button id="tagFilterButton"
+            class="flex items-center gap-2 bg-gray-800/70 border border-cyan-500/30 rounded-xl px-4 py-3 text-white hover:bg-gray-700/70 transition-colors">
+            <i class="fas fa-tags text-cyan-400"></i>
+            <span>Filtrar por tags</span>
+            <i class="fas fa-chevron-down ml-2 text-xs"></i>
+          </button>
+    
+          <div id="tagFilterDropdown"
+            class="hidden absolute right-0 mt-2 w-64 bg-gray-800 border border-cyan-500/30 rounded-xl shadow-2xl z-20 p-3">
+            <div class="mb-2 pb-2 border-b border-gray-700">
+              <div class="text-sm font-medium text-cyan-400 mb-2">Tags</div>
+              <div id="tagsList" class="max-h-48 overflow-y-auto">
+                {% for tag in all_tags %}
+                <label class="flex items-center p-2 hover:bg-gray-700/50 rounded transition-colors cursor-pointer">
+                  <input type="checkbox" class="tag-checkbox mr-2 accent-cyan-500" value="{{ tag.name }}">
+                  <span class="text-white">{{ tag.name }}</span>
+                  <span class="ml-auto text-xs text-cyan-400 bg-cyan-500/10 px-2 py-1 rounded">{{ tag.count }}</span>
+                </label>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="flex justify-between">
+              <button id="clearTagFilter" class="text-sm text-gray-300 hover:text-white">Limpar</button>
+              <button id="applyTagFilter"
+                class="text-sm bg-cyan-500 hover:bg-cyan-600 text-white px-3 py-1 rounded">Aplicar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Active filters display -->
+      <div id="activeFilters" class="flex flex-wrap gap-2 mt-4"></div>
     </div>
 
     <!-- Grid de Notas -->
@@ -138,6 +209,169 @@
       }
     })
   }
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('searchInput');
+    const noteCards = document.querySelectorAll('.grid > div');
+    const tagFilterButton = document.getElementById('tagFilterButton');
+    const tagFilterDropdown = document.getElementById('tagFilterDropdown');
+    const clearTagFilter = document.getElementById('clearTagFilter');
+    const applyTagFilter = document.getElementById('applyTagFilter');
+    const activeFilters = document.getElementById('activeFilters');
+    const tagCheckboxes = document.querySelectorAll('.tag-checkbox');
+    let selectedTags = [];
+
+    // Toggle tag filter dropdown
+    tagFilterButton.addEventListener('click', function () {
+      tagFilterDropdown.classList.toggle('hidden');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function (e) {
+      if (!tagFilterContainer.contains(e.target)) {
+        tagFilterDropdown.classList.add('hidden');
+      }
+    });
+
+    // Clear tag filters
+    clearTagFilter.addEventListener('click', function () {
+      tagCheckboxes.forEach(cb => cb.checked = false);
+      selectedTags = [];
+      applyFilters();
+    });
+
+    // Apply tag filters
+    applyTagFilter.addEventListener('click', function () {
+      selectedTags = Array.from(tagCheckboxes)
+        .filter(cb => cb.checked)
+        .map(cb => cb.value);
+      tagFilterDropdown.classList.add('hidden');
+      applyFilters();
+    });
+
+    // Search input
+    searchInput.addEventListener('input', debounce(function () {
+      applyFilters();
+    }, 300));
+
+    // Apply both search and tag filters
+    function applyFilters() {
+      const searchTerm = searchInput.value.toLowerCase();
+
+      // Update active filters display
+      updateActiveFilters();
+
+      noteCards.forEach(card => {
+        const title = card.querySelector('h2').textContent.toLowerCase();
+        const content = card.querySelector('.prose').textContent.toLowerCase();
+        const cardTags = Array.from(card.querySelectorAll('.mt-2 span')).map(tag => tag.textContent.substring(1));
+
+        const matchesSearch = searchTerm === '' || title.includes(searchTerm) || content.includes(searchTerm);
+        const matchesTags = selectedTags.length === 0 ||
+          selectedTags.every(tag => cardTags.some(cardTag => cardTag === tag));
+
+        if (matchesSearch && matchesTags) {
+          card.style.display = '';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      checkEmptyState();
+    }
+
+    function updateActiveFilters() {
+      activeFilters.innerHTML = '';
+
+      // Add search filter if exists
+      if (searchInput.value) {
+        const filterPill = document.createElement('span');
+        filterPill.className = 'inline-flex items-center gap-1 px-3 py-1 bg-cyan-500/20 text-cyan-300 rounded-full text-sm';
+        filterPill.innerHTML = `
+          <i class="fas fa-search text-xs"></i>
+          "${searchInput.value}"
+          <button class="ml-1 hover:text-white" data-clear="search">
+            <i class="fas fa-times"></i>
+          </button>
+        `;
+        activeFilters.appendChild(filterPill);
+      }
+
+      // Add tag filters
+      selectedTags.forEach(tag => {
+        const filterPill = document.createElement('span');
+        filterPill.className = 'inline-flex items-center gap-1 px-3 py-1 bg-cyan-500/20 text-cyan-300 rounded-full text-sm';
+        filterPill.innerHTML = `
+          <i class="fas fa-tag text-xs"></i>
+          ${tag}
+          <button class="ml-1 hover:text-white" data-clear-tag="${tag}">
+            <i class="fas fa-times"></i>
+          </button>
+        `;
+        activeFilters.appendChild(filterPill);
+      });
+
+      // Add event listeners to clear buttons
+      activeFilters.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', function () {
+          if (this.dataset.clear === 'search') {
+            searchInput.value = '';
+          }
+          if (this.dataset.clearTag) {
+            const tagToRemove = this.dataset.clearTag;
+            selectedTags = selectedTags.filter(t => t !== tagToRemove);
+            tagCheckboxes.forEach(cb => {
+              if (cb.value === tagToRemove) cb.checked = false;
+            });
+          }
+          applyFilters();
+        });
+      });
+    }
+
+    function checkEmptyState() {
+      const visibleCards = Array.from(noteCards).filter(card => card.style.display !== 'none');
+
+      const noResultsElement = document.getElementById('noResultsMessage');
+
+      if (visibleCards.length === 0 && (searchInput.value || selectedTags.length > 0)) {
+        if (!noResultsElement) {
+          const noResults = document.createElement('div');
+          noResults.id = 'noResultsMessage';
+          noResults.className = 'text-center py-20 space-y-6';
+          noResults.innerHTML = `
+            <div class="inline-flex p-6 bg-cyan-500/10 rounded-2xl">
+              <i class="fas fa-search text-4xl text-cyan-400"></i>
+            </div>
+            <h2 class="text-2xl font-semibold text-white">Nenhum resultado encontrado</h2>
+            <p class="text-cyan-300 max-w-md mx-auto">
+              Tente ajustar seus filtros ou termos de busca para encontrar o que procura.
+            </p>
+          `;
+
+          const gridContainer = document.querySelector('.grid') || noteCards[0].parentNode;
+          gridContainer.parentNode.insertBefore(noResults, gridContainer.nextSibling);
+        }
+      } else if (noResultsElement) {
+        noResultsElement.remove();
+      }
+    }
+
+    // Debounce function to limit how often a function is called
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+  });
 </script>
 
 <style>
