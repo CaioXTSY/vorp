@@ -400,7 +400,7 @@
         }
 
         .logo-image {
-            max-width: 300px;
+            max-width: 600px; /* Increased from 400px to 600px */
             height: auto;
             opacity: 0;
             transform: scale(0.8);
@@ -914,7 +914,7 @@
         /* Device Mockup */
         .device-mockup {
             width: 100%;
-            max-width: 500px;
+            max-width: 900px; /* Increased from 700px to 900px */
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
@@ -940,7 +940,7 @@
         /* Editor Showcase Styles */
         .editor-showcase {
             width: 100%;
-            max-width: 500px;
+            max-width: 900px; /* Increased from 700px to 900px */
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
@@ -1029,6 +1029,7 @@
 
         .chatbot-interface {
             width: 100%;
+            max-width: 900px; /* Increased from 700px to 900px */
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
@@ -1329,6 +1330,13 @@
 
             50% {
                 opacity: 0.8;
+            }
+        }
+
+        /* Adjust max-width for larger screens */
+        @media (min-width: 1400px) {
+            .slide-content {
+                max-width: 1400px; /* Increased from 1200px */
             }
         }
     </style>
