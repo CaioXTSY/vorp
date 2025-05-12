@@ -1,8 +1,6 @@
 .env
 instance/
 notebooks/
-*.jpg
-*.jpeg
 *.gif
 *.bmp
 *.tiff
