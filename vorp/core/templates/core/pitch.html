@@ -1,1475 +1,1975 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vorp - Apresentação</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --primary: #6366f1;
-      --primary-light: #818cf8;
-      --primary-dark: #4f46e5;
-      --secondary: #a855f7;
-      --accent: #ec4899;
-      --dark-bg: #0f172a;
-      --darker-bg: #080a0f;
-      --card-bg: rgba(30, 41, 59, 0.7);
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --border: rgba(148, 163, 184, 0.1);
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Outfit', sans-serif;
-      background-color: var(--darker-bg);
-      color: var(--text);
-      overflow: hidden;
-      height: 100vh;
-      width: 100vw;
-    }
-
-    /* Animated Background */
-    .animated-bg {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      overflow: hidden;
-    }
-
-    .bg-gradient {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, var(--darker-bg), var(--dark-bg));
-    }
-
-    .particles {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    }
-
-    .particle {
-      position: absolute;
-      background: linear-gradient(to right, var(--primary), var(--secondary));
-      border-radius: 50%;
-      opacity: 0.3;
-      animation: float 15s infinite ease-in-out;
-    }
-
-    .particle:nth-child(1) {
-      width: 300px;
-      height: 300px;
-      top: -150px;
-      left: -150px;
-      animation-delay: 0s;
-      filter: blur(70px);
-    }
-
-    .particle:nth-child(2) {
-      width: 400px;
-      height: 400px;
-      top: 70%;
-      right: -200px;
-      animation-delay: -5s;
-      filter: blur(90px);
-    }
-
-    .particle:nth-child(3) {
-      width: 250px;
-      height: 250px;
-      bottom: -100px;
-      left: 30%;
-      animation-delay: -2s;
-      filter: blur(60px);
-    }
-
-    .particle:nth-child(4) {
-      width: 200px;
-      height: 200px;
-      top: 20%;
-      right: 20%;
-      animation-delay: -7s;
-      filter: blur(50px);
-    }
-
-    .grid-pattern {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-image: 
-        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-      background-size: 40px 40px;
-      opacity: 0.5;
-    }
-
-    @keyframes float {
-      0%, 100% {
-        transform: translateY(0) translateX(0);
-      }
-      25% {
-        transform: translateY(-50px) translateX(50px);
-      }
-      50% {
-        transform: translateY(0) translateX(100px);
-      }
-      75% {
-        transform: translateY(50px) translateX(50px);
-      }
-    }
-
-    .slides-container {
-      width: 100%;
-      height: 100vh;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .slides {
-      display: flex;
-      height: 100%;
-      transition: transform 0.7s cubic-bezier(0.65, 0, 0.35, 1);
-    }
-
-    .slide {
-      min-width: 100vw;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 2rem;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .slide-content {
-      max-width: 1400px;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.5s ease, transform 0.5s ease;
-      padding: 2rem 0;
-    }
-
-    .slide.active .slide-content {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .slide-header {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
-    }
-
-    .slide-number {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--primary);
-      opacity: 0.7;
-    }
-
-    .slide-logo {
-      font-size: 1.25rem;
-      font-weight: 800;
-      background: linear-gradient(to right, var(--primary), var(--secondary));
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-
-    .slide-main {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      gap: 4rem;
-    }
-
-    .slide-left {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .slide-right {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-    }
-
-    .slide-title {
-      font-size: 3rem;
-      font-weight: 800;
-      background: linear-gradient(to right, var(--primary), var(--secondary), var(--accent));
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      line-height: 1.2;
-      margin-bottom: 1rem;
-    }
-
-    .slide-subtitle {
-      font-size: 1.25rem;
-      color: var(--text-muted);
-      font-weight: 400;
-      margin-bottom: 2rem;
-    }
-
-    .slide-description {
-      font-size: 1.1rem;
-      line-height: 1.6;
-      color: var(--text-muted);
-      margin-bottom: 2rem;
-    }
-
-    .feature-list {
-      list-style: none;
-    }
-
-    .feature-list li {
-      display: flex;
-      align-items: center;
-      margin-bottom: 1rem;
-      font-size: 1.1rem;
-      color: var(--text-muted);
-    }
-
-    .feature-list li i {
-      color: var(--primary);
-      margin-right: 1rem;
-      font-size: 1.25rem;
-    }
-
-    .highlight {
-      color: var(--primary-light);
-      font-weight: 600;
-    }
-
-    .stat-highlight {
-      font-size: 3rem;
-      font-weight: 800;
-      background: linear-gradient(to right, var(--primary), var(--secondary));
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      margin-bottom: 0.5rem;
-      line-height: 1;
-    }
-
-    /* Image Showcase Styles */
-    .device-mockup {
-      position: relative;
-      width: 100%;
-      max-width: 600px;
-      height: auto;
-      perspective: 1000px;
-      transform-style: preserve-3d;
-    }
-
-    .device-frame {
-      width: 100%;
-      height: auto;
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-      transform: rotateY(-10deg) rotateX(5deg);
-      transition: transform 0.5s ease;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background-color: var(--dark-bg);
-    }
-
-    .device-frame:hover {
-      transform: rotateY(-5deg) rotateX(2deg) scale(1.02);
-    }
-
-    .device-screen {
-      width: 100%;
-      height: auto;
-      display: block;
-      border-radius: 12px;
-    }
-
-    .device-reflection {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent 80%);
-      border-radius: 20px;
-      pointer-events: none;
-    }
-
-    .device-glow {
-      position: absolute;
-      top: -20px;
-      left: -20px;
-      right: -20px;
-      bottom: -20px;
-      background: radial-gradient(circle at 30% 30%, var(--primary-dark), transparent 70%);
-      opacity: 0.3;
-      filter: blur(30px);
-      z-index: -1;
-      animation: pulse 4s infinite alternate;
-    }
-
-    @keyframes pulse {
-      0% {
-        opacity: 0.2;
-      }
-      100% {
-        opacity: 0.4;
-      }
-    }
-
-    .floating-elements {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      pointer-events: none;
-    }
-
-    .floating-element {
-      position: absolute;
-      border-radius: 12px;
-      background-color: var(--card-bg);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 1rem;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-      animation: float-element 6s infinite ease-in-out;
-    }
-
-    .floating-element:nth-child(1) {
-      top: 10%;
-      right: -30px;
-      width: 180px;
-      animation-delay: 0s;
-    }
-
-    .floating-element:nth-child(2) {
-      bottom: 15%;
-      left: -20px;
-      width: 160px;
-      animation-delay: -2s;
-    }
-
-    .floating-element:nth-child(3) {
-      top: 60%;
-      right: -20px;
-      width: 140px;
-      animation-delay: -4s;
-    }
-
-    .floating-element-icon {
-      font-size: 1.5rem;
-      margin-bottom: 0.5rem;
-      background: linear-gradient(to right, var(--primary), var(--secondary));
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-
-    .floating-element-text {
-      font-size: 0.9rem;
-      color: var(--text);
-    }
-
-    @keyframes float-element {
-      0%, 100% {
-        transform: translateY(0);
-      }
-      50% {
-        transform: translateY(-15px);
-      }
-    }
-
-    /* Feature Grid */
-    .feature-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1.5rem;
-      width: 100%;
-    }
-
-    .feature-card {
-      background-color: var(--card-bg);
-      backdrop-filter: blur(10px);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.5rem;
-      text-align: left;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .feature-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3),
-                  0 10px 10px -5px rgba(0, 0, 0, 0.2);
-    }
-
-    .feature-icon {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      background: linear-gradient(to right, var(--primary), var(--secondary));
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-
-    .feature-title {
-      font-size: 1.25rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      color: var(--text);
-    }
-
-    .feature-description {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-    }
-
-    /* Before/After */
-    .before-after {
-      display: flex;
-      width: 100%;
-      gap: 2rem;
-    }
-
-    .before-after-item {
-      flex: 1;
-      background-color: var(--card-bg);
-      backdrop-filter: blur(10px);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.5rem;
-      position: relative;
-    }
-
-    .before-after-label {
-      position: absolute;
-      top: -12px;
-      left: 2rem;
-      background: linear-gradient(to right, var(--primary), var(--secondary));
-      color: white;
-      padding: 0.25rem 1rem;
-      border-radius: 20px;
-      font-size: 0.9rem;
-      font-weight: 600;
-    }
-
-    .before-after-content {
-      font-family: 'Fira Code', monospace;
-      font-size: 0.9rem;
-      line-height: 1.6;
-      white-space: pre-wrap;
-    }
-
-    .before-content {
-      color: var(--text-muted);
-    }
-
-    .after-content {
-      color: var(--primary-light);
-    }
-
-    /* Pricing Cards */
-    .pricing-container {
-      display: flex;
-      gap: 1.5rem;
-      width: 100%;
-    }
-
-    .pricing-card {
-      flex: 1;
-      background-color: var(--card-bg);
-      backdrop-filter: blur(10px);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.5rem;
-      text-align: center;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .pricing-card.featured {
-      background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(168, 85, 247, 0.3));
-      transform: scale(1.05);
-      z-index: 1;
-    }
-
-    .pricing-card:hover:not(.featured) {
-      transform: translateY(-10px);
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3),
-                  0 10px 10px -5px rgba(0, 0, 0, 0.2);
-    }
-
-    .pricing-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-    }
-
-    .pricing-price {
-      font-size: 2.5rem;
-      font-weight: 800;
-      margin-bottom: 1rem;
-      color: var(--text);
-    }
-
-    .pricing-price span {
-      font-size: 0.9rem;
-      font-weight: 400;
-      color: var(--text-muted);
-    }
-
-    .pricing-features {
-      list-style: none;
-      margin-bottom: 1.5rem;
-      text-align: left;
-    }
-
-    .pricing-features li {
-      margin-bottom: 0.5rem;
-      display: flex;
-      align-items: center;
-      color: var(--text-muted);
-      font-size: 0.9rem;
-    }
-
-    .pricing-features li::before {
-      content: "✓";
-      color: var(--primary);
-      margin-right: 0.5rem;
-      font-weight: bold;
-    }
-
-    /* Security Grid */
-    .security-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1.5rem;
-      width: 100%;
-    }
-
-    .security-card {
-      background-color: var(--card-bg);
-      backdrop-filter: blur(10px);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .security-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3),
-                  0 10px 10px -5px rgba(0, 0, 0, 0.2);
-    }
-
-    .security-icon {
-      font-size: 2rem;
-      color: var(--primary);
-    }
-
-    .security-content h3 {
-      margin-bottom: 0.5rem;
-      font-size: 1.1rem;
-    }
-
-    .security-content p {
-      margin-bottom: 0;
-      font-size: 0.9rem;
-      color: var(--text-muted);
-    }
-
-    /* Funnel */
-    .funnel-container {
-      width: 100%;
-      max-width: 600px;
-      height: 250px;
-      position: relative;
-      margin: 0 auto;
-    }
-
-    .funnel {
-      width: 100%;
-      height: 100%;
-      position: relative;
-    }
-
-    .funnel-section {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      background: linear-gradient(to bottom, rgba(99, 102, 241, 0.7), rgba(168, 85, 247, 0.7));
-      border-radius: 8px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: white;
-      font-weight: 600;
-      transition: all 0.5s ease;
-    }
-
-    .funnel-section:nth-child(1) {
-      top: 0;
-      width: 100%;
-      height: 60px;
-    }
-
-    .funnel-section:nth-child(2) {
-      top: 80px;
-      width: 80%;
-      height: 50px;
-    }
-
-    .funnel-section:nth-child(3) {
-      top: 150px;
-      width: 60%;
-      height: 50px;
-    }
-
-    .funnel-section:nth-child(4) {
-      top: 220px;
-      width: 40%;
-      height: 40px;
-    }
-
-    .funnel-arrow {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 0;
-      height: 0;
-      border-left: 15px solid transparent;
-      border-right: 15px solid transparent;
-      border-top: 15px solid rgba(168, 85, 247, 0.7);
-    }
-
-    .funnel-arrow:nth-child(5) {
-      top: 60px;
-    }
-
-    .funnel-arrow:nth-child(6) {
-      top: 130px;
-    }
-
-    .funnel-arrow:nth-child(7) {
-      top: 200px;
-    }
-
-    /* Credits */
-    .credits-container {
-      width: 100%;
-      background-color: var(--card-bg);
-      backdrop-filter: blur(10px);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.5rem;
-      position: relative;
-    }
-
-    .credits-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
-    }
-
-    .credits-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-    }
-
-    .credits-balance {
-      font-size: 2rem;
-      font-weight: 800;
-      color: var(--primary);
-    }
-
-    .credits-progress {
-      width: 100%;
-      height: 8px;
-      background-color: rgba(30, 41, 59, 0.5);
-      border-radius: 4px;
-      margin-bottom: 1rem;
-      overflow: hidden;
-    }
-
-    .credits-progress-bar {
-      height: 100%;
-      background: linear-gradient(to right, var(--primary), var(--secondary));
-      border-radius: 4px;
-      width: 65%;
-    }
-
-    .credits-stats {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 1.5rem;
-    }
-
-    .credits-stat {
-      text-align: center;
-    }
-
-    .credits-stat-value {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 0.25rem;
-    }
-
-    .credits-stat-label {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-
-    /* Navigation */
-    .navigation {
-      position: fixed;
-      bottom: 2rem;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 1rem;
-      z-index: 10;
-    }
-
-    .nav-button {
-      background-color: rgba(30, 41, 59, 0.7);
-      border: 1px solid var(--border);
-      color: var(--text);
-      width: 3rem;
-      height: 3rem;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      transition: background-color 0.3s ease, transform 0.3s ease;
-      backdrop-filter: blur(10px);
-    }
-
-    .nav-button:hover {
-      background-color: rgba(99, 102, 241, 0.2);
-      transform: translateY(-3px);
-    }
-
-    .nav-button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .progress-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      height: 4px;
-      background: linear-gradient(to right, var(--primary), var(--secondary));
-      transition: width 0.7s cubic-bezier(0.65, 0, 0.35, 1);
-      z-index: 10;
-    }
-
-    .slide-indicator {
-      position: fixed;
-      bottom: 1rem;
-      right: 2rem;
-      background-color: rgba(30, 41, 59, 0.7);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-      font-size: 0.9rem;
-      backdrop-filter: blur(10px);
-      z-index: 10;
-    }
-
-    /* Responsive */
-    @media (max-width: 1200px) {
-      .slide-title {
-        font-size: 2.5rem;
-      }
-      
-      .slide-main {
-        gap: 2rem;
-      }
-    }
-
-    @media (max-width: 992px) {
-      .slide-main {
-        flex-direction: column;
-        gap: 2rem;
-      }
-      
-      .slide-left, .slide-right {
-        width: 100%;
-      }
-      
-      .feature-grid, .security-grid {
-        grid-template-columns: 1fr;
-      }
-      
-      .pricing-container, .before-after {
-        flex-direction: column;
-      }
-      
-      .pricing-card.featured {
-        transform: scale(1);
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORP - Apresentação</title>
+    {% load static %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #a855f7;
+            --dark-bg: #0f172a;
+            --darker-bg: #080a0f;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(148, 163, 184, 0.1);
+            --problem: #ef4444;
+            --solution: #22c55e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--darker-bg);
+            color: var(--text);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Animated Background */
+        .bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, var(--darker-bg), var(--dark-bg));
+            overflow: hidden;
+        }
+
+        .grid-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.5;
+        }
+
+        .parallax-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .parallax-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+            filter: blur(50px);
+            opacity: 0.3;
+            transition: transform 0.5s ease-out;
+        }
+
+        .parallax-circle:nth-child(1) {
+            width: 500px;
+            height: 500px;
+            top: -100px;
+            left: -100px;
+        }
+
+        .parallax-circle:nth-child(2) {
+            width: 400px;
+            height: 400px;
+            bottom: -100px;
+            right: -100px;
+        }
+
+        .parallax-circle:nth-child(3) {
+            width: 300px;
+            height: 300px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .slides-container {
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .slides {
+            display: flex;
+            height: 100%;
+            transition: transform 0.7s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+
+        .slide {
+            min-width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .slide-content {
+            max-width: 1200px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            padding: 2rem 0;
+        }
+
+        .slide.active .slide-content {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Slide Element Animations */
+        .slide-header,
+        .slide-title,
+        .slide-subtitle,
+        .slide-description,
+        .feature-list,
+        .feature-grid,
+        .pricing-container,
+        .business-model,
+        .device-mockup,
+        .ai-diagram,
+        .funnel,
+        .chatbot-container {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .slide.active .slide-header {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.1s;
+        }
+
+        .slide.active .slide-title {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.2s;
+        }
+
+        .slide.active .slide-subtitle {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.3s;
+        }
+
+        .slide.active .slide-description {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.4s;
+        }
+
+        .slide.active .feature-list,
+        .slide.active .feature-grid,
+        .slide.active .pricing-container,
+        .slide.active .business-model {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.5s;
+        }
+
+        .slide.active .device-mockup,
+        .slide.active .ai-diagram,
+        .slide.active .funnel,
+        .slide.active .chatbot-container {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.6s;
+        }
+
+        .feature-card,
+        .pricing-card,
+        .model-card {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .slide.active .feature-card:nth-child(1),
+        .slide.active .pricing-card:nth-child(1),
+        .slide.active .model-card:nth-child(1) {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.5s;
+        }
+
+        .slide.active .feature-card:nth-child(2),
+        .slide.active .pricing-card:nth-child(2),
+        .slide.active .model-card:nth-child(2) {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.6s;
+        }
+
+        .slide.active .feature-card:nth-child(3),
+        .slide.active .pricing-card:nth-child(3) {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.7s;
+        }
+
+        .slide.active .feature-card:nth-child(4),
+        .slide.active .pricing-card:nth-child(4) {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.8s;
+        }
+
+        .slide-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .slide-number {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--primary);
+            opacity: 0.7;
+        }
+
+        .slide-logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .slide-main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 4rem;
+        }
+
+        .slide-left {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slide-right {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .slide-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        .slide-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            margin-bottom: 2rem;
+        }
+
+        .slide-description {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+        }
+
+        .feature-list li::before {
+            content: "•";
+            color: var(--primary);
+            margin-right: 1rem;
+            font-size: 1.25rem;
+        }
+
+        .problem-list li {
+            color: var(--text-muted);
+        }
+
+        .problem-list li::before {
+            content: "✕";
+            color: var(--problem);
+            margin-right: 1rem;
+            font-size: 1rem;
+        }
+
+        .solution-list li {
+            color: var(--text-muted);
+        }
+
+        .solution-list li::before {
+            content: "✓";
+            color: var(--solution);
+            margin-right: 1rem;
+            font-size: 1rem;
+        }
+
+        .highlight {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .problem-highlight {
+            color: var(--problem);
+            font-weight: 600;
+        }
+
+        .solution-highlight {
+            color: var(--solution);
+            font-weight: 600;
+        }
+
+        /* Logo Slide */
+        .logo-slide {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        .logo-container {
+            text-align: center;
+        }
+
+        .logo-text {
+            font-size: 5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 2rem;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 1s ease, transform 1s ease;
+        }
+
+        .slide.active .logo-text {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .logo-image {
+            max-width: 300px;
+            height: auto;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 1s ease, transform 1s ease;
+            transition-delay: 0.3s;
+        }
+
+        .slide.active .logo-image {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Feature Grid */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            width: 100%;
+        }
+
+        .feature-card {
+            background-color: rgba(30, 41, 59, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: left;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        .feature-description {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Pricing Cards */
+        .pricing-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .pricing-card {
+            background-color: rgba(30, 41, 59, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pricing-card.featured {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+            transform: scale(1.05);
+            z-index: 1;
+        }
+
+        .pricing-card:hover:not(.featured) {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .pricing-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .pricing-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .pricing-price {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .pricing-price span {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: var(--text-muted);
+        }
+
+        .pricing-subtitle {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 1.5rem;
+            text-align: left;
+            flex-grow: 1;
+        }
+
+        .pricing-features li {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .pricing-features li::before {
+            content: "✓";
+            color: var(--primary);
+            margin-right: 0.5rem;
+            font-weight: bold;
+        }
+
+        .pricing-button {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+
+        .pricing-button:hover {
+            opacity: 0.9;
+        }
+
+        /* AI Diagram */
+        .ai-diagram {
+            width: 100%;
+            max-width: 500px;
+            height: 400px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .note-container {
+            position: absolute;
+            top: 20px;
+            left: 50px;
+            width: 200px;
+            height: 250px;
+            background-color: rgba(30, 41, 59, 0.7);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            transform: rotate(-5deg);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            transition-delay: 0.7s;
+        }
+
+        .slide.active .note-container {
+            opacity: 1;
+            transform: rotate(-5deg) translateY(0);
+        }
+
+        .note-content {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .ai-process {
+            position: absolute;
+            top: 100px;
+            left: 180px;
+            width: 300px;
+            height: 200px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 50px rgba(99, 102, 241, 0.3);
+            z-index: 0;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            transition-delay: 0.9s;
+        }
+
+        .slide.active .ai-process {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .ai-brain {
+            width: 80px;
+            height: 80px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .ai-brain::before,
+        .ai-brain::after {
+            content: "";
+            position: absolute;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            opacity: 0.7;
+        }
+
+        .ai-brain::before {
+            width: 40px;
+            height: 2px;
+            animation: pulse 2s infinite;
+        }
+
+        .ai-brain::after {
+            width: 2px;
+            height: 40px;
+            animation: pulse 2s infinite 0.5s;
+        }
+
+        .ai-label {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .ai-connections {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            transition-delay: 1.1s;
+        }
+
+        .slide.active .ai-connections {
+            opacity: 1;
+        }
+
+        .ai-connection {
+            position: absolute;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            height: 2px;
+            opacity: 0.5;
+            animation: connection 3s infinite;
+        }
+
+        .ai-connection:nth-child(1) {
+            width: 100px;
+            top: 100px;
+            left: 130px;
+            transform: rotate(30deg);
+            animation-delay: 0s;
+        }
+
+        .ai-connection:nth-child(2) {
+            width: 80px;
+            top: 150px;
+            left: 150px;
+            transform: rotate(0deg);
+            animation-delay: 0.5s;
+        }
+
+        .ai-connection:nth-child(3) {
+            width: 120px;
+            top: 200px;
+            left: 130px;
+            transform: rotate(-30deg);
+            animation-delay: 1s;
+        }
+
+        .ai-connection:nth-child(4) {
+            width: 100px;
+            top: 100px;
+            right: 130px;
+            transform: rotate(-30deg);
+            animation-delay: 1.5s;
+        }
+
+        .ai-connection:nth-child(5) {
+            width: 80px;
+            top: 150px;
+            right: 150px;
+            transform: rotate(0deg);
+            animation-delay: 2s;
+        }
+
+        .ai-connection:nth-child(6) {
+            width: 120px;
+            top: 200px;
+            right: 130px;
+            transform: rotate(30deg);
+            animation-delay: 2.5s;
+        }
+
+        @keyframes connection {
+
+            0%,
+            100% {
+                opacity: 0.2;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        .structured-note {
+            position: absolute;
+            top: 70px;
+            right: 50px;
+            width: 220px;
+            height: 280px;
+            background-color: rgba(30, 41, 59, 0.7);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            transform: rotate(5deg);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            transition-delay: 1.3s;
+        }
+
+        .slide.active .structured-note {
+            opacity: 1;
+            transform: rotate(5deg) translateY(0);
+        }
+
+        .structured-content {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: var(--text);
+            line-height: 1.4;
+        }
+
+        .structured-content h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .structured-content ul {
+            padding-left: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .structured-content li {
+            margin-bottom: 0.25rem;
+        }
+
+        /* Business Model */
+        .business-model {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            gap: 1.5rem;
+        }
+
+        .model-row {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .model-card {
+            flex: 1;
+            background-color: rgba(30, 41, 59, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .model-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .model-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        .model-description {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .funnel {
+            width: 100%;
+            max-width: 500px;
+            height: 300px;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .funnel-section {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(to bottom, rgba(99, 102, 241, 0.7), rgba(168, 85, 247, 0.7));
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: 600;
+            transition: all 0.5s ease;
+            opacity: 0;
+        }
+
+        .slide.active .funnel-section {
+            opacity: 1;
+        }
+
+        .funnel-section:nth-child(1) {
+            top: 0;
+            width: 100%;
+            height: 60px;
+            transition-delay: 0.7s;
+        }
+
+        .funnel-section:nth-child(2) {
+            top: 80px;
+            width: 80%;
+            height: 50px;
+            transition-delay: 0.9s;
+        }
+
+        .funnel-section:nth-child(3) {
+            top: 150px;
+            width: 60%;
+            height: 50px;
+            transition-delay: 1.1s;
+        }
+
+        .funnel-section:nth-child(4) {
+            top: 220px;
+            width: 40%;
+            height: 40px;
+            transition-delay: 1.3s;
+        }
+
+        .funnel-arrow {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 15px solid rgba(168, 85, 247, 0.7);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .slide.active .funnel-arrow {
+            opacity: 1;
+        }
+
+        .funnel-arrow:nth-child(5) {
+            top: 60px;
+            transition-delay: 0.8s;
+        }
+
+        .funnel-arrow:nth-child(6) {
+            top: 130px;
+            transition-delay: 1s;
+        }
+
+        .funnel-arrow:nth-child(7) {
+            top: 200px;
+            transition-delay: 1.2s;
+        }
+
+        /* Device Mockup */
+        .device-mockup {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: var(--dark-bg);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+            transition-delay: 0.7s;
+        }
+
+        .slide.active .device-mockup {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .device-screen {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Editor Showcase Styles */
+        .editor-showcase {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: var(--dark-bg);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+            transition-delay: 0.7s;
+        }
+
+        .slide.active .editor-showcase {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .editor-tabs {
+            display: flex;
+            background-color: rgba(30, 41, 59, 0.9);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .editor-tab {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 0.75rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .editor-tab.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .editor-views {
+            position: relative;
+            overflow: hidden;
+            height: auto;
+        }
+
+        .editor-view {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(30px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out, visibility 0.5s linear;
+            pointer-events: none;
+        }
+
+        .editor-views::after {
+            display: none;
+        }
+
+        .editor-view.active {
+            position: relative;
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+            z-index: 2;
+            pointer-events: auto;
+        }
+
+        .editor-image {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Chatbot Container */
+        .chatbot-container {
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .chatbot-interface {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: var(--dark-bg);
+        }
+
+        .chatbot-header {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            padding: 1rem;
+            color: white;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chatbot-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .chatbot-messages {
+            padding: 1rem;
+            height: 300px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            position: relative;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .slide.active .message {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background-color: rgba(99, 102, 241, 0.2);
+            color: var(--text);
+            transition-delay: 0.8s;
+        }
+
+        .message.bot {
+            align-self: flex-start;
+            background-color: rgba(30, 41, 59, 0.5);
+            color: var(--text-muted);
+        }
+
+        .message.bot:nth-of-type(1) {
+            transition-delay: 1s;
+        }
+
+        .message.bot:nth-of-type(2) {
+            transition-delay: 1.2s;
+        }
+
+        .message.bot:nth-of-type(3) {
+            transition-delay: 1.4s;
+        }
+
+        .chatbot-input {
+            display: flex;
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+            background-color: rgba(30, 41, 59, 0.3);
+        }
+
+        .chatbot-input input {
+            flex: 1;
+            background-color: rgba(30, 41, 59, 0.7);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+
+        .chatbot-input button {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            margin-left: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .chatbot-connections {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: -50px;
+            left: 0;
+            z-index: -1;
+        }
+
+        .connection-line {
+            position: absolute;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            height: 2px;
+            opacity: 0.3;
+            transform-origin: left center;
+        }
+
+        .connection-line:nth-child(1) {
+            width: 150px;
+            top: 80px;
+            left: -100px;
+            transform: rotate(30deg);
+        }
+
+        .connection-line:nth-child(2) {
+            width: 120px;
+            top: 150px;
+            left: -80px;
+            transform: rotate(0deg);
+        }
+
+        .connection-line:nth-child(3) {
+            width: 150px;
+            top: 220px;
+            left: -100px;
+            transform: rotate(-30deg);
+        }
+
+        .connection-dot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+        }
+
+        .connection-dot:nth-child(4) {
+            top: 80px;
+            left: -100px;
+        }
+
+        .connection-dot:nth-child(5) {
+            top: 150px;
+            left: -80px;
+        }
+
+        .connection-dot:nth-child(6) {
+            top: 220px;
+            left: -100px;
+        }
+
+        .knowledge-base {
+            position: absolute;
+            left: -180px;
+            top: 120px;
+            width: 120px;
+            height: 160px;
+            background-color: rgba(30, 41, 59, 0.7);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .knowledge-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .knowledge-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* Navigation */
+        .navigation {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 10;
+        }
+
+        .nav-button {
+            background-color: rgba(30, 41, 59, 0.7);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            font-size: 1.25rem;
+        }
+
+        .nav-button:hover {
+            background-color: rgba(99, 102, 241, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            transition: width 0.7s cubic-bezier(0.65, 0, 0.35, 1);
+            z-index: 10;
+        }
+
+        .slide-indicator {
+            position: fixed;
+            bottom: 1rem;
+            right: 2rem;
+            background-color: rgba(30, 41, 59, 0.7);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            z-index: 10;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .slide-main {
+                flex-direction: column;
+                gap: 2rem;
+            }
+
+            .slide-left,
+            .slide-right {
+                width: 100%;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pricing-container {
+                grid-template-columns: 1fr;
+            }
+
+            .pricing-card.featured {
+                transform: scale(1);
+            }
+
+            .model-row {
+                flex-direction: column;
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 0.3;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
+        }
+    </style>
 </head>
+
 <body>
-  <!-- Animated Background -->
-  <div class="animated-bg">
-    <div class="bg-gradient"></div>
-    <div class="particles">
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
+    <!-- Animated Background -->
+    <div class="bg">
+        <div class="grid-pattern"></div>
+        <div class="parallax-bg">
+            <div class="parallax-circle"></div>
+            <div class="parallax-circle"></div>
+            <div class="parallax-circle"></div>
+        </div>
     </div>
-    <div class="grid-pattern"></div>
-  </div>
 
-  <div class="slides-container">
-    <div class="slides">
-      <!-- Slide 1: Abertura impactante -->
-      <div class="slide" id="slide-1">
-        <div class="slide-content">
-          <div class="slide-header">
-            <div class="slide-number">01</div>
-            <div class="slide-logo">Vorp</div>
-          </div>
-          <div class="slide-main">
-            <div class="slide-left">
-              <h1 class="slide-title">Potencializando suas notas com IA</h1>
-              <p class="slide-subtitle">Transforme informações em conhecimento acionável</p>
-              <p class="slide-description">A plataforma que revoluciona a forma como você organiza e extrai valor das suas anotações, usando inteligência artificial para potencializar sua produtividade.</p>
-              <div class="feature-list">
-                <li><i class="fas fa-check-circle"></i> Editor inteligente com IA integrada</li>
-                <li><i class="fas fa-check-circle"></i> Organização automática de conteúdo</li>
-                <li><i class="fas fa-check-circle"></i> Transformação de notas brutas em conhecimento estruturado</li>
-              </div>
-            </div>
-            <div class="slide-right">
-              <div class="device-mockup">
-                <div class="device-glow"></div>
-                <div class="device-frame">
-                  <img src="slide1_editor_ia.jpg" alt="Editor Vorp com menu de IA" class="device-screen">
-                </div>
-                <div class="device-reflection"></div>
-                <div class="floating-elements">
-                  <div class="floating-element">
-                    <div class="floating-element-icon"><i class="fas fa-magic"></i></div>
-                    <div class="floating-element-text">Transformação automática</div>
-                  </div>
-                  <div class="floating-element">
-                    <div class="floating-element-icon"><i class="fas fa-lightbulb"></i></div>
-                    <div class="floating-element-text">Sugestões inteligentes</div>
-                  </div>
-                  <div class="floating-element">
-                    <div class="floating-element-icon"><i class="fas fa-link"></i></div>
-                    <div class="floating-element-text">Conexões contextuais</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Slide 2: Problema & Oportunidade -->
-      <div class="slide" id="slide-2">
-        <div class="slide-content">
-          <div class="slide-header">
-            <div class="slide-number">02</div>
-            <div class="slide-logo">Vorp</div>
-          </div>
-          <div class="slide-main">
-            <div class="slide-left">
-              <h1 class="slide-title">Problema & Oportunidade</h1>
-              <p class="slide-subtitle">A fragmentação de informações é um desafio constante</p>
-              <div class="stat-highlight">58%</div>
-              <p class="slide-description">dos profissionais gastam mais de 5 horas por semana apenas buscando informações em suas próprias anotações.</p>
-              <div class="feature-list">
-                <li><i class="fas fa-times-circle" style="color: #ef4444;"></i> Notas espalhadas em múltiplos aplicativos</li>
-                <li><i class="fas fa-times-circle" style="color: #ef4444;"></i> Formatos inconsistentes e desorganizados</li>
-                <li><i class="fas fa-times-circle" style="color: #ef4444;"></i> Dificuldade para encontrar informações</li>
-                <li><i class="fas fa-check-circle"></i> <span class="highlight">Oportunidade:</span> Centralizar e potencializar com IA</li>
-              </div>
-            </div>
-            <div class="slide-right">
-              <div class="device-mockup">
-                <div class="device-glow"></div>
-                <div class="device-frame">
-                  <img src="slide2_problema.jpg" alt="Múltiplas janelas com notas desorganizadas" class="device-screen">
-                </div>
-                <div class="device-reflection"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Slide 3: Solução Vorp -->
-      <div class="slide" id="slide-3">
-        <div class="slide-content">
-          <div class="slide-header">
-            <div class="slide-number">03</div>
-            <div class="slide-logo">Vorp</div>
-          </div>
-          <div class="slide-main">
-            <div class="slide-left">
-              <h1 class="slide-title">Solução <span class="highlight">Vorp</span></h1>
-              <p class="slide-subtitle">Plataforma SaaS B2C com modelo freemium</p>
-              <p class="slide-description">Um único hub para todas as suas anotações, com organização automática e categorização inteligente.</p>
-              <div class="feature-list">
-                <li><i class="fas fa-brain"></i> IA que entende o contexto das suas notas</li>
-                <li><i class="fas fa-sitemap"></i> Estrutura flexível e personalizável</li>
-                <li><i class="fas fa-search"></i> Busca semântica avançada</li>
-                <li><i class="fas fa-link"></i> Conexões automáticas entre conceitos relacionados</li>
-              </div>
-            </div>
-            <div class="slide-right">
-              <div class="device-mockup">
-                <div class="device-glow"></div>
-                <div class="device-frame">
-                  <img src="slide3_dashboard.jpg" alt="Dashboard principal do Vorp" class="device-screen">
-                </div>
-                <div class="device-reflection"></div>
-                <div class="floating-elements">
-                  <div class="floating-element">
-                    <div class="floating-element-icon"><i class="fas fa-folder"></i></div>
-                    <div class="floating-element-text">Organização inteligente</div>
-                  </div>
-                  <div class="floating-element">
-                    <div class="floating-element-icon"><i class="fas fa-tag"></i></div>
-                    <div class="floating-element-text">Tags automáticas</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Slide 4: Core Features -->
-      <div class="slide" id="slide-4">
-        <div class="slide-content">
-          <div class="slide-header">
-            <div class="slide-number">04</div>
-            <div class="slide-logo">Vorp</div>
-          </div>
-          <div class="slide-main">
-            <div class="slide-left">
-              <h1 class="slide-title">Recursos Principais</h1>
-              <p class="slide-subtitle">Ferramentas poderosas para transformar suas anotações</p>
-              <div class="feature-grid">
-                <div class="feature-card">
-                  <div class="feature-icon"><i class="fas fa-edit"></i></div>
-                  <h3 class="feature-title">Editor Markdown</h3>
-                  <p class="feature-description">
-                    Editor completo com preview em tempo real e formatação avançada.
-                  </p>
-                </div>
-                <div class="feature-card">
-                  <div class="feature-icon"><i class="fas fa-robot"></i></div>
-                  <h3 class="feature-title">Assistente IA</h3>
-                  <p class="feature-description">
-                    Transforme textos brutos em conteúdo estruturado e otimizado.
-                  </p>
-                </div>
-                <div class="feature-card">
-                  <div class="feature-icon"><i class="fas fa-comments"></i></div>
-                  <h3 class="feature-title">Chatbot Integrado</h3>
-                  <p class="feature-description">
-                    Faça perguntas sobre suas notas e obtenha respostas contextuais.
-                  </p>
-                </div>
-                <div class="feature-card">
-                  <div class="feature-icon"><i class="fas fa-file-pdf"></i></div>
-                  <h3 class="feature-title">Upload de PDF</h3>
-                  <p class="feature-description">
-                    Conversão automática de PDFs para notas editáveis e pesquisáveis.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div class="slide-right">
-              <div class="device-mockup">
-                <div class="device-glow"></div>
-                <div class="device-frame">
-                  <img src="slide4_features.jpg" alt="Interface mostrando os recursos principais" class="device-screen">
-                </div>
-                <div class="device-reflection"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Slide 5: Demo Visual -->
-      <div class="slide" id="slide-5">
-        <div class="slide-content">
-          <div class="slide-header">
-            <div class="slide-number">05</div>
-            <div class="slide-logo">Vorp</div>
-          </div>
-          <div class="slide-main">
-            <div class="slide-left">
-              <h1 class="slide-title">Demonstração Visual</h1>
-              <p class="slide-subtitle">Veja o poder da transformação com IA</p>
-              <div class="before-after">
-                <div class="before-after-item">
-                  <div class="before-after-label">Antes</div>
-                  <div class="before-after-content before-content">
-reuniao com equipe marketing
-discutimos campanha q4
-pontos principais:
-- orcamento 50k
-- foco em redes sociais
-- prazo lancamento 15/nov
-- responsaveis: ana (criacao), carlos (midia)
-preciso fazer follow up semana q vem
-                  </div>
-                </div>
-                <div class="before-after-item">
-                  <div class="before-after-label">Depois</div>
-                  <div class="before-after-content after-content">
-# Reunião com Equipe de Marketing: Campanha Q4
-
-## Pontos Principais
-- **Orçamento**: R$ 50.000
-- **Foco**: Redes Sociais
-- **Prazo de Lançamento**: 15 de Novembro
-- **Responsáveis**:
-  - Ana (Criação)
-  - Carlos (Mídia)
-
-## Próximos Passos
-- [ ] Fazer follow-up na próxima semana
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="slide-right">
-              <div class="device-mockup">
-                <div class="device-glow"></div>
-                <div class="device-frame">
-                  <img src="slide5_zen_mode.jpg" alt="Modo Zen do Vorp" class="device-screen">
-                </div>
-                <div class="device-reflection"></div>
-                <div class="floating-elements">
-                  <div class="floating-element">
-                    <div class="floating-element-icon"><i class="fas fa-moon"></i></div>
-                    <div class="floating-element-text">Modo Zen</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Slide 6: Modelo de Negócio -->
-      <div class="slide" id="slide-6">
-        <div class="slide-content">
-          <div class="slide-header">
-            <div class="slide-number">06</div>
-            <div class="slide-logo">Vorp</div>
-          </div>
-          <div class="slide-main">
-            <div class="slide-left">
-              <h1 class="slide-title">Modelo de Negócio</h1>
-              <p class="slide-subtitle">Estratégia freemium para maximizar alcance e conversão</p>
-              <p class="slide-description">Nossa abordagem foca em oferecer valor imediato com o plano gratuito, enquanto incentivamos a conversão através de recursos premium.</p>
-              <div class="feature-list">
-                <li><i class="fas fa-users"></i> Ampla base de usuários gratuitos</li>
-                <li><i class="fas fa-chart-line"></i> Conversão progressiva para planos pagos</li>
-                <li><i class="fas fa-heart"></i> Fidelização através de valor contínuo</li>
-              </div>
-            </div>
-            <div class="slide-right">
-              <div class="funnel-container">
-                <div class="funnel">
-                  <div class="funnel-section">Usuários Gratuitos</div>
-                  <div class="funnel-section">Uso de Recursos Premium</div>
-                  <div class="funnel-section">Conversão para Pagante</div>
-                  <div class="funnel-section">Retenção e Upgrade</div>
-                  <div class="funnel-arrow"></div>
-                  <div class="funnel-arrow"></div>
-                  <div class="funnel-arrow"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Slide 7: Sistema de Créditos -->
-      <div class="slide" id="slide-7">
-        <div class="slide-content">
-          <div class="slide-header">
-            <div class="slide-number">07</div>
-            <div class="slide-logo">Vorp</div>
-          </div>
-          <div class="slide-main">
-            <div class="slide-left">
-              <h1 class="slide-title">Sistema de Créditos</h1>
-              <p class="slide-subtitle">Modelo de monetização flexível e transparente</p>
-              <p class="slide-description">Os créditos são a moeda interna do Vorp, utilizados para acessar recursos premium como transformações avançadas de IA, análises profundas e exportações especiais.</p>
-              <div class="feature-list">
-                <li><i class="fas fa-sync"></i> Renovação mensal automática</li>
-                <li><i class="fas fa-gift"></i> Bônus por indicações</li>
-                <li><i class="fas fa-coins"></i> Compra de créditos adicionais</li>
-              </div>
-            </div>
-            <div class="slide-right">
-              <div class="device-mockup">
-                <div class="device-glow"></div>
-                <div class="device-frame">
-                  <div class="credits-container">
-                    <div class="credits-header">
-                      <div class="credits-title">Seus Créditos</div>
-                      <div class="credits-balance">650</div>
+    <div class="slides-container">
+        <div class="slides">
+            <!-- Slide 0: Logo Slide -->
+            <div class="slide" id="slide-0">
+                <div class="slide-content logo-slide">
+                    <div class="logo-container">
+                        <h1 class="logo-text">VORP</h1>
+                        <img src="{% static 'images/logo.png' %}" alt="VORP Logo" class="logo-image">
                     </div>
-                    <div class="credits-progress">
-                      <div class="credits-progress-bar"></div>
-                    </div>
-                    <div class="credits-stats">
-                      <div class="credits-stat">
-                        <div class="credits-stat-value">450</div>
-                        <div class="credits-stat-label">Utilizados</div>
-                      </div>
-                      <div class="credits-stat">
-                        <div class="credits-stat-value">650</div>
-                        <div class="credits-stat-label">Disponíveis</div>
-                      </div>
-                      <div class="credits-stat">
-                        <div class="credits-stat-value">1100</div>
-                        <div class="credits-stat-label">Total</div>
-                      </div>
-                    </div>
-                  </div>
                 </div>
-                <div class="device-reflection"></div>
-                <div class="floating-elements">
-                  <div class="floating-element">
-                    <div class="floating-element-icon"><i class="fas fa-plus-circle"></i></div>
-                    <div class="floating-element-text">Adicionar créditos</div>
-                  </div>
-                </div>
-              </div>
             </div>
-          </div>
-        </div>
-      </div>
+            
+            <!-- Slide 1: Problema & Solução -->
+            <div class="slide" id="slide-1">
+                <div class="slide-content">
+                    <div class="slide-header">
+                        <div class="slide-number">01</div>
+                        <div class="slide-logo">VORP</div>
+                        </div>
+                        <div class="slide-main">
+                            <div class="slide-left">
+                            <h1 class="slide-title">Problema & Solução</h1>
+                            <p class="slide-subtitle">Transformando desafios em oportunidades</p>
+                            
+                            <h3 style="color: var(--problem); margin-bottom: 1rem; font-size: 1.5rem;">Problema</h3>
+                            <ul class="feature-list problem-list" style="margin-bottom: 2rem;">
+                                <li>Anotações espalhadas em múltiplos aplicativos</li>
+                                <li>Formatos inconsistentes e desorganizados</li>
+                                <li>Dificuldade para encontrar informações</li>
+                                <li>Tempo perdido organizando conteúdo</li>
+                            </ul>
+                            
+                            <h3 style="color: var(--solution); margin-bottom: 1rem; font-size: 1.5rem;">Solução</h3>
+                            <ul class="feature-list solution-list">
+                                <li>Centralização de todas as anotações</li>
+                                <li>Estruturação automática com IA</li>
+                                <li>Busca inteligente</li>
+                                <li>Economia de tempo e aumento de produtividade</li>
+                            </ul>
+                            </div>
+                            <div class="slide-right">
+                                <div class="device-mockup">
+                                <img src="{% static 'images/problema_solucao.jpg' %}" alt="Comparação entre problema e solução" class="device-screen">
+                                </div>
+                                </div>
+                                </div>
+                                </div>
+                                </div>
 
-      <!-- Slide 8: Planos e Preços -->
-      <div class="slide" id="slide-8">
-        <div class="slide-content">
-          <div class="slide-header">
-            <div class="slide-number">08</div>
-            <div class="slide-logo">Vorp</div>
-          </div>
-          <div class="slide-main">
-            <div class="slide-left">
-              <h1 class="slide-title">Planos e Preços</h1>
-              <p class="slide-subtitle">Opções flexíveis para diferentes necessidades</p>
-              <div class="pricing-container">
-                <div class="pricing-card">
-                  <h3 class="pricing-title">Gratuito</h3>
-                  <div class="pricing-price">R$ 0 <span>/mês</span></div>
-                  <ul class="pricing-features">
-                    <li>50 créditos mensais</li>
-                    <li>Editor Markdown básico</li>
-                    <li>Armazenamento de 100MB</li>
-                  </ul>
-                </div>
-                <div class="pricing-card featured">
-                  <h3 class="pricing-title">Profissional</h3>
-                  <div class="pricing-price">R$ 39 <span>/mês</span></div>
-                  <ul class="pricing-features">
-                    <li>500 créditos mensais</li>
-                    <li>Todos os recursos</li>
-                    <li>Armazenamento de 10GB</li>
-                    <li>Assistente IA avançado</li>
-                  </ul>
-                </div>
-                <div class="pricing-card">
-                  <h3 class="pricing-title">Empresarial</h3>
-                  <div class="pricing-price">R$ 99 <span>/mês</span></div>
-                  <ul class="pricing-features">
-                    <li>1500 créditos mensais</li>
-                    <li>API de integração</li>
-                    <li>Suporte prioritário</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <div class="slide-right">
-              <div class="device-mockup">
-                <div class="device-glow"></div>
-                <div class="device-frame">
-                  <img src="slide8_pricing.jpg" alt="Visualização dos planos e preços" class="device-screen">
-                </div>
-                <div class="device-reflection"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+            <!-- Slide 2: Introdução -->
+            <div class="slide" id="slide-2">
+                <div class="slide-content">
+                    <div class="slide-header">
+                        <div class="slide-number">02</div>
+                        <div class="slide-logo">VORP</div>
+                        </div>
+                        <div class="slide-main">
+                            <div class="slide-left">
+                            <h1 class="slide-title">Potencializando suas anotações com IA</h1>
+                            <p class="slide-subtitle">Transforme informações em conhecimento acionável</p>
+                            <p class="slide-description">A plataforma que revoluciona a forma como você organiza e
+                                extrai valor das suas anotações, usando inteligência artificial para potencializar sua
+                                produtividade.</p>
+                            <div class="feature-list">
+                                <li>Editor inteligente com IA integrada</li>
+                                <li>Dois modos de edição: Normal e Zen</li>
+                                <li>Organização automática de conteúdo</li>
+                                <li>Transformação de anotações brutas em conhecimento estruturado</li>
+                                </div>
+                                </div>
+                                <div class="slide-right">
+                            <div class="editor-showcase">
+                                <div class="editor-tabs">
+                                    <button class="editor-tab active" data-editor="normal">Editor Normal</button>
+                                    <button class="editor-tab" data-editor="zen">Modo Zen</button>
+                                </div>
+                                <div class="editor-views">
+                                    <div class="editor-view active" id="normal-editor">
+                                        <img src="{% static 'images/editor_normal.jpg' %}" alt="Editor VORP com menu completo" class="editor-image">
+                                    </div>
+                                    <div class="editor-view" id="zen-editor">
+                                        <img src="{% static 'images/editor_zen.jpg' %}" alt="Editor VORP em modo zen sem distrações" class="editor-image">
+                                    </div>
+                                    </div>
+                                    </div>
+                                    </div>
+                                    </div>
+                                    </div>
+                                    </div>
 
-      <!-- Slide 9: Segurança e Conformidade -->
-      <div class="slide" id="slide-9">
-        <div class="slide-content">
-          <div class="slide-header">
-            <div class="slide-number">09</div>
-            <div class="slide-logo">Vorp</div>
-          </div>
-          <div class="slide-main">
-            <div class="slide-left">
-              <h1 class="slide-title">Segurança e Conformidade</h1>
-              <p class="slide-subtitle">Seus dados protegidos com os mais altos padrões</p>
-              <div class="security-grid">
-                <div class="security-card">
-                  <div class="security-icon"><i class="fas fa-lock"></i></div>
-                  <div class="security-content">
-                    <h3>Criptografia End-to-End</h3>
-                    <p>Todas as suas notas são criptografadas em trânsito e em repouso.</p>
-                  </div>
-                </div>
-                <div class="security-card">
-                  <div class="security-icon"><i class="fas fa-shield-alt"></i></div>
-                  <div class="security-content">
-                    <h3>Conformidade LGPD</h3>
-                    <p>Plataforma totalmente aderente à Lei Geral de Proteção de Dados.</p>
-                  </div>
-                </div>
-                <div class="security-card">
-                  <div class="security-icon"><i class="fas fa-key"></i></div>
-                  <div class="security-content">
-                    <h3>Autenticação 2FA</h3>
-                    <p>Camada adicional de segurança com autenticação de dois fatores.</p>
-                  </div>
-                </div>
-                <div class="security-card">
-                  <div class="security-icon"><i class="fas fa-database"></i></div>
-                  <div class="security-content">
-                    <h3>Backups Automáticos</h3>
-                    <p>Seus dados são automaticamente salvos e versionados.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="slide-right">
-              <div class="device-mockup">
-                <div class="device-glow"></div>
-                <div class="device-frame">
-                  <img src="slide9_security.jpg" alt="Visualização dos recursos de segurança" class="device-screen">
-                </div>
-                <div class="device-reflection"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+            <!-- Slide 3: Recursos Principais -->
+            <div class="slide" id="slide-3">
+                <div class="slide-content">
+                    <div class="slide-header">
+                        <div class="slide-number">03</div>
+                        <div class="slide-logo">VORP</div>
+                        </div>
+                        <div class="slide-main">
+                            <div class="slide-left">
+                                <h1 class="slide-title">Recursos Principais</h1>
+                                <p class="slide-subtitle">Ferramentas poderosas para transformar suas anotações</p>
+                                <div class="feature-grid">
+                                    <div class="feature-card">
+                                    <h3 class="feature-title">Editor Markdown</h3>
+                                    <p class="feature-description">
+                                        Editor completo com preview em tempo real e formatação avançada.
+                                    </p>
+                                    </div>
+                                    <div class="feature-card">
+                                    <h3 class="feature-title">Assistente IA</h3>
+                                    <p class="feature-description">
+                                        Transforme textos brutos em conteúdo estruturado e otimizado.
+                                    </p>
+                                    </div>
+                                    <div class="feature-card">
+                                    <h3 class="feature-title">Chatbot Integrado</h3>
+                                    <p class="feature-description">
+                                        Faça perguntas sobre suas anotações e obtenha respostas contextuais.
+                                        </p>
+                                        </div>
+                                        <div class="feature-card">
+                                    <h3 class="feature-title">Upload de PDF</h3>
+                                    <p class="feature-description">
+                                        Conversão automática de PDFs para anotações editáveis e pesquisáveis.
+                                        </p>
+                                        </div>
+                                        </div>
+                                        </div>
+                                        <div class="slide-right">
+                            <div class="ai-diagram">
+                                <div class="note-container">
+                                    <div class="note-content">
+                                        reuniao marketing
+                                        - orcamento 50k
+                                        - redes sociais
+                                        - prazo 15/nov
+                                        - ana (criacao)
+                                        - carlos (midia)
+                                        fazer follow up
+                                    </div>
+                                </div>
+                                <div class="structured-note">
+                                    <div class="structured-content">
+                                        <h3>Reunião Marketing</h3>
+                                        <ul>
+                                            <li>Orçamento: R$ 50.000</li>
+                                            <li>Foco: Redes Sociais</li>
+                                            <li>Prazo: 15/Nov</li>
+                                        </ul>
+                                        <h3>Responsáveis:</h3>
+                                        <ul>
+                                            <li>Ana (Criação)</li>
+                                            <li>Carlos (Mídia)</li>
+                                        </ul>
+                                        <h3>Tarefas:</h3>
+                                        <ul>
+                                            <li>[ ] Follow up</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
+                            </div>
+                            </div>
+                            </div>
 
-      <!-- Slide 10: Conclusão -->
-      <div class="slide" id="slide-10">
-        <div class="slide-content">
-          <div class="slide-header">
-            <div class="slide-number">10</div>
-            <div class="slide-logo">Vorp</div>
-          </div>
-          <div class="slide-main">
-            <div class="slide-left">
-              <h1 class="slide-title">Transforme suas notas em conhecimento acionável</h1>
-              <p class="slide-subtitle">Potencialize sua produtividade com inteligência artificial</p>
-              <div class="feature-list">
-                <li><i class="fas fa-rocket"></i> Aumento imediato de produtividade</li>
-                <li><i class="fas fa-lightbulb"></i> Insights valiosos do seu próprio conteúdo</li>
-                <li><i class="fas fa-clock"></i> Economia de tempo em organização e busca</li>
-              </div>
-              <p style="margin-top: 2rem; font-size: 1.25rem; font-weight: 600;">
-                contato@vorp.ai<br>
-                www.vorp.ai
-              </p>
-            </div>
-            <div class="slide-right">
-              <div class="device-mockup">
-                <div class="device-glow"></div>
-                <div class="device-frame">
-                  <img src="slide10_conclusion.jpg" alt="Logo Vorp ampliado" class="device-screen">
-                </div>
-                <div class="device-reflection"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+            <!-- NOVO SLIDE: Chatbot Inteligente -->
+            <div class="slide" id="slide-3a">
+                <div class="slide-content">
+                    <div class="slide-header">
+                        <div class="slide-number">04</div>
+                        <div class="slide-logo">VORP</div>
+                        </div>
+                        <div class="slide-main">
+                            <div class="slide-left">
+                            <h1 class="slide-title">Chatbot Inteligente</h1>
+                            <p class="slide-subtitle">Converse com suas anotações</p>
+                            <p class="slide-description">
+                                Nosso chatbot é treinado com o conteúdo das suas próprias anotações, permitindo que você
+                                faça perguntas e obtenha respostas precisas baseadas no seu conhecimento pessoal.
+                            </p>
+                            <div class="feature-list">
+                                <li>Treinado com suas anotações pessoais</li>
+                                <li>Responde perguntas específicas sobre seu conteúdo</li>
+                                <li>Recupera informações rapidamente sem necessidade de busca manual</li>
+                                <li>Conecta informações relacionadas de diferentes anotações</li>
+                            </div>
+                            </div>
+                            <div class="slide-right">
+                                <div class="chatbot-container">
+                                    <div class="chatbot-connections">
+                                        <div class="connection-line"></div>
+                                        <div class="connection-line"></div>
+                                        <div class="connection-line"></div>
+                                        <div class="connection-dot"></div>
+                                        <div class="connection-dot"></div>
+                                        <div class="connection-dot"></div>
+                                    </div>
+                                    <div class="chatbot-interface">
+                                        <div class="chatbot-header">
+                                            <div class="chatbot-avatar">
+                                                <img src="{% static 'images/logo.png' %}" alt="VORP Logo" style="width: 20px; height: 20px;">
+                                            </div>
+                                        VORP Assistant
+                                    </div>
+                                    <div class="chatbot-messages">
+                                        <div class="message user">
+                                            Quando é a próxima reunião de marketing?
+                                        </div>
+                                        <div class="message bot">
+                                            De acordo com suas anotações, a próxima reunião de marketing está agendada
+                                            para o dia 15 de novembro.
+                                        </div>
+                                        <div class="message user">
+                                            Quem são os responsáveis pelo projeto?
+                                        </div>
+                                        <div class="message bot">
+                                            Encontrei em suas anotações que Ana está responsável pela criação e Carlos
+                                            pela mídia do projeto de marketing.
+                                        </div>
+                                    </div>
+                                    <div class="chatbot-input">
+                                        <input type="text" placeholder="Faça uma pergunta sobre suas anotações...">
+                                        <button>Enviar</button>
+                                    </div>
+                                    </div>
+                                    </div>
+                                    </div>
+                                    </div>
+                                    </div>
+                                    </div>
+
+            <!-- Slide 4: Demonstração Visual (agora é o slide 5) -->
+            <div class="slide" id="slide-4">
+                <div class="slide-content">
+                    <div class="slide-header">
+                        <div class="slide-number">05</div>
+                        <div class="slide-logo">VORP</div>
+                        </div>
+                        <div class="slide-main">
+                            <div class="slide-left">
+                            <h1 class="slide-title">Transformação com IA</h1>
+                            <p class="slide-subtitle">De anotações brutas para conhecimento estruturado</p>
+                            <p class="slide-description">
+                                Nossa tecnologia de IA transforma anotações rápidas e desorganizadas em documentos bem
+                                estruturados, facilitando a compreensão e o acesso à informação quando você precisar.
+                            </p>
+                            <div class="feature-list">
+                                <li>Formatação automática</li>
+                                <li>Organização por tópicos</li>
+                                <li>Destaque de informações importantes</li>
+                                <li>Criação de listas de tarefas</li>
+                                </div>
+                                </div>
+                                <div class="slide-right">
+                            <div class="device-mockup">
+                                <img src="{% static 'images/transformacao.jpg' %}" alt="Exemplo de transformação de texto" class="device-screen">
+                            </div>
+                            </div>
+                            </div>
+                            </div>
+                            </div>
+
+            <!-- Slide 5: Modelo de Negócio (agora é o slide 6) -->
+            <div class="slide" id="slide-5">
+                <div class="slide-content">
+                    <div class="slide-header">
+                        <div class="slide-number">06</div>
+                        <div class="slide-logo">VORP</div>
+                        </div>
+                        <div class="slide-main">
+                            <div class="slide-left">
+                            <h1 class="slide-title">Modelo de Negócio</h1>
+                            <p class="slide-subtitle">SaaS B2C com estratégia freemium</p>
+                            
+                            <div class="business-model">
+                                <div class="model-row">
+                                    <div class="model-card">
+                                        <h3 class="model-title">SaaS B2C</h3>
+                                        <p class="model-description">
+                                            Software como serviço voltado para o consumidor final, com foco em usuários
+                                            individuais que buscam organizar suas anotações e aumentar sua produtividade
+                                            pessoal.
+                                        </p>
+                                    </div>
+                                    <div class="model-card">
+                                        <h3 class="model-title">Modelo Freemium</h3>
+                                        <p class="model-description">
+                                            Oferecemos uma versão gratuita com recursos básicos para atrair usuários e
+                                            versões pagas com recursos avançados para monetização, criando um funil de
+                                            conversão natural.
+                                        </p>
+                                    </div>
+                                    </div>
+                                <div class="model-row">
+                                    <div class="model-card">
+                                        <h3 class="model-title">Estratégia de Crescimento</h3>
+                                        <p class="model-description">
+                                        <ul class="feature-list" style="margin-top: 0.5rem;">
+                                            <li>Aquisição de usuários via versão gratuita</li>
+                                            <li>Conversão para planos pagos através de valor agregado</li>
+                                            <li>Retenção por meio de melhorias contínuas</li>
+                                            <li>Expansão através de marketing orgânico</li>
+                                        </ul>
+                                        </p>
+                                    </div>
+                                    </div>
+                            </div>
+                            </div>
+                        <div class="slide-right">
+                            <div class="funnel">
+                                <div class="funnel-section">Usuários Gratuitos</div>
+                                <div class="funnel-section">Uso de Recursos Premium</div>
+                                <div class="funnel-section">Conversão para Pagante</div>
+                                <div class="funnel-section">Retenção e Upgrade</div>
+                                <div class="funnel-arrow"></div>
+                                <div class="funnel-arrow"></div>
+                                <div class="funnel-arrow"></div>
+                            </div>
+                            </div>
+                            </div>
+                            </div>
+                            </div>
+
+            <!-- Slide 6: Planos e Preços (agora é o slide 7) -->
+            <div class="slide" id="slide-6">
+                <div class="slide-content">
+                    <div class="slide-header">
+                        <div class="slide-number">07</div>
+                        <div class="slide-logo">VORP</div>
+                        </div>
+                        <div class="slide-main">
+                        <div class="slide-left" style="flex: 1.5;">
+                            <h1 class="slide-title">Planos e Preços</h1>
+                            <p class="slide-subtitle">Opções flexíveis para diferentes necessidades</p>
+                            <div class="pricing-container">
+                                <div class="pricing-card">
+                                    <div class="pricing-label">Iniciante</div>
+                                    <h3 class="pricing-title">Grátis</h3>
+                                    <p class="pricing-subtitle">Comece agora</p>
+                                    <ul class="pricing-features">
+                                        <li>500 créditos/mês</li>
+                                        <li>Editor básico</li>
+                                        <li>Anúncios</li>
+                                    </ul>
+                                    <button class="pricing-button">Começar Agora</button>
+                                    </div>
+                                    
+                                    <div class="pricing-card">
+                                        <div class="pricing-label">Estudantes</div>
+                                        <h3 class="pricing-title">Estudante</h3>
+                                        <div class="pricing-price">R$ 19 <span>/mês</span></div>
+                                        <p class="pricing-subtitle">Com email institucional</p>
+                                        <ul class="pricing-features">
+                                        <li>3.000 créditos/mês</li>
+                                        <li>IA Básica</li>
+                                        <li>Suporte por email</li>
+                                        </ul>
+                                    <button class="pricing-button">Verificar Elegibilidade</button>
+                                </div>
+
+                                <div class="pricing-card featured">
+                                    <div class="pricing-label">Mais Popular</div>
+                                    <h3 class="pricing-title">Profissional</h3>
+                                    <div class="pricing-price">R$ 29 <span>/mês</div>
+                                    <p class="pricing-subtitle">Recursos completos</p>
+                                    <ul class="pricing-features">
+                                        <li>5.000 créditos/mês</li>
+                                        <li>IA Avançada</li>
+                                        <li>Suporte prioritário</li>
+                                        <li>Chatbot personalizado</li>
+                                        </ul>
+                                    <button class="pricing-button">Assinar Agora</button>
+                                </div>
+
+                                <div class="pricing-card">
+                                    <div class="pricing-label">Empresas</div>
+                                    <h3 class="pricing-title">Custom</h3>
+                                    <p class="pricing-subtitle">Soluções personalizadas</p>
+                                    <ul class="pricing-features">
+                                        <li>Gestão centralizada</li>
+                                        <li>SSO e SAML</li>
+                                        <li>API dedicada</li>
+                                        <li>Suporte VIP</li>
+                                        </ul>
+                                    <button class="pricing-button">Contato</button>
+                                </div>
+                            </div>
+                            </div>
+                            </div>
+                            </div>
+                            </div>
+
+            <!-- Slide 7: Segurança (agora é o slide 8) -->
+            <div class="slide" id="slide-7">
+                <div class="slide-content">
+                    <div class="slide-header">
+                        <div class="slide-number">08</div>
+                        <div class="slide-logo">VORP</div>
+                        </div>
+                        <div class="slide-main">
+                            <div class="slide-left">
+                            <h1 class="slide-title">Segurança e Privacidade</h1>
+                            <p class="slide-subtitle">Seus dados protegidos com os mais altos padrões</p>
+                            <div class="feature-list">
+                                <li>Criptografia end-to-end em todas as anotações</li>
+                                <li>Conformidade total com LGPD</li>
+                                <li>Controle total sobre seus dados</li>
+                                <li>Proteção contra acesso não autorizado</li>
+                            </div>
+                            </div>
+                            <div class="slide-right">
+                                <div class="device-mockup">
+                                <img src="{% static 'images/security.jpg' %}" alt="Visualização dos recursos de segurança" class="device-screen">
+                                </div>
+                                </div>
+                                </div>
+                                </div>
+                                </div>
+
+            <!-- Slide 8: Conclusão -->
+            <div class="slide" id="slide-8">
+                <div class="slide-content">
+                    <div class="slide-header">
+                        <div class="slide-number">09</div>
+                        <div class="slide-logo">VORP</div>
+                        </div>
+                        <div class="slide-main">
+                            <div class="slide-left">
+                            <h1 class="slide-title">Transforme suas anotações em conhecimento ativo</h1>
+                            <p class="slide-subtitle">Potencialize sua produtividade com inteligência artificial</p>
+                            <div class="feature-list">
+                                <li>Aumento imediato de produtividade</li>
+                                <li>Insights valiosos do seu próprio conteúdo</li>
+                                <li>Economia de tempo em organização e busca</li>
+                                </div>
+                                <p style="margin-top: 2rem; font-size: 1.25rem; font-weight: 600;"><br>
+                                    vorp.caiots.dev
+                                </p>
+                                </div>
+                                <div class="slide-right">
+                                    <div class="device-mockup">
+                                <img src="{% static 'images/logo.png' %}" alt="Logo VORP ampliado" class="device-screen">
+                                </div>
+                                </div>
+                                </div>
+                                </div>
+                                </div>
+                                </div>
+                                </div>
+
+    <div class="navigation">
+        <button class="nav-button" id="prev-button">←</button>
+        <button class="nav-button" id="next-button">→</button>
     </div>
-  </div>
 
-  <div class="navigation">
-    <button class="nav-button" id="prev-button">←</button>
-    <button class="nav-button" id="next-button">→</button>
-  </div>
+    <div class="progress-bar" id="progress-bar"></div>
+    <div class="slide-indicator" id="slide-indicator">1/10</div>
 
-  <div class="progress-bar" id="progress-bar"></div>
-  <div class="slide-indicator" id="slide-indicator">1/10</div>
+    <script>
+                                                                document.addEventListener('DOMContentLoaded', function () {
+                                                                    const slides = document.querySelectorAll('.slide');
+                                                                    const slidesContainer = document.querySelector('.slides');
+                                                                    const prevButton = document.getElementById('prev-button');
+                                                                    const nextButton = document.getElementById('next-button');
+                                                                    const progressBar = document.getElementById('progress-bar');
+                                                                    const slideIndicator = document.getElementById('slide-indicator');
+                                                                const parallaxCircles = document.querySelectorAll('.parallax-circle');
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const slides = document.querySelectorAll('.slide');
-      const slidesContainer = document.querySelector('.slides');
-      const prevButton = document.getElementById('prev-button');
-      const nextButton = document.getElementById('next-button');
-      const progressBar = document.getElementById('progress-bar');
-      const slideIndicator = document.getElementById('slide-indicator');
-      
-      let currentSlide = 0;
-      const totalSlides = slides.length;
-      
-      // Initialize
-      updateSlides();
-      
-      // Add event listeners
-      prevButton.addEventListener('click', prevSlide);
-      nextButton.addEventListener('click', nextSlide);
-      
-      // Keyboard navigation
-      document.addEventListener('keydown', function(e) {
-        if (e.key === 'ArrowRight') {
-          nextSlide();
-        } else if (e.key === 'ArrowLeft') {
-          prevSlide();
-        }
-      });
-      
-      // Swipe navigation for touch devices
-      let touchStartX = 0;
-      let touchEndX = 0;
-      
-      document.addEventListener('touchstart', function(e) {
-        touchStartX = e.changedTouches[0].screenX;
-      });
-      
-      document.addEventListener('touchend', function(e) {
-        touchEndX = e.changedTouches[0].screenX;
-        handleSwipe();
-      });
-      
-      function handleSwipe() {
-        const swipeThreshold = 50;
-        if (touchEndX < touchStartX - swipeThreshold) {
-          nextSlide();
-        } else if (touchEndX > touchStartX + swipeThreshold) {
-          prevSlide();
-        }
-      }
-      
-      function prevSlide() {
-        if (currentSlide > 0) {
-          currentSlide--;
-          updateSlides();
-        }
-      }
-      
-      function nextSlide() {
-        if (currentSlide < totalSlides - 1) {
-          currentSlide++;
-          updateSlides();
-        }
-      }
-      
-      function updateSlides() {
-        // Update slides position
-        slidesContainer.style.transform = `translateX(-${currentSlide * 100}%)`;
-        
-        // Update active class
-        slides.forEach((slide, index) => {
-          if (index === currentSlide) {
-            slide.classList.add('active');
-          } else {
-            slide.classList.remove('active');
-          }
-        });
-        
-        // Update buttons state
-        prevButton.disabled = currentSlide === 0;
-        nextButton.disabled = currentSlide === totalSlides - 1;
-        
-        // Update progress bar
-        const progress = ((currentSlide + 1) / totalSlides) * 100;
-        progressBar.style.width = `${progress}%`;
-        
-        // Update slide indicator
-        slideIndicator.textContent = `${currentSlide + 1}/${totalSlides}`;
-      }
-      
-      // Parallax effect for floating elements
-      document.addEventListener('mousemove', function(e) {
-        const floatingElements = document.querySelectorAll('.floating-elements');
-        
-        floatingElements.forEach(container => {
-          const elements = container.querySelectorAll('.floating-element');
-          const rect = container.getBoundingClientRect();
-          const centerX = rect.left + rect.width / 2;
-          const centerY = rect.top + rect.height / 2;
-          
-          const moveX = (e.clientX - centerX) / 30;
-          const moveY = (e.clientY - centerY) / 30;
-          
-          elements.forEach((element, index) => {
-            const factor = (index + 1) * 0.8;
-            element.style.transform = `translate(${moveX * factor}px, ${moveY * factor}px)`;
-          });
-        });
-      });
-      
-      // Auto-activate first slide
-      setTimeout(() => {
-        slides[0].classList.add('active');
-      }, 100);
-    });
-  </script>
+                                                                let currentSlide = 0;
+                                                                const totalSlides = slides.length;
+
+                                                                // Initialize
+                                                                updateSlides();
+
+                                                                // Add event listeners
+                                                                prevButton.addEventListener('click', prevSlide);
+                                                                nextButton.addEventListener('click', nextSlide);
+
+                                                                // Keyboard navigation
+                                                                document.addEventListener('keydown', function (e) {
+                                                                    if (e.key === 'ArrowRight') {
+                                                                        nextSlide();
+                                                                    } else if (e.key === 'ArrowLeft') {
+                                                                        prevSlide();
+                                                                    }
+                                                                });
+
+                                                                // Parallax effect
+                                                                document.addEventListener('mousemove', function (e) {
+                                                                    const x = e.clientX / window.innerWidth;
+                                                                    const y = e.clientY / window.innerHeight;
+
+                                                                    parallaxCircles[0].style.transform = `translate(${x * 50}px, ${y * 50}px)`;
+                                                                    parallaxCircles[1].style.transform = `translate(${-x * 50}px, ${-y * 50}px)`;
+                                                                    parallaxCircles[2].style.transform = `translate(${x * 30}px, ${-y * 30}px)`;
+                                                                });
+
+                                                                // Swipe navigation for touch devices
+                                                                let touchStartX = 0;
+                                                                let touchEndX = 0;
+
+                                                                document.addEventListener('touchstart', function (e) {
+                                                                    touchStartX = e.changedTouches[0].screenX;
+                                                                });
+
+                                                                document.addEventListener('touchend', function (e) {
+                                                                    touchEndX = e.changedTouches[0].screenX;
+                                                                    handleSwipe();
+                                                                });
+
+                                                                function handleSwipe() {
+                                                                    const swipeThreshold = 50;
+                                                                    if (touchEndX < touchStartX - swipeThreshold) {
+                                                                        nextSlide();
+                                                                    } else if (touchEndX > touchStartX + swipeThreshold) {
+                                                                        prevSlide();
+                                                                    }
+                                                                }
+
+                                                                function prevSlide() {
+                                                                    if (currentSlide > 0) {
+                                                                        currentSlide--;
+                                                                        updateSlides();
+                                                                    }
+                                                                }
+
+                                                                function nextSlide() {
+                                                                    if (currentSlide < totalSlides - 1) {
+                                                                        currentSlide++;
+                                                                        updateSlides();
+                                                                    }
+                                                                }
+
+                                                                function updateSlides() {
+                                                                    // Update slides position
+                                                                    slidesContainer.style.transform = `translateX(-${currentSlide * 100}%)`;
+
+                                                                    // Update active class
+                                                                    slides.forEach((slide, index) => {
+                                                                        if (index === currentSlide) {
+                                                                            slide.classList.add('active');
+                                                                        } else {
+                                                                            slide.classList.remove('active');
+                                                                        }
+                                                                    });
+
+                                                                    // Update buttons state
+                                                                    prevButton.disabled = currentSlide === 0;
+                                                                    nextButton.disabled = currentSlide === totalSlides - 1;
+
+                                                                    // Update progress bar
+                                                                    const progress = ((currentSlide + 1) / totalSlides) * 100;
+                                                                    progressBar.style.width = `${progress}%`;
+
+                                                                    // Update slide indicator
+                                                                    slideIndicator.textContent = `${currentSlide + 1}/${totalSlides}`;
+                                                                }
+
+                                                                // Auto-activate first slide
+                                                                setTimeout(() => {
+                                                                    slides[0].classList.add('active');
+                                                                }, 100);
+
+                                                                // Editor tabs functionality
+                                                                const editorTabs = document.querySelectorAll('.editor-tab');
+                                                                const editorViews = document.querySelectorAll('.editor-view');
+                                                                let autoSwapInterval;
+                                                                let currentEditorIndex = 0;
+
+                                                                // Função para alternar automaticamente entre as abas
+                                                                function switchEditorMode() {
+                                                                    currentEditorIndex = (currentEditorIndex + 1) % editorTabs.length;
+
+                                                                // Atualiza a classe ativa para todas as abas
+                                                                editorTabs.forEach((t, index) => {
+                                                                    if (index === currentEditorIndex) {
+                                                                        t.classList.add('active');
+                                                                    } else {
+                                                                        t.classList.remove('active');
+                                                                    }
+                                                                });
+
+                                                                // Atualiza a visibilidade das visualizações
+                                                                const editorType = editorTabs[currentEditorIndex].getAttribute('data-editor');
+                                                                editorViews.forEach(view => {
+                                                                    if (view.id === editorType + '-editor') {
+                                                                        view.classList.add('active');
+                                                                    } else {
+                                                                        view.classList.remove('active');
+                                                                    }
+                                                            });
+                                                                }
+
+                                                                // Iniciar alternância automática
+                                                                autoSwapInterval = setInterval(switchEditorMode, 5000); // A cada 5 segundos
+
+                                                                // Manter funcionalidade de clique, mas pausar alternância automática
+                                                                editorTabs.forEach((tab, index) => {
+                                                                    tab.addEventListener('click', () => {
+                                                                        // Pausar alternância automática
+                                                                        clearInterval(autoSwapInterval);
+
+                                                                        // Atualizar índice atual
+                                                                        currentEditorIndex = index;
+
+                                                                        // Atualizar abas conforme o clique
+                                                                        editorTabs.forEach(t => t.classList.remove('active'));
+                                                                        tab.classList.add('active');
+
+                                                                        const editorType = tab.getAttribute('data-editor');
+                                                                        editorViews.forEach(view => {
+                                                                            if (view.id === editorType + '-editor') {
+                                                                                view.classList.add('active');
+                                                                            } else {
+                                                                                view.classList.remove('active');
+                                                                            }
+                                                                    });
+
+                                                                    // Reiniciar alternância automática após 10 segundos
+                                                                    autoSwapInterval = setInterval(switchEditorMode, 5000);
+                                                                });
+                                                            });
+                                                            });
+                                                                </script>
 </body>
+
 </html>
