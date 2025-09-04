@@ -1,0 +1,32 @@
+{% extends "core/base.html" %}
+{% block title %}Histórico - {{ note.title }}{% endblock %}
+{% block content %}
+<section class="p-6">
+  <h1 class="text-2xl font-bold mb-4 text-white">Histórico de versões - {{ note.title }}</h1>
+  <ul class="space-y-2">
+    {% for version in history %}
+      <li class="bg-gray-800 p-4 rounded text-white">
+        <div class="flex justify-between">
+          <span>{{ version.created_at|date:"d/m/Y H:i" }}</span>
+          <div>
+            <a href="{% url 'notes:restore_version' note.id version.id %}" class="text-cyan-400 hover:underline mr-4">Restaurar</a>
+            <a href="#" onclick="toggleContent({{ version.id }}); return false;" class="text-cyan-400 hover:underline">Visualizar</a>
+          </div>
+        </div>
+        <div id="content-{{ version.id }}" class="hidden mt-2 p-2 bg-gray-900 rounded">{{ version.content|linebreaksbr }}</div>
+      </li>
+    {% empty %}
+      <li class="text-white">Nenhuma versão anterior.</li>
+    {% endfor %}
+  </ul>
+  <div class="mt-4">
+    <a href="{% url 'notes:view_note' note.id %}" class="text-cyan-400 hover:underline">Voltar</a>
+  </div>
+</section>
+<script>
+function toggleContent(id){
+  const el=document.getElementById('content-'+id);
+  if(el){el.classList.toggle('hidden');}
+}
+</script>
+{% endblock %}

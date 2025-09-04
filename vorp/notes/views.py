@@ -6,7 +6,7 @@ from django.urls import reverse
 from io import BytesIO
 import markdown
 from xhtml2pdf import pisa
-from db.notes_models import Note, Tag, Comment
+from db.notes_models import Note, Tag, Comment, NoteHistory
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 import openai
@@ -97,6 +97,12 @@ def view_note(request, note_id):
 def edit_note(request, note_id):
     note = get_object_or_404(Note, pk=note_id, user=request.user)
     if request.method == 'POST':
+        # Save current state to history before updating
+        NoteHistory.objects.create(
+            note=note,
+            title=note.title,
+            content=note.content,
+        )
         note.title = request.POST.get('title', note.title).strip()
         note.content = request.POST.get('content', note.content)
         note.is_public = (request.POST.get('is_public') == 'on')
@@ -112,6 +118,26 @@ def edit_note(request, note_id):
         return redirect('notes:view_note', note_id=note.id)
     tags = ', '.join([tag.name for tag in note.tags.all()])
     return render(request, 'notes/edit_note.html', {'note': note, 'tags': tags})
+
+
+@login_required
+def note_history(request, note_id):
+    note = get_object_or_404(Note, pk=note_id, user=request.user)
+    history = note.history.all()
+    return render(request, 'notes/history.html', {'note': note, 'history': history})
+
+
+@login_required
+def restore_version(request, note_id, version_id):
+    note = get_object_or_404(Note, pk=note_id, user=request.user)
+    version = get_object_or_404(NoteHistory, pk=version_id, note=note)
+    # Save current state before restoring
+    NoteHistory.objects.create(note=note, title=note.title, content=note.content)
+    note.title = version.title
+    note.content = version.content
+    note.save()
+    messages.success(request, "Versão restaurada com sucesso!")
+    return redirect('notes:view_note', note_id=note.id)
 
 @login_required
 def delete_note(request, note_id):

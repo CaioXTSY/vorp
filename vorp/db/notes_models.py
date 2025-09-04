@@ -82,3 +82,16 @@ class Comment(models.Model):
         return f"{self.user.username} em {self.note.title}"
 
 
+
+class NoteHistory(models.Model):
+    note = models.ForeignKey('Note', on_delete=models.CASCADE, related_name='history')
+    title = models.CharField(max_length=200)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.note.title} - {self.created_at}"
+
