@@ -1190,6 +1190,12 @@
           <span>Cancelar</span>
         </a>
 
+        <!-- History button -->
+        <a href="{% url 'notes:note_history' note.id %}" class="btn-control btn-secondary">
+          <i class="fas fa-history"></i>
+          <span>Histórico</span>
+        </a>
+
         <!-- Public toggle -->
         <div class="toggle-container">
           <span class="toggle-label">Tornar Público</span>

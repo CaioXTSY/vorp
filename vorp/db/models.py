@@ -1,2 +1,2 @@
 from .accounts_models import User
-from .notes_models import Note
+from .notes_models import Note, Tag, Comment, NoteHistory
