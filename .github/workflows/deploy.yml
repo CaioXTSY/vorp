@@ -22,12 +22,6 @@ jobs:
           port: 22
           source: "."
           target: "/www/wwwroot/caiobook"
-          exclude: |
-            .git
-            .github
-            venv
-            logs
-            __pycache__
 
       - name: Run remote deploy commands
         uses: appleboy/ssh-action@v0.1.8
@@ -59,6 +53,10 @@ jobs:
             # gera e aplica migrations do app "db"
             echo "--- Gerando migrations para app 'db' ---"
             python3 vorp/manage.py makemigrations db --noinput || echo "Nenhuma migração pendente para 'db'"
+            
+            echo "--- Marcando migrações iniciais como aplicadas para evitar conflitos ---"
+            python3 vorp/manage.py migrate db --fake-initial || echo "Migrações iniciais já aplicadas"
+            
             echo "--- Executando migrações Django ---"
             python3 vorp/manage.py migrate
 
