@@ -54,10 +54,10 @@ jobs:
             echo "--- Gerando migrations para app 'db' ---"
             python3 vorp/manage.py makemigrations db --noinput || echo "Nenhuma migração pendente para 'db'"
             
-            echo "--- Marcando migrações iniciais como aplicadas para evitar conflitos ---"
-            python3 vorp/manage.py migrate db --fake-initial || echo "Migrações iniciais já aplicadas"
+            echo "--- Marcando todas as migrações do app db como aplicadas para evitar conflitos ---"
+            python3 vorp/manage.py migrate db --fake || echo "Erro ao marcar migrações como fake, continuando..."
             
-            echo "--- Executando migrações Django ---"
+            echo "--- Executando migrações Django para outros apps ---"
             python3 vorp/manage.py migrate
 
             # coleta arquivos estáticos
