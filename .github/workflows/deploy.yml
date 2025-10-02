@@ -36,6 +36,7 @@ jobs:
 
             # prepara logs
             mkdir -p "$LOG_DIR" && chmod 755 "$LOG_DIR"
+            mkdir -p "$PROJECT_PATH/vorp/logs" && chmod 755 "$PROJECT_PATH/vorp/logs"
             TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
             LOG_FILE="$LOG_DIR/deploy-$TIMESTAMP.log"
             echo "=== Deploy iniciado em $(date) ===" >> "$LOG_FILE"
@@ -64,12 +65,11 @@ jobs:
             echo "--- Coletando arquivos estáticos ---"
             python3 vorp/manage.py collectstatic --noinput
 
-            # configura unit do Gunicorn (se ainda não existir)
+            # configura unit do Gunicorn (sempre recria para garantir permissões corretas)
             SERVICE_FILE="/etc/systemd/system/gunicorn-vorp.service"
-            if [ ! -f "$SERVICE_FILE" ]; then
-              echo "--- Criando systemd service para Gunicorn ---"
-              SERVICE_USER=$(whoami)
-              sudo tee "$SERVICE_FILE" > /dev/null << EOF
+            echo "--- Criando/atualizando systemd service para Gunicorn ---"
+            SERVICE_USER=$(whoami)
+            sudo tee "$SERVICE_FILE" > /dev/null << EOF
             [Unit]
             Description=Gunicorn daemon for VORP Django project
             After=network.target
@@ -78,17 +78,26 @@ jobs:
             User=${SERVICE_USER}
             Group=${SERVICE_USER}
             WorkingDirectory=${PROJECT_PATH}/vorp
-            ExecStart=${PROJECT_PATH}/venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:${PROJECT_PATH}/gunicorn.sock vorp.wsgi:application
+            Environment=PATH=${PROJECT_PATH}/venv/bin
+            ExecStart=${PROJECT_PATH}/venv/bin/gunicorn --access-logfile - --error-logfile - --workers 3 --bind unix:${PROJECT_PATH}/gunicorn.sock --timeout 120 vorp.wsgi:application
+            ExecReload=/bin/kill -s HUP \$MAINPID
+            KillMode=mixed
+            TimeoutStopSec=5
+            PrivateTmp=true
+            Restart=always
+            RestartSec=3
 
             [Install]
             WantedBy=multi-user.target
             EOF
-              sudo systemctl daemon-reload
-              sudo systemctl enable gunicorn-vorp.service
-            fi
+            sudo systemctl daemon-reload
+            sudo systemctl enable gunicorn-vorp.service
 
-            # reinicia o serviço Gunicorn
-            echo "--- Reiniciando gunicorn-vorp.service ---"
+            # corrige permissões e reinicia o serviço Gunicorn
+            echo "--- Corrigindo permissões e reiniciando gunicorn-vorp.service ---"
+            sudo rm -f /www/wwwroot/caiobook/gunicorn.sock
+            sudo chown -R $(whoami):$(whoami) /www/wwwroot/caiobook/
+            sudo chmod 755 /www/wwwroot/caiobook/
             sudo systemctl restart gunicorn-vorp.service \
               && echo "Serviço gunicorn-vorp.service reiniciado com sucesso." \
               || echo "Falha ao reiniciar gunicorn-vorp.service."
