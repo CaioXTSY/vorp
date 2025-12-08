@@ -34,7 +34,7 @@ jobs:
             PROJECT_PATH="/www/wwwroot/caiobook"
             LOG_DIR="$PROJECT_PATH/logs/deploy"
 
-            # prepara logs
+            # 1. Prepara logs
             mkdir -p "$LOG_DIR" && chmod 755 "$LOG_DIR"
             mkdir -p "$PROJECT_PATH/vorp/logs" && chmod 755 "$PROJECT_PATH/vorp/logs"
             TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
@@ -44,31 +44,35 @@ jobs:
 
             cd "$PROJECT_PATH" || { echo "Diretório $PROJECT_PATH não encontrado"; exit 1; }
 
-            # instala/atualiza deps
+            # 2. Instala/atualiza dependências (Python)
             echo "--- Preparando ambiente Python ---"
             [ ! -d "venv" ] && python3 -m venv venv
             source venv/bin/activate
             pip install --upgrade pip
             pip install -r requirements.txt
 
-            # gera e aplica migrations do app "db"
+            # 3. Executa Migrations
             echo "--- Gerando migrations para app 'db' ---"
             python3 vorp/manage.py makemigrations db --noinput || echo "Nenhuma migração pendente para 'db'"
             
-            echo "--- Marcando todas as migrações do app db como aplicadas para evitar conflitos ---"
+            echo "--- Marcando migrações do app db como fake (evitar conflitos) ---"
             python3 vorp/manage.py migrate db --fake || echo "Erro ao marcar migrações como fake, continuando..."
             
-            echo "--- Executando migrações Django para outros apps ---"
+            echo "--- Executando migrações gerais ---"
             python3 vorp/manage.py migrate
 
-            # coleta arquivos estáticos
+            # 4. Coleta arquivos estáticos
             echo "--- Coletando arquivos estáticos ---"
             python3 vorp/manage.py collectstatic --noinput
 
-            # configura unit do Gunicorn (sempre recria para garantir permissões corretas)
+            # 5. Configura o serviço Systemd (Gunicorn) na porta 3554
             SERVICE_FILE="/etc/systemd/system/gunicorn-vorp.service"
             echo "--- Criando/atualizando systemd service para Gunicorn ---"
             SERVICE_USER=$(whoami)
+            
+            # DEFININDO A PORTA
+            APP_PORT="3554"
+
             sudo tee "$SERVICE_FILE" > /dev/null << EOF
             [Unit]
             Description=Gunicorn daemon for VORP Django project
@@ -79,7 +83,10 @@ jobs:
             Group=${SERVICE_USER}
             WorkingDirectory=${PROJECT_PATH}/vorp
             Environment=PATH=${PROJECT_PATH}/venv/bin
-            ExecStart=${PROJECT_PATH}/venv/bin/gunicorn --access-logfile - --error-logfile - --workers 3 --bind unix:${PROJECT_PATH}/gunicorn.sock --timeout 120 vorp.wsgi:application
+            
+            # ATENÇÃO: Bind na porta 3554 conforme solicitado
+            ExecStart=${PROJECT_PATH}/venv/bin/gunicorn --access-logfile - --error-logfile - --workers 3 --bind 127.0.0.1:${APP_PORT} --timeout 120 vorp.wsgi:application
+            
             ExecReload=/bin/kill -s HUP \$MAINPID
             KillMode=mixed
             TimeoutStopSec=5
@@ -90,16 +97,18 @@ jobs:
             [Install]
             WantedBy=multi-user.target
             EOF
+            
             sudo systemctl daemon-reload
             sudo systemctl enable gunicorn-vorp.service
 
-            # corrige permissões e reinicia o serviço Gunicorn
+            # 6. Reinicia o serviço
             echo "--- Corrigindo permissões e reiniciando gunicorn-vorp.service ---"
             sudo rm -f /www/wwwroot/caiobook/gunicorn.sock
             sudo chown -R $(whoami):$(whoami) /www/wwwroot/caiobook/
             sudo chmod 755 /www/wwwroot/caiobook/
+            
             sudo systemctl restart gunicorn-vorp.service \
-              && echo "Serviço gunicorn-vorp.service reiniciado com sucesso." \
+              && echo "Serviço gunicorn-vorp.service reiniciado na porta $APP_PORT." \
               || echo "Falha ao reiniciar gunicorn-vorp.service."
 
             echo "=== Deploy finalizado em $(date) ==="
